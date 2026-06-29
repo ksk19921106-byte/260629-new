@@ -12,11 +12,97 @@ import {
 import type { RequestKind } from "../services/formValidation";
 
 export const summary = {
-  totalNeedCheckCount: 7,
+  totalNeedCheckCount: 8,
   totalNeedCheckAmount: 86577903,
   monthlyNeedCount: 6,
-  collectionNeedCount: 1
+  collectionNeedCount: 1,
+  delayedRequestCount: 1
 };
+
+export type WorkItemType = "common" | "monthClose" | "collection" | "request" | "notice" | "issue";
+export type WorkItemStatus = "notStarted" | "inProgress" | "needCheck" | "done" | "delayed";
+
+export type WorkItem = {
+  id: string;
+  title: string;
+  description?: string;
+  type: WorkItemType;
+  status: WorkItemStatus;
+  priority: "high" | "medium" | "low";
+  date: string;
+  repeat?: "weekly" | "monthly" | "none";
+  target: "all" | "sales" | "vips" | "admin";
+  owner?: string;
+  source: "manual" | "opsData" | "system";
+  relatedRoute?: string;
+};
+
+export const weeklyWorkItems: WorkItem[] = [
+  {
+    id: "weekly-wr",
+    title: "WR 작성",
+    description: "주간 업무 리포트",
+    type: "common",
+    status: "notStarted",
+    priority: "medium",
+    date: "월",
+    repeat: "weekly",
+    target: "all",
+    source: "manual"
+  },
+  {
+    id: "month-start",
+    title: "월마감 시작",
+    description: "오늘부터 월마감 시작",
+    type: "monthClose",
+    status: "needCheck",
+    priority: "high",
+    date: "화",
+    repeat: "monthly",
+    target: "sales",
+    source: "system",
+    relatedRoute: "/month-end"
+  },
+  {
+    id: "month-focus",
+    title: "월마감 체크",
+    description: "월말 기간 집중 점검",
+    type: "monthClose",
+    status: "inProgress",
+    priority: "high",
+    date: "수",
+    repeat: "monthly",
+    target: "sales",
+    source: "opsData",
+    relatedRoute: "/month-end"
+  },
+  {
+    id: "collection-check",
+    title: "수금 확인",
+    description: "수금 이슈 1건",
+    type: "collection",
+    status: "needCheck",
+    priority: "high",
+    date: "목",
+    repeat: "none",
+    target: "sales",
+    source: "opsData",
+    relatedRoute: "/collections"
+  },
+  {
+    id: "request-delay",
+    title: "반려/지연 확인",
+    description: "요청 이슈 1건",
+    type: "request",
+    status: "delayed",
+    priority: "medium",
+    date: "금",
+    repeat: "none",
+    target: "sales",
+    source: "opsData",
+    relatedRoute: "/request-status"
+  }
+];
 
 export const searchChips = ["수정세금계산서", "입금확인", "보증보험", "수금매칭", "계산서매칭"];
 

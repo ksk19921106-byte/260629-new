@@ -9,6 +9,7 @@ import { searchChips } from "./homeData";
 import { HeroSection } from "./HeroSection";
 import { MonthlyCheckCard } from "./MonthlyCheckCard";
 import { CollectionCheckCard } from "./CollectionCheckCard";
+import { WeeklyOpsCalendar } from "./WeeklyOpsCalendar";
 import { GatekeeperBanner } from "./GatekeeperBanner";
 import { QuickRequestSection } from "./QuickRequestSection";
 import { RequestStatusSection } from "./RequestStatusSection";
@@ -94,6 +95,8 @@ export function Home({ userName, exchange, onSelectRequestKind }: { userName: st
           <MonthlyCheckCard />
           <CollectionCheckCard />
         </div>
+
+        <WeeklyOpsCalendar />
 
         <GatekeeperBanner />
 
