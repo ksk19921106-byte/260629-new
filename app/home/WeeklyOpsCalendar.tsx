@@ -55,13 +55,13 @@ function handleWorkItemClick(item: WorkItem) {
 
 export function WeeklyOpsCalendar() {
   return (
-    <section className="min-w-0 overflow-hidden rounded-[24px] border border-[#e5eaf3] bg-white p-4 shadow-[0_12px_28px_rgba(15,23,42,0.055)]">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <section className="min-w-0 overflow-hidden rounded-[20px] border border-[#e5eaf3] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.045)]">
+      <div className="flex h-10 flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-[12px] font-[950] uppercase tracking-[0.08em] text-[#2563eb]">Weekly Work View</p>
-          <h2 className="mt-1 text-[20px] font-[950] tracking-[-0.03em] text-[#111827]">이번 주 운영 캘린더</h2>
+          <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#2563eb]">Weekly Work View</p>
+          <h2 className="mt-0.5 text-[18px] font-[950] tracking-[-0.03em] text-[#111827]">이번 주 운영 캘린더</h2>
         </div>
-        <p className="rounded-full bg-[#f8fbff] px-3 py-1 text-[12px] font-[900] text-[#64748b]">공통 업무 + OPS 자동 이슈</p>
+        <p className="rounded-full bg-[#f8fbff] px-3 py-1 text-[11px] font-[900] text-[#64748b]">공통 업무 + OPS 자동 이슈</p>
       </div>
 
       <div className="mt-3 grid min-w-0 grid-cols-5 gap-2">
@@ -72,7 +72,7 @@ export function WeeklyOpsCalendar() {
               key={item.id}
               type="button"
               onClick={() => handleWorkItemClick(item)}
-              className="flex min-h-[124px] min-w-0 flex-col justify-between overflow-hidden rounded-[18px] border border-[#edf1f7] bg-[#fbfdff] p-3 text-left transition hover:-translate-y-0.5 hover:border-[#2563eb] hover:bg-white hover:shadow-sm"
+              className="flex min-h-[112px] min-w-0 flex-col justify-between overflow-hidden rounded-[16px] border border-[#edf1f7] bg-[#fbfdff] p-3 text-left transition hover:-translate-y-0.5 hover:border-[#2563eb] hover:bg-white hover:shadow-sm"
             >
               <div className="min-w-0">
                 <div className="flex items-center justify-between gap-2">

@@ -6,7 +6,7 @@ import { SummaryKpiStrip } from "./SummaryKpiStrip";
 
 export function HeroSection({ userName }: { userName: string }) {
   return (
-    <section className="grid min-h-[188px] min-w-0 grid-cols-[minmax(0,1fr)_280px] overflow-hidden rounded-[24px] border border-[#e5eaf3] bg-[linear-gradient(135deg,#fff7f3_0%,#ffffff_50%,#eef6ff_100%)] shadow-[0_12px_30px_rgba(15,23,42,0.075)]">
+    <section className="grid min-h-[188px] min-w-0 grid-cols-[minmax(0,1fr)_280px] overflow-hidden rounded-[20px] border border-[#e5eaf3] bg-[linear-gradient(135deg,#fff7f3_0%,#ffffff_50%,#eef6ff_100%)] shadow-[0_8px_20px_rgba(15,23,42,0.055)]">
       <div className="min-w-0 px-7 py-5">
         <p className="truncate text-[18px] font-[900] text-[#111827]">{userName}님 👋</p>
         <h1 className="mt-1 text-[34px] font-[950] leading-[1.08] tracking-[-0.04em] text-[#111827]">
