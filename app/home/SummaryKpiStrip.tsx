@@ -4,24 +4,24 @@ import { AlertTriangle, CalendarCheck, ClipboardList, WalletCards } from "lucide
 import { summary } from "./homeData";
 
 const kpis = [
-  { label: "오늘 할 일", value: `${summary.totalNeedCheckCount}건`, color: "text-[#ef4444]", icon: ClipboardList, valueClass: "text-[34px]" },
-  { label: "월마감 이슈", value: `${summary.monthlyNeedCount}건`, color: "text-[#f97316]", icon: CalendarCheck, valueClass: "text-[32px]" },
-  { label: "수금 이슈", value: `${summary.collectionNeedCount}건`, color: "text-[#2563eb]", icon: WalletCards, valueClass: "text-[32px]" },
-  { label: "반려/지연", value: `${summary.delayedRequestCount}건`, color: "text-[#ef4444]", icon: AlertTriangle, valueClass: "text-[32px]" }
+  { label: "오늘 할 일", value: `${summary.totalNeedCheckCount}건`, color: "text-[#ef4444]", bg: "bg-[#fff0ef]", icon: ClipboardList },
+  { label: "월마감 이슈", value: `${summary.monthlyNeedCount}건`, color: "text-[#f97316]", bg: "bg-[#fff4e8]", icon: CalendarCheck },
+  { label: "수금 이슈", value: `${summary.collectionNeedCount}건`, color: "text-[#2563eb]", bg: "bg-[#eef6ff]", icon: WalletCards },
+  { label: "반려/지연", value: `${summary.delayedRequestCount}건`, color: "text-[#ef4444]", bg: "bg-[#fff0ef]", icon: AlertTriangle }
 ];
 
 export function SummaryKpiStrip() {
   return (
-    <div className="grid min-w-0 grid-cols-4 overflow-hidden rounded-[20px] border border-[#e5eaf3] bg-white px-[22px] py-[18px] shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+    <div className="grid min-w-0 grid-cols-4 overflow-hidden rounded-[18px] border border-[#e5eaf3] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.07)]">
       {kpis.map((item, index) => (
-        <div key={item.label} className={`min-w-0 px-4 first:pl-0 ${index > 0 ? "border-l border-[#e5eaf3]" : ""}`}>
-          <div className="flex min-w-0 items-center gap-3">
-            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${item.color === "text-[#ef4444]" ? "bg-[#fff0ef]" : item.color === "text-[#f97316]" ? "bg-[#fff4e8]" : "bg-[#eef6ff]"}`}>
-              <item.icon size={20} className={item.color} />
+        <div key={item.label} className={`min-w-0 px-3 first:pl-0 ${index > 0 ? "border-l border-[#e5eaf3]" : ""}`}>
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${item.bg}`}>
+              <item.icon size={16} className={item.color} />
             </span>
             <div className="min-w-0">
-              <p className="mb-1.5 truncate text-[13px] font-[800] text-[#64748b]">{item.label}</p>
-              <p className={`truncate font-[800] leading-none tracking-[-0.03em] ${item.valueClass} ${item.color}`}>{item.value}</p>
+              <p className="mb-1 truncate text-[11px] font-[850] text-[#64748b]">{item.label}</p>
+              <p className={`truncate text-[24px] font-[900] leading-none tracking-[-0.03em] ${item.color}`}>{item.value}</p>
             </div>
           </div>
         </div>
