@@ -14,13 +14,17 @@ export function ModulePage({
 }) {
   return (
     <OpsShell>
-      <section className="px-6 py-5">
-        <div className="rounded-lg border border-[#dce6f3] bg-white p-6 shadow-sm">
-          <p className="text-[12px] font-[800] uppercase tracking-[0.08em] text-[#075bdc]">{eyebrow}</p>
-          <h1 className="mt-1 text-[24px] font-[850] tracking-[-0.01em] text-[#10203f]">{title}</h1>
-          <p className="mt-2 text-[14px] font-[550] text-[#5b6b84]">{description}</p>
+      <section className="min-w-0 px-6 py-5">
+        <div className="ops-card min-w-0 p-5">
+          <div className="flex min-h-[72px] items-center justify-between gap-4 border-b border-[#eef2f7] pb-4">
+            <div className="min-w-0">
+              <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#2563eb]">{eyebrow}</p>
+              <h1 className="mt-1 truncate text-[24px] font-[950] tracking-[-0.02em] text-[#111827]">{title}</h1>
+              <p className="mt-1 text-[13px] font-[700] leading-5 text-[#64748b]">{description}</p>
+            </div>
+          </div>
           {children ?? (
-            <div className="mt-6 rounded-md border border-dashed border-[#c6d4e9] bg-[#f8fbff] px-5 py-8 text-[13px] font-[650] text-[#435a7b]">
+            <div className="mt-5 rounded-[16px] border border-dashed border-[#c6d4e9] bg-[#f8fbff] px-5 py-8 text-[13px] font-[750] text-[#64748b]">
               이 영역은 이후 운영 기능 확장을 위한 기본 화면입니다.
             </div>
           )}

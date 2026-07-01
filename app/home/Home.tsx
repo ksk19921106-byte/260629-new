@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { RequestKind } from "../services/formValidation";
@@ -14,10 +15,45 @@ import { GatekeeperBanner } from "./GatekeeperBanner";
 import { QuickRequestSection } from "./QuickRequestSection";
 import { RequestStatusSection } from "./RequestStatusSection";
 import { ExchangeRateMiniCard, type MiniExchangeRate } from "./ExchangeRateMiniCard";
-import { TodayFlowCard } from "./TodayFlowCard";
 import { PerformanceMiniCard } from "./PerformanceMiniCard";
+import { OperationNoticeMiniCard } from "./OperationNoticeMiniCard";
 
-export function Home({ userName, exchange, onSelectRequestKind }: { userName: string; exchange: MiniExchangeRate; onSelectRequestKind: (kind: RequestKind) => void }) {
+function HomeGroup({
+  eyebrow,
+  title,
+  description,
+  children,
+  compact = false
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  children: ReactNode;
+  compact?: boolean;
+}) {
+  return (
+    <section className={`min-w-0 rounded-[28px] border border-[#edf2f8] bg-white/40 p-3.5 shadow-[0_4px_14px_rgba(15,23,42,0.016)] ${compact ? "space-y-2.5" : "space-y-3.5"}`}>
+      <div className="flex min-w-0 items-end justify-between gap-3 px-1">
+        <div className="min-w-0">
+          <p className="text-[10px] font-[950] uppercase tracking-[0.1em] text-[#2563eb]">{eyebrow}</p>
+          <h2 className="mt-0.5 truncate text-[19px] font-[950] tracking-[-0.03em] text-[#111827]">{title}</h2>
+        </div>
+        <p className="hidden max-w-[560px] truncate text-right text-[12px] font-[750] text-[#64748b] lg:block">{description}</p>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+export function Home({
+  userName,
+  exchange,
+  onSelectRequestKind
+}: {
+  userName: string;
+  exchange: MiniExchangeRate;
+  onSelectRequestKind: (kind: RequestKind) => void;
+}) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const results = useMemo(() => searchGlobal(query, 6), [query]);
@@ -33,11 +69,11 @@ export function Home({ userName, exchange, onSelectRequestKind }: { userName: st
   };
 
   return (
-    <main className="home-main w-full overflow-x-hidden bg-[#f5f7fb]">
-      <div className="home-shell mx-auto flex w-full max-w-[1600px] flex-col gap-3 px-6 pb-6 pt-[18px]">
+    <main className="home-main w-full min-w-0 overflow-x-hidden bg-[#f5f7fb]">
+      <div className="home-shell mx-auto flex w-full max-w-[1840px] flex-col gap-5 px-5 pb-7 pt-[18px] 2xl:px-6">
         <section className="relative z-30 flex h-[74px] min-w-0 items-start justify-center overflow-visible">
           <div className="relative min-w-0">
-            <div className="mx-auto flex h-[42px] w-[560px] max-w-full items-center gap-3 rounded-full border border-[#dfe7f2] bg-white px-5 shadow-[0_10px_24px_rgba(15,23,42,0.055)]">
+            <div className="mx-auto flex h-[42px] w-[560px] max-w-full items-center gap-3 rounded-full border border-[#dfe7f2] bg-white px-5 shadow-[0_8px_20px_rgba(15,23,42,0.045)]">
               <Search size={18} className="shrink-0 text-[#64748b]" />
               <input
                 value={query}
@@ -52,7 +88,9 @@ export function Home({ userName, exchange, onSelectRequestKind }: { userName: st
             </div>
             <div className="mt-2 flex h-7 min-w-0 flex-wrap justify-center gap-2 overflow-hidden">
               {searchChips.map((chip) => (
-                <button key={chip} onClick={() => setQuery(chip)} className="h-7 rounded-full border border-[#e7ecf4] bg-white px-3 text-[12px] font-[850] text-[#475569] shadow-sm">{chip}</button>
+                <button key={chip} onClick={() => setQuery(chip)} className="h-7 rounded-full border border-[#e7ecf4] bg-white px-3 text-[12px] font-[850] text-[#475569] shadow-sm">
+                  {chip}
+                </button>
               ))}
             </div>
             {showResults ? (
@@ -72,14 +110,6 @@ export function Home({ userName, exchange, onSelectRequestKind }: { userName: st
                         <span className="block text-[11px] font-[950] text-[#2563eb]">{result.categoryLabel}</span>
                         <span className="block truncate text-[14px] font-[950] text-[#111827]">{result.title}</span>
                         <span className="block truncate text-[12px] font-[750] text-[#64748b]">{result.description}</span>
-                        {result.readTime || result.tags?.length ? (
-                          <span className="mt-1 flex min-w-0 flex-wrap gap-1">
-                            {result.readTime ? <span className="rounded-full bg-[#f8fbff] px-2 py-0.5 text-[10px] font-[850] text-[#64748b]">{result.readTime}</span> : null}
-                            {result.tags?.slice(0, 2).map((tag) => (
-                              <span key={tag} className="rounded-full bg-[#f8fbff] px-2 py-0.5 text-[10px] font-[850] text-[#64748b]">{tag}</span>
-                            ))}
-                          </span>
-                        ) : null}
                       </span>
                     </button>
                   ))
@@ -89,27 +119,43 @@ export function Home({ userName, exchange, onSelectRequestKind }: { userName: st
           </div>
         </section>
 
-        <HeroSection userName={userName} />
+        <HomeGroup
+          eyebrow="Today Priority"
+          title="오늘 해야 할 업무"
+          description="오늘 처리할 업무와 이번 주 운영 흐름을 먼저 확인합니다."
+        >
+          <HeroSection userName={userName} />
+          <WeeklyOpsCalendar />
+          <div className="grid min-w-0 gap-3 lg:grid-cols-2">
+            <MonthlyCheckCard />
+            <CollectionCheckCard />
+          </div>
+        </HomeGroup>
 
-        <div className="grid min-w-0 grid-cols-2 gap-3">
-          <MonthlyCheckCard />
-          <CollectionCheckCard />
-        </div>
+        <HomeGroup
+          eyebrow="Request Work Center"
+          title="업무 요청"
+          description="월마감 상태를 먼저 확인하고 필요한 요청을 등록합니다."
+        >
+          <GatekeeperBanner />
+          <div className="grid min-w-0 gap-3 lg:grid-cols-[1.25fr_0.75fr]">
+            <QuickRequestSection onSelectRequestKind={onSelectRequestKind} />
+            <RequestStatusSection />
+          </div>
+        </HomeGroup>
 
-        <WeeklyOpsCalendar />
-
-        <GatekeeperBanner />
-
-        <div className="grid min-w-0 grid-cols-2 gap-3">
-          <QuickRequestSection onSelectRequestKind={onSelectRequestKind} />
-          <RequestStatusSection />
-        </div>
-
-        <div className="grid min-w-0 grid-cols-3 gap-3">
-          <TodayFlowCard />
-          <PerformanceMiniCard />
-          <ExchangeRateMiniCard exchange={exchange} />
-        </div>
+        <HomeGroup
+          eyebrow="Reference"
+          title="참고 정보"
+          description="환율, 성과, 운영 공지는 업무 판단을 돕는 보조 정보입니다."
+          compact
+        >
+          <div className="grid min-w-0 gap-3 lg:grid-cols-3">
+            <ExchangeRateMiniCard exchange={exchange} />
+            <PerformanceMiniCard />
+            <OperationNoticeMiniCard />
+          </div>
+        </HomeGroup>
       </div>
     </main>
   );

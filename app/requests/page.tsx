@@ -94,21 +94,21 @@ export default function RequestsPage() {
       title="VIPS팀 요청"
       description="필요한 요청을 검색하거나 카테고리로 골라 전용 Form으로 이동합니다."
     >
-      <section className="mt-6 overflow-hidden rounded-[28px] border border-[#dbe7fb] bg-[#f5f9ff]">
-        <div className="grid grid-cols-[1.1fr_0.9fr] gap-5 px-6 py-6">
+      <section className="ops-card mt-5 overflow-hidden bg-[#fbfcff]">
+        <div className="grid grid-cols-[1.1fr_0.9fr] gap-4 px-5 py-5">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-[#075bdc] shadow-sm">
-                <Sparkles size={19} />
+              <span className="ops-icon-circle">
+                <Sparkles size={20} />
               </span>
-              <p className="text-[13px] font-[900] text-[#075bdc]">Request Support Center</p>
+              <p className="text-[12px] font-[950] uppercase tracking-[0.08em] text-[#2563eb]">Request Support Center</p>
             </div>
-            <h2 className="mt-3 text-[28px] font-[950] tracking-[-0.025em] text-[#10203f]">무슨 요청이 필요하세요?</h2>
-            <p className="mt-2 text-[13px] font-[700] leading-6 text-[#435a7b]">
+            <h2 className="mt-3 text-[26px] font-[950] tracking-[-0.025em] text-[#111827]">무슨 요청이 필요하세요?</h2>
+            <p className="mt-2 text-[13px] font-[700] leading-5 text-[#64748b]">
               전자부품 유통 SALES 흐름에 맞춰 계산서, 수금, 매칭, 월마감 요청을 빠르게 찾습니다.
             </p>
-            <div className="mt-5 flex h-14 items-center gap-3 rounded-[20px] border border-[#cbdcf5] bg-white px-4 shadow-sm">
-              <Search size={19} className="text-[#075bdc]" />
+            <div className="mt-5 flex h-12 items-center gap-3 rounded-[16px] border border-[#e5eaf3] bg-white px-4 shadow-sm">
+              <Search size={19} className="text-[#2563eb]" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -120,13 +120,13 @@ export default function RequestsPage() {
 
           <div className="grid gap-3">
             {helpCards.map((card) => (
-              <article key={card.title} className="flex items-center gap-3 rounded-[20px] border border-white/80 bg-white/85 px-4 py-3 shadow-sm">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#eef5ff] text-[#075bdc]">
+              <article key={card.title} className="flex items-center gap-3 rounded-[16px] border border-[#edf1f6] bg-white px-4 py-3 shadow-sm">
+                <span className="ops-icon-circle shrink-0">
                   <card.icon size={20} />
                 </span>
                 <span>
-                  <span className="block text-[13px] font-[900] text-[#10203f]">{card.title}</span>
-                  <span className="mt-0.5 block text-[12px] font-[650] leading-5 text-[#5b6b84]">{card.body}</span>
+                  <span className="block text-[13px] font-[900] text-[#111827]">{card.title}</span>
+                  <span className="mt-0.5 block text-[12px] font-[700] leading-5 text-[#64748b]">{card.body}</span>
                 </span>
               </article>
             ))}
@@ -141,7 +141,7 @@ export default function RequestsPage() {
             type="button"
             onClick={() => setActiveGroup(group)}
             className={`h-10 rounded-full px-4 text-[13px] font-[900] transition ${
-              activeGroup === group ? "bg-[#075bdc] text-white shadow-sm" : "border border-[#e7ecf4] bg-white text-[#435a7b] hover:bg-[#f8fbff]"
+              activeGroup === group ? "bg-[#2563eb] text-white shadow-sm" : "border border-[#e5eaf3] bg-white text-[#64748b] hover:bg-[#f8fbff]"
             }`}
           >
             {group}
@@ -156,16 +156,16 @@ export default function RequestsPage() {
             <a
               key={item.kind}
               href={`/requests/${item.kind}`}
-              className="group rounded-[24px] border border-[#e7ecf4] bg-white p-5 text-left shadow-[0_10px_26px_rgba(21,31,53,0.045)] transition hover:-translate-y-0.5 hover:border-[#b9cff1] hover:shadow-[0_18px_42px_rgba(21,31,53,0.08)]"
+              className="ops-card group p-4 text-left transition hover:-translate-y-0.5 hover:border-[#cbdaf5]"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[#eef5ff] text-[#075bdc]">
-                  <item.icon size={23} />
+                <div className="ops-icon-circle">
+                  <item.icon size={24} />
                 </div>
                 <span className="rounded-full bg-[#f3f6fb] px-3 py-1 text-[11px] font-[850] text-[#5b6b84]">{item.group}</span>
               </div>
-              <h2 className="mt-4 text-[17px] font-[950] tracking-[-0.01em] text-[#10203f]">{config.title}</h2>
-              <p className="mt-2 min-h-[40px] text-[13px] font-[700] leading-5 text-[#5b6b84]">{item.summary}</p>
+              <h2 className="mt-4 text-[17px] font-[950] tracking-[-0.01em] text-[#111827]">{config.title}</h2>
+              <p className="mt-2 min-h-[40px] text-[13px] font-[700] leading-5 text-[#64748b]">{item.summary}</p>
               <div className="mt-4 flex flex-wrap gap-1.5">
                 {item.chips.map((chip) => (
                   <span key={chip} className="rounded-full border border-[#e7ecf4] bg-[#fbfdff] px-2.5 py-1 text-[11px] font-[850] text-[#435a7b]">
@@ -173,7 +173,7 @@ export default function RequestsPage() {
                   </span>
                 ))}
               </div>
-              <div className="mt-5 flex h-10 items-center justify-between rounded-2xl bg-[#075bdc] px-4 text-[13px] font-[950] text-white transition group-hover:bg-[#064fbd]">
+              <div className="ops-btn-primary mt-5 flex h-10 items-center justify-between px-4 text-[13px] transition group-hover:bg-[#1d4ed8]">
                 작성하기
                 <ArrowRight size={16} />
               </div>

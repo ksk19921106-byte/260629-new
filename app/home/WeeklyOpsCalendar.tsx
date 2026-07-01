@@ -3,6 +3,8 @@
 import { AlertCircle, Building2, CalendarDays, CheckCircle2, Clock3 } from "lucide-react";
 import { weeklyWorkItems, type WorkItem, type WorkItemStatus, type WorkItemType } from "./homeData";
 
+const dayOrder = ["월", "화", "수", "목", "금"];
+
 const typeLabel: Record<WorkItemType, string> = {
   common: "전사 공통",
   monthClose: "월마감",
@@ -20,25 +22,29 @@ const statusLabel: Record<WorkItemStatus, string> = {
   delayed: "지연"
 };
 
-function statusClass(status: WorkItemStatus) {
+function todayLabel() {
+  const index = new Date().getDay();
+  if (index >= 1 && index <= 5) return dayOrder[index - 1];
+  return "월";
+}
+
+function statusClass(status: WorkItemStatus, isPast: boolean) {
+  if (isPast) return "bg-[#ecfdf5] text-[#059669]";
   if (status === "done") return "bg-[#ecfdf5] text-[#059669]";
-  if (status === "inProgress") return "bg-[#eef6ff] text-[#2563eb]";
-  if (status === "needCheck") return "bg-[#fff7e8] text-[#f97316]";
-  if (status === "delayed") return "bg-[#fff0ef] text-[#ef4444]";
+  if (status === "inProgress") return "bg-[#fff7ed] text-[#f97316]";
+  if (status === "needCheck") return "bg-[#fff1f2] text-[#ef4444]";
+  if (status === "delayed") return "bg-[#fff1f2] text-[#ef4444]";
   return "bg-[#f1f5f9] text-[#64748b]";
 }
 
 function typeClass(type: WorkItemType) {
-  if (type === "monthClose") return "bg-[#fff7e8] text-[#f97316]";
-  if (type === "collection") return "bg-[#eef6ff] text-[#2563eb]";
-  if (type === "request") return "bg-[#fff0ef] text-[#ef4444]";
-  if (type === "common") return "bg-[#f3f4f6] text-[#475569]";
-  return "bg-[#f8fbff] text-[#64748b]";
+  if (type === "monthClose" || type === "collection" || type === "request") return "bg-[#eef5ff] text-[#2563eb]";
+  return "bg-[#f1f5f9] text-[#64748b]";
 }
 
-function iconFor(item: WorkItem) {
+function iconFor(item: WorkItem, isPast: boolean) {
+  if (isPast || item.status === "done") return CheckCircle2;
   if (item.status === "delayed") return AlertCircle;
-  if (item.status === "done") return CheckCircle2;
   if (item.type === "common") return Building2;
   if (item.type === "monthClose") return CalendarDays;
   return Clock3;
@@ -54,30 +60,51 @@ function handleWorkItemClick(item: WorkItem) {
 }
 
 export function WeeklyOpsCalendar() {
+  const today = todayLabel();
+  const todayIndex = dayOrder.indexOf(today);
+  const orderedItems = [...weeklyWorkItems].sort((a, b) => {
+    const aIndex = dayOrder.indexOf(a.date);
+    const bIndex = dayOrder.indexOf(b.date);
+    const aDistance = aIndex < todayIndex ? aIndex + 5 - todayIndex : aIndex - todayIndex;
+    const bDistance = bIndex < todayIndex ? bIndex + 5 - todayIndex : bIndex - todayIndex;
+    return aDistance - bDistance;
+  });
+
   return (
-    <section className="min-w-0 overflow-hidden rounded-[20px] border border-[#e5eaf3] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.045)]">
+    <section className="min-w-0 overflow-hidden rounded-[22px] border border-[#e9eef6] bg-white p-5 shadow-[0_6px_16px_rgba(15,23,42,0.032)]">
       <div className="flex h-10 flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#2563eb]">Weekly Work View</p>
           <h2 className="mt-0.5 text-[18px] font-[950] tracking-[-0.03em] text-[#111827]">이번 주 운영 캘린더</h2>
         </div>
-        <p className="rounded-full bg-[#f8fbff] px-3 py-1 text-[11px] font-[900] text-[#64748b]">공통 업무 + OPS 자동 이슈</p>
+        <p className="rounded-full bg-[#f1f5f9] px-3 py-1 text-[11px] font-[900] text-[#64748b]">오늘 {today}요일 먼저 보기</p>
       </div>
 
-      <div className="mt-3 grid min-w-0 grid-cols-5 gap-2">
-        {weeklyWorkItems.map((item) => {
-          const Icon = iconFor(item);
+      <div className="mt-4 grid min-w-0 grid-cols-5 gap-2.5">
+        {orderedItems.map((item) => {
+          const itemIndex = dayOrder.indexOf(item.date);
+          const isToday = item.date === today;
+          const isPast = itemIndex < todayIndex;
+          const Icon = iconFor(item, isPast);
           return (
             <button
               key={item.id}
               type="button"
               onClick={() => handleWorkItemClick(item)}
-              className="flex min-h-[112px] min-w-0 flex-col justify-between overflow-hidden rounded-[16px] border border-[#edf1f7] bg-[#fbfdff] p-3 text-left transition hover:-translate-y-0.5 hover:border-[#2563eb] hover:bg-white hover:shadow-sm"
+              className={`flex min-h-[132px] min-w-0 flex-col justify-between overflow-hidden rounded-[18px] border p-3.5 text-left transition hover:-translate-y-0.5 hover:bg-white hover:shadow-sm ${
+                isToday
+                  ? "border-[#cbd5e1] bg-white shadow-[0_8px_18px_rgba(15,23,42,0.055)]"
+                  : isPast
+                    ? "border-[#edf1f7] bg-[#fbfcff] opacity-70"
+                    : "border-[#edf1f7] bg-[#fbfdff] hover:border-[#2563eb]"
+              }`}
             >
               <div className="min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[18px] font-[950] text-[#111827]">{item.date}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-[900] ${statusClass(item.status)}`}>{statusLabel[item.status]}</span>
+                  <span className={`text-[18px] font-[950] ${isToday ? "text-[#111827]" : "text-[#111827]"}`}>{item.date}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-[900] ${statusClass(item.status, isPast)}`}>
+                    {isToday ? "오늘" : isPast ? "완료" : statusLabel[item.status]}
+                  </span>
                 </div>
                 <div className="mt-3 flex min-w-0 items-center gap-2">
                   <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl ${typeClass(item.type)}`}>

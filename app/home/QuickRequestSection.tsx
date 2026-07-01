@@ -1,17 +1,17 @@
 "use client";
 
 import type { RequestKind } from "../services/formValidation";
-import { quickRequests, toneClass } from "./homeData";
+import { quickRequests } from "./homeData";
 
 export function QuickRequestSection({ onSelectRequestKind }: { onSelectRequestKind: (kind: RequestKind) => void }) {
   return (
-    <section className="h-[148px] min-w-0 overflow-hidden rounded-[20px] border border-[#e5eaf3] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.045)]">
+    <section className="h-[148px] min-w-0 overflow-hidden rounded-[20px] border border-[#e9eef6] bg-white p-4 shadow-[0_6px_16px_rgba(15,23,42,0.032)]">
       <div className="flex h-8 items-center justify-between">
         <div>
           <h2 className="text-[16px] font-[950] text-[#111827]">VIPS팀 요청 바로가기</h2>
-          <p className="mt-0.5 text-[11px] font-[750] text-[#64748b]">자주 쓰는 요청만 빠르게 이동합니다.</p>
+          <p className="mt-0.5 text-[11px] font-[750] text-[#64748b]">필요한 요청만 빠르게 시작합니다.</p>
         </div>
-        <button onClick={() => (window.location.href = "/requests")} className="h-8 rounded-full border border-[#e7ecf4] bg-[#f8fbff] px-3 text-[11px] font-[900] text-[#2563eb]">
+        <button onClick={() => (window.location.href = "/requests")} className="h-8 rounded-full border border-[#e9eef6] bg-[#f8fbff] px-3 text-[11px] font-[900] text-[#2563eb]">
           전체 메뉴
         </button>
       </div>
@@ -21,9 +21,9 @@ export function QuickRequestSection({ onSelectRequestKind }: { onSelectRequestKi
           <button
             key={item.kind}
             onClick={() => onSelectRequestKind(item.kind)}
-            className="flex h-[72px] min-w-0 items-center gap-2 overflow-hidden rounded-[16px] border border-[#edf1f6] bg-[#fbfcff] px-3 text-left shadow-[0_6px_14px_rgba(15,23,42,0.035)] transition hover:-translate-y-0.5 hover:border-[#cbdaf5]"
+            className="flex h-[72px] min-w-0 items-center gap-2 overflow-hidden rounded-[16px] border border-[#edf2f8] bg-[#fbfcff] px-3 text-left shadow-[0_4px_10px_rgba(15,23,42,0.022)] transition hover:-translate-y-0.5 hover:border-[#cbd5e1]"
           >
-            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${toneClass(item.tone)}`}>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#eef5ff] text-[#2563eb]">
               <item.icon size={18} />
             </span>
             <span className="min-w-0 whitespace-pre-line text-[12px] font-[900] leading-[15px] text-[#111827]">{item.label}</span>

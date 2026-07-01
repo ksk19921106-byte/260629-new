@@ -266,7 +266,7 @@ export function MonthEndPasteClient() {
 
   return (
     <div className="space-y-5">
-      <section className="rounded-[24px] border border-[#e5eaf3] bg-white p-5 shadow-[0_12px_28px_rgba(15,23,42,0.05)]">
+      <section className="ops-card p-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-[#2563eb]">
@@ -284,7 +284,7 @@ export function MonthEndPasteClient() {
                 : "내 거래 중 아직 월마감이 완료되지 않은 건입니다."}
             </p>
           </div>
-          <div className="rounded-[16px] bg-[#f8fbff] px-4 py-3 text-right">
+          <div className="rounded-[16px] border border-[#e5eaf3] bg-[#f8fbff] px-4 py-3 text-right">
             <p className="text-[11px] font-[850] text-[#64748b]">현재 사용자</p>
             <p className="text-[15px] font-[950] text-[#111827]">{selectedUser.name}</p>
             <p className="text-[11px] font-[800] text-[#2563eb]">{selectedUser.accessRole.toUpperCase()} · {selectedUser.salesName}</p>
@@ -292,7 +292,7 @@ export function MonthEndPasteClient() {
         </div>
 
         {snapshot ? (
-          <div className="mt-4 rounded-[16px] border border-[#e7ecf4] bg-[#fbfdff] px-4 py-3 text-[12px] font-[800] text-[#64748b]">
+          <div className="mt-4 rounded-[16px] border border-[#e5eaf3] bg-[#fbfdff] px-4 py-3 text-[12px] font-[800] text-[#64748b]">
             최신 저장 데이터: {snapshot.closingMonth} · 업로드 {new Date(snapshot.uploadedAt).toLocaleString("ko-KR")} · 업로드 담당 {snapshot.uploadedBy}
           </div>
         ) : null}
@@ -300,7 +300,7 @@ export function MonthEndPasteClient() {
 
       {isAdmin ? (
         <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-          <article className="min-w-0 overflow-hidden rounded-[24px] border border-[#e5eaf3] bg-white p-5 shadow-sm">
+          <article className="ops-card min-w-0 overflow-hidden p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-[12px] font-[950] uppercase tracking-[0.08em] text-[#2563eb]">ERP PASTE PARSER</p>
@@ -315,18 +315,18 @@ export function MonthEndPasteClient() {
               value={pasteText}
               onChange={(event) => setPasteText(event.target.value)}
               placeholder="ERP 월마감 화면에서 표 영역을 복사한 뒤 여기에 붙여넣으세요."
-              className="mt-4 h-[220px] w-full resize-none rounded-[18px] border border-[#dce6f3] bg-[#fbfdff] p-4 text-[13px] font-[700] leading-6 text-[#10203f] outline-none placeholder:text-[#94a3b8] focus:border-[#2563eb]"
+              className="mt-4 h-[220px] w-full resize-none rounded-[16px] border border-[#e5eaf3] bg-[#fbfdff] p-4 text-[13px] font-[700] leading-6 text-[#10203f] outline-none placeholder:text-[#94a3b8] focus:border-[#2563eb]"
             />
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <button type="button" onClick={() => recognizeData()} className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#111827] px-4 text-[13px] font-[950] text-white">
+              <button type="button" onClick={() => recognizeData()} className="ops-btn-primary inline-flex h-10 items-center gap-2 px-4 text-[13px]">
                 <ClipboardPaste size={16} />
                 데이터 인식하기
               </button>
-              <button type="button" onClick={saveRecognizedData} className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#dc2626] px-4 text-[13px] font-[950] text-white">
+              <button type="button" onClick={saveRecognizedData} className="ops-btn-danger inline-flex h-10 items-center gap-2 px-4 text-[13px]">
                 <Save size={16} />
                 저장하기
               </button>
-              <button type="button" onClick={resetData} className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#dce6f3] bg-white px-4 text-[13px] font-[900] text-[#475569]">
+              <button type="button" onClick={resetData} className="ops-btn-secondary inline-flex h-10 items-center gap-2 px-4 text-[13px]">
                 <Eraser size={16} />
                 초기화
               </button>
@@ -338,7 +338,7 @@ export function MonthEndPasteClient() {
             </p>
           </article>
 
-          <article className="min-w-0 overflow-hidden rounded-[24px] border border-[#e5eaf3] bg-[linear-gradient(135deg,#fff7f3,#f7fbff)] p-5 shadow-sm">
+          <article className="ops-card min-w-0 overflow-hidden bg-[linear-gradient(135deg,#fff7f3,#f7fbff)] p-4">
             <div className="flex items-center gap-2 text-[#dc2626]">
               <AlertCircle size={18} />
               <p className="text-[12px] font-[950] uppercase tracking-[0.08em]">배포 구조</p>
@@ -356,7 +356,7 @@ export function MonthEndPasteClient() {
           </article>
         </section>
       ) : (
-        <section className="rounded-[24px] border border-[#e5eaf3] bg-[linear-gradient(135deg,#fff7f3,#f7fbff)] p-5 shadow-sm">
+        <section className="ops-card bg-[linear-gradient(135deg,#fff7f3,#f7fbff)] p-4">
           <div className="flex items-start gap-3">
             <AlertCircle className="mt-0.5 text-[#dc2626]" size={20} />
             <div>
@@ -374,12 +374,12 @@ export function MonthEndPasteClient() {
         <KpiCard label="총 확인 필요 금액" value={formatKrw(kpi.totalAmount)} tone="bg-[#fff7e8] text-[#d97706]" />
         <KpiCard label="계산서 발행 필요" value={`${kpi.invoiceRequired}건`} tone="bg-[#f1f5ff] text-[#2563eb]" />
         <KpiCard label="출고 확인 필요" value={`${kpi.shipmentCheck}건`} tone="bg-[#ecfeff] text-[#0891b2]" />
-        <KpiCard label="수금 확인 필요" value={`${kpi.collectionCheck}건`} tone="bg-[#f5f3ff] text-[#7c3aed]" />
+        <KpiCard label="수금 확인 필요" value={`${kpi.collectionCheck}건`} tone="bg-[#eef6ff] text-[#2563eb]" />
         <KpiCard label="차감/공제 확인" value={`${kpi.deductCheck}건`} tone="bg-[#f8fafc] text-[#475569]" />
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
-        <article className="min-w-0 overflow-hidden rounded-[24px] border border-[#e5eaf3] bg-white p-5 shadow-sm">
+        <article className="ops-card min-w-0 overflow-hidden p-4">
           <h3 className="text-[18px] font-[950] text-[#111827]">{isAdmin ? "영업별 요약" : "내 권한 범위 요약"}</h3>
           <div className="mt-4 space-y-2">
             {salesGroups.length === 0 ? (
@@ -401,7 +401,7 @@ export function MonthEndPasteClient() {
           </div>
         </article>
 
-        <article className="min-w-0 overflow-hidden rounded-[24px] border border-[#e5eaf3] bg-white p-5 shadow-sm">
+        <article className="ops-card min-w-0 overflow-hidden p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h3 className="text-[18px] font-[950] text-[#111827]">{isAdmin ? "전체 이슈 테이블" : "내 월마감 이슈"}</h3>
@@ -425,7 +425,7 @@ export function MonthEndPasteClient() {
                 type="button"
                 onClick={() => setFilter(option.key)}
                 className={`h-9 rounded-full px-4 text-[12px] font-[900] transition ${
-                  filter === option.key ? "bg-[#111827] text-white" : "border border-[#e7ecf4] bg-white text-[#475569] hover:bg-[#f8fbff]"
+                  filter === option.key ? "bg-[#2563eb] text-white" : "border border-[#e5eaf3] bg-white text-[#475569] hover:bg-[#f8fbff]"
                 }`}
               >
                 {option.label}
@@ -465,7 +465,7 @@ export function MonthEndPasteClient() {
                     <span className="font-[850] text-[#64748b]">{getElapsedDays(issue)}일</span>
                     <span className="truncate font-[800] text-[#475569]">{issue.recommendedAction}</span>
                     <span className="flex gap-1.5">
-                      <button type="button" onClick={() => handleIssueAction(issue)} className="h-8 rounded-lg bg-[#111827] px-2.5 text-[11px] font-[900] text-white">
+                      <button type="button" onClick={() => handleIssueAction(issue)} className="ops-btn-primary h-8 px-3 text-[11px]">
                         {getIssueActionLabel(issue.issueType)}
                       </button>
                       <button type="button" onClick={() => updateIssueStatus(issue, "done")} title="확인 완료" className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#ecfdf5] text-[#059669]">
@@ -490,16 +490,16 @@ export function MonthEndPasteClient() {
 
 function KpiCard({ label, value, tone }: { label: string; value: string; tone: string }) {
   return (
-    <div className="min-w-0 overflow-hidden rounded-[18px] border border-[#e7ecf4] bg-white p-4 shadow-sm">
+    <div className="ops-card min-w-0 overflow-hidden p-4">
       <p className="text-[11px] font-[850] text-[#64748b]">{label}</p>
-      <p className={`mt-2 truncate rounded-xl px-3 py-2 text-[19px] font-[950] ${tone}`}>{value}</p>
+      <p className={`mt-2 truncate rounded-[14px] px-3 py-2 text-[19px] font-[950] ${tone}`}>{value}</p>
     </div>
   );
 }
 
 function InfoTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[16px] border border-white/80 bg-white/80 p-4">
+    <div className="rounded-[16px] border border-[#e5eaf3] bg-white/85 p-4">
       <p className="text-[11px] font-[850] text-[#64748b]">{label}</p>
       <p className="mt-1 truncate text-[18px] font-[950] tracking-[-0.02em] text-[#111827]">{value}</p>
     </div>

@@ -1,28 +1,28 @@
 "use client";
 
 const statusItems = [
-  { label: "접수", value: "12", color: "text-[#2563eb]", bg: "bg-[#eaf2ff]" },
-  { label: "처리중", value: "8", color: "text-[#f97316]", bg: "bg-[#fff3df]" },
-  { label: "완료", value: "23", color: "text-[#0d9b6c]", bg: "bg-[#e9f8f1]" },
-  { label: "반려", value: "2", color: "text-[#ef4444]", bg: "bg-[#fff0ef]" }
+  { label: "접수", value: "12", color: "text-[#64748b]", bg: "bg-[#f1f5f9]" },
+  { label: "처리중", value: "8", color: "text-[#f97316]", bg: "bg-[#fff7ed]" },
+  { label: "완료", value: "23", color: "text-[#16a34a]", bg: "bg-[#eefdf4]" },
+  { label: "반려", value: "2", color: "text-[#ef4444]", bg: "bg-[#fff1f2]" }
 ];
 
 export function RequestStatusSection() {
   return (
-    <section className="h-[148px] min-w-0 overflow-hidden rounded-[20px] border border-[#e5eaf3] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.045)]">
+    <section className="h-[148px] min-w-0 overflow-hidden rounded-[20px] border border-[#e9eef6] bg-white p-4 shadow-[0_6px_16px_rgba(15,23,42,0.032)]">
       <div className="flex h-8 items-center justify-between">
         <div>
           <h2 className="text-[16px] font-[950] text-[#111827]">나의 요청현황</h2>
           <p className="mt-0.5 text-[11px] font-[750] text-[#64748b]">요청 상태를 한눈에 확인합니다.</p>
         </div>
-        <button onClick={() => (window.location.href = "/request-status")} className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e7ecf4] bg-[#f8fbff] text-[15px] font-[950] text-[#2563eb] shadow-sm transition hover:bg-[#eef5ff]">
+        <button onClick={() => (window.location.href = "/request-status")} className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e9eef6] bg-[#f8fbff] text-[15px] font-[950] text-[#2563eb] shadow-sm transition hover:bg-[#eef5ff]">
           →
         </button>
       </div>
 
       <div className="mt-3 grid min-w-0 grid-cols-4 gap-2">
         {statusItems.map((item) => (
-          <div key={item.label} className="flex h-[72px] min-w-0 items-center gap-2 overflow-hidden rounded-[16px] border border-[#edf1f6] bg-[#fbfcff] px-3 shadow-[0_6px_14px_rgba(15,23,42,0.035)]">
+          <div key={item.label} className="flex h-[72px] min-w-0 items-center gap-2 overflow-hidden rounded-[16px] border border-[#edf2f8] bg-[#fbfcff] px-3 shadow-[0_4px_10px_rgba(15,23,42,0.022)]">
             <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${item.bg}`} />
             <div className="min-w-0">
               <p className="truncate text-[11px] font-[850] text-[#64748b]">{item.label}</p>

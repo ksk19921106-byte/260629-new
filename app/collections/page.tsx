@@ -191,14 +191,14 @@ export default function CollectionsPage() {
       description="입금확인, 수금매칭, 미수금 이슈를 한 곳에서 확인합니다."
     >
       <div className="space-y-5">
-        <section className="rounded-[28px] border border-[#dce6f3] bg-[linear-gradient(135deg,#ffffff_0%,#f5f9ff_52%,#fff7f3_100%)] p-6 shadow-[0_16px_34px_rgba(15,23,42,0.065)]">
+        <section className="ops-card bg-[linear-gradient(135deg,#ffffff_0%,#f8fbff_58%,#fff7f3_100%)] p-5">
           <div className="grid gap-5 lg:grid-cols-[1fr_260px]">
             <div>
               <div className="flex items-center gap-2 text-[#2563eb]">
                 <ShieldCheck size={18} />
-                <p className="text-[12px] font-[950] uppercase tracking-[0.08em]">{isAdmin ? "ADMIN COLLECTION VIEW" : "MY COLLECTION VIEW"}</p>
+                <p className="text-[11px] font-[950] uppercase tracking-[0.08em]">{isAdmin ? "VIPS COLLECTION VIEW" : "MY COLLECTION VIEW"}</p>
               </div>
-              <h2 className="mt-3 text-[30px] font-[950] leading-tight tracking-[-0.03em] text-[#111827]">
+              <h2 className="mt-3 text-[28px] font-[950] leading-tight tracking-[-0.03em] text-[#111827]">
                 {isAdmin
                   ? `Sally님, 전체 수금 확인 필요 건이 ${openIssues.length}건 있습니다.`
                   : `${selectedUser.name}님, 오늘 확인해야 할 수금이 ${openIssues.length}건 있습니다.`}
@@ -209,13 +209,13 @@ export default function CollectionsPage() {
               <button
                 type="button"
                 onClick={focusTopIssue}
-                className="mt-5 inline-flex h-11 items-center gap-2 rounded-2xl bg-[#111827] px-5 text-[14px] font-[950] text-white shadow-[0_12px_22px_rgba(15,23,42,0.16)] transition hover:-translate-y-0.5"
+                className="ops-btn-primary mt-5 inline-flex h-10 items-center gap-2 px-5 text-[13px] transition hover:-translate-y-0.5 hover:bg-[#1d4ed8]"
               >
                 지금 확인하기
                 <ArrowRight size={17} />
               </button>
             </div>
-            <div className="rounded-[22px] border border-white/80 bg-white/86 p-5 shadow-sm">
+            <div className="rounded-[18px] border border-[#e5eaf3] bg-white p-4">
               <p className="text-[12px] font-[900] text-[#64748b]">오늘의 Collection Score</p>
               <div className="mt-3 flex items-end justify-between gap-3">
                 <p className="text-[48px] font-[950] leading-none tracking-[-0.05em] text-[#111827]">{collectionScore}<span className="text-[20px]">점</span></p>
@@ -232,11 +232,11 @@ export default function CollectionsPage() {
           <KpiCard icon={AlertCircle} label="오늘 확인 필요" value={`${openIssues.length}건`} tone="red" />
           <KpiCard icon={CircleDollarSign} label="미수금" value={formatKrwShort(summary.unpaidAmount)} tone="orange" />
           <KpiCard icon={Banknote} label="수금률" value={`${summary.collectionRate}%`} tone="blue" />
-          <KpiCard icon={AlertCircle} label="30일 이상 미수" value={`${summary.longOverdueCount}건`} tone="purple" />
+          <KpiCard icon={AlertCircle} label="30일 이상 미수" value={`${summary.longOverdueCount}건`} tone="red" />
           {isAdmin ? <KpiCard icon={UserRound} label="담당자 미매칭" value={`${unmappedRecords.length}건`} tone="slate" /> : null}
         </section>
 
-        <section className="rounded-[24px] border border-[#dce6f3] bg-white p-5 shadow-sm">
+        <section className="ops-card p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className="text-[20px] font-[950] tracking-[-0.02em] text-[#111827]">전체 수금 현황</h3>
@@ -252,7 +252,7 @@ export default function CollectionsPage() {
             <SummaryTile label="부분수금" count={`${composition.partialRecords.length}건`} amount={`차액 ${formatKrwShort(composition.partialDiff)}`} tone="orange" />
             <SummaryTile label="미수" count={`${composition.unpaidRecords.length}건`} amount={formatKrwShort(composition.unpaidAmount)} tone="red" />
           </div>
-          <div className="mt-4 rounded-[18px] border border-[#e7ecf4] bg-[#fbfdff] p-4">
+          <div className="mt-4 rounded-[16px] border border-[#e5eaf3] bg-[#fbfdff] p-4">
             <div className="flex items-center justify-between gap-3">
               <p className="text-[13px] font-[950] text-[#111827]">오늘 확인 {checkedCount} / {todayTotal} 완료</p>
               <p className="text-[12px] font-[850] text-[#64748b]">{todayProgress}%</p>
@@ -263,14 +263,14 @@ export default function CollectionsPage() {
           </div>
         </section>
 
-        {isAdmin ? <section className="rounded-[18px] border border-[#e7ecf4] bg-[#fbfdff] px-4 py-3 text-[12px] font-[800] text-[#64748b]">
+        {isAdmin ? <section className="ops-card bg-[#fbfdff] px-4 py-3 text-[12px] font-[800] text-[#64748b]">
           전체 {recordsWithAssignments.length}건 중 담당자 매핑 성공 {mappedRecordsCount}건 · 담당자 미매칭 {unmappedRecords.length}건 · 현재 사용자 {selectedUser.name} 기준 {visibleRecords.length}건 표시
         </section> : null}
 
         <section className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
           <article
             ref={topSectionRef}
-            className={`min-w-0 overflow-hidden rounded-[24px] border bg-white p-5 shadow-sm transition ${
+            className={`ops-card min-w-0 overflow-hidden p-4 transition ${
               highlightTop ? "border-[#2563eb] ring-4 ring-blue-100" : "border-[#dce6f3]"
             }`}
           >
@@ -288,7 +288,7 @@ export default function CollectionsPage() {
                 openIssues.slice(0, 5).map((issue) => (
                   <div
                     key={issue.id}
-                    className="w-full min-w-0 rounded-[18px] border border-[#e7ecf4] bg-[#fbfdff] p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-md"
+                    className="w-full min-w-0 rounded-[16px] border border-[#e5eaf3] bg-[#fbfdff] p-4 transition hover:-translate-y-0.5 hover:bg-white"
                   >
                     <div className="flex min-w-0 items-start justify-between gap-4">
                       <div className="min-w-0">
@@ -299,7 +299,7 @@ export default function CollectionsPage() {
                         <p className="mt-2 truncate text-[17px] font-[950] text-[#111827]">{issue.company}</p>
                         <p className="mt-1 text-[12px] font-[850] text-[#64748b]">이유: {issue.reason} · 경과일 {issue.overdueDays}일</p>
                       </div>
-                      <button onClick={() => { setActiveIssue(issue); setActionMemo(""); }} className="h-9 shrink-0 rounded-xl bg-[#111827] px-3 text-[12px] font-[950] text-white">
+                      <button onClick={() => { setActiveIssue(issue); setActionMemo(""); }} className="ops-btn-primary h-9 shrink-0 px-3 text-[12px]">
                         {issueActionLabel(issue)}
                       </button>
                     </div>
@@ -319,7 +319,7 @@ export default function CollectionsPage() {
             </div>
           </article>
 
-          <article className="min-w-0 overflow-hidden rounded-[24px] border border-[#dce6f3] bg-white p-5 shadow-sm">
+          <article className="ops-card min-w-0 overflow-hidden p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h3 className="text-[20px] font-[950] tracking-[-0.02em] text-[#111827]">{isAdmin ? "전체 수금현황" : "내 전체 수금현황"}</h3>
@@ -342,8 +342,8 @@ export default function CollectionsPage() {
                   key={option.key}
                   type="button"
                   onClick={() => setFilter(option.key)}
-                  className={`h-9 rounded-full px-4 text-[12px] font-[900] transition ${
-                    filter === option.key ? "bg-[#111827] text-white" : "border border-[#e7ecf4] bg-white text-[#475569] hover:bg-[#f8fbff]"
+                className={`h-9 rounded-full px-4 text-[12px] font-[900] transition ${
+                    filter === option.key ? "bg-[#2563eb] text-white" : "border border-[#e5eaf3] bg-white text-[#475569] hover:bg-[#f8fbff]"
                   }`}
                 >
                   {option.label}
@@ -389,7 +389,7 @@ export default function CollectionsPage() {
                             }
                           }}
                           disabled={!issue}
-                          className="h-8 rounded-lg bg-[#f3f7ff] px-2 text-[11px] font-[900] text-[#2563eb] disabled:bg-[#f8fafc] disabled:text-[#94a3b8]"
+                          className="h-8 rounded-full bg-[#f3f7ff] px-3 text-[11px] font-[900] text-[#2563eb] disabled:bg-[#f8fafc] disabled:text-[#94a3b8]"
                         >
                           {issue ? issueActionLabel(issue) : "완료됨"}
                         </button>
@@ -403,7 +403,7 @@ export default function CollectionsPage() {
               <button
                 type="button"
                 onClick={() => setShowAllRows((current) => !current)}
-                className="mt-3 h-10 w-full rounded-xl border border-[#dce6f3] bg-[#fbfdff] text-[13px] font-[900] text-[#475569]"
+                className="ops-btn-secondary mt-3 h-10 w-full text-[13px]"
               >
                 {showAllRows ? "접기" : `더보기 ${visibleRecordRows.length - 10}건`}
               </button>
@@ -413,7 +413,7 @@ export default function CollectionsPage() {
 
         {isAdmin ? (
           <>
-            <section className="rounded-[24px] border border-[#dce6f3] bg-white p-5 shadow-sm">
+            <section className="ops-card p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h3 className="text-[20px] font-[950] tracking-[-0.02em] text-[#111827]">담당자 미매칭 수금건</h3>
@@ -507,19 +507,19 @@ export default function CollectionsPage() {
   );
 }
 
-function KpiCard({ icon: Icon, label, value, tone }: { icon: typeof AlertCircle; label: string; value: string; tone: "red" | "orange" | "blue" | "purple" | "slate" }) {
+function KpiCard({ icon: Icon, label, value, tone }: { icon: typeof AlertCircle; label: string; value: string; tone: "red" | "orange" | "blue" | "green" | "slate" }) {
   const toneClass = {
     red: "bg-[#fff0ef] text-[#dc2626]",
     orange: "bg-[#fff7e8] text-[#d97706]",
     blue: "bg-[#eef6ff] text-[#2563eb]",
-    purple: "bg-[#f5f3ff] text-[#7c3aed]",
+    green: "bg-[#ecfdf5] text-[#0d9b6c]",
     slate: "bg-[#f8fafc] text-[#475569]"
   }[tone];
 
   return (
-    <article className="min-w-0 overflow-hidden rounded-[20px] border border-[#e7ecf4] bg-white p-4 shadow-sm">
-      <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${toneClass}`}>
-        <Icon size={20} />
+    <article className="ops-card min-w-0 overflow-hidden p-4">
+      <div className={`flex h-10 w-10 items-center justify-center rounded-full ${toneClass}`}>
+        <Icon size={24} />
       </div>
       <p className="mt-3 text-[12px] font-[850] text-[#64748b]">{label}</p>
       <p className="mt-1 truncate text-[27px] font-[950] tracking-[-0.03em] text-[#111827]">{value}</p>
@@ -536,7 +536,7 @@ function SummaryTile({ label, count, amount, tone }: { label: string; count: str
   }[tone];
 
   return (
-    <article className="min-w-0 overflow-hidden rounded-[18px] border border-[#e7ecf4] bg-[#fbfdff] p-4">
+    <article className="min-w-0 overflow-hidden rounded-[16px] border border-[#e5eaf3] bg-[#fbfdff] p-4">
       <p className="text-[12px] font-[900] text-[#64748b]">{label}</p>
       <p className={`mt-3 inline-flex rounded-full px-3 py-1 text-[12px] font-[950] ${toneClass}`}>{count}</p>
       <p className="mt-3 truncate text-[19px] font-[950] tracking-[-0.02em] text-[#111827]">{amount}</p>
@@ -546,7 +546,7 @@ function SummaryTile({ label, count, amount, tone }: { label: string; count: str
 
 function MiniAmount({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className="min-w-0 rounded-[14px] border border-[#eef2f7] bg-white px-3 py-2">
+    <div className="min-w-0 rounded-[14px] border border-[#e5eaf3] bg-white px-3 py-2">
       <p className="text-[10px] font-[850] text-[#94a3b8]">{label}</p>
       <p className={`mt-1 truncate text-[12px] font-[950] ${strong ? "text-[#dc2626]" : "text-[#111827]"}`}>{value}</p>
     </div>
@@ -555,7 +555,7 @@ function MiniAmount({ label, value, strong }: { label: string; value: string; st
 
 function InfoTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[16px] border border-[#e7ecf4] bg-[#fbfdff] p-4">
+    <div className="rounded-[16px] border border-[#e5eaf3] bg-[#fbfdff] p-4">
       <p className="text-[11px] font-[850] text-[#64748b]">{label}</p>
       <p className="mt-1 truncate text-[17px] font-[950] text-[#111827]">{value}</p>
     </div>
@@ -564,7 +564,7 @@ function InfoTile({ label, value }: { label: string; value: string }) {
 
 function AdminPanel({ title, rows }: { title: string; rows: string[][] }) {
   return (
-    <article className="min-w-0 overflow-hidden rounded-[22px] border border-[#dce6f3] bg-white p-5 shadow-sm">
+    <article className="ops-card min-w-0 overflow-hidden p-4">
       <div className="flex items-center gap-2">
         <UserRound size={17} className="text-[#2563eb]" />
         <h3 className="truncate text-[17px] font-[950] text-[#111827]">{title}</h3>
@@ -574,7 +574,7 @@ function AdminPanel({ title, rows }: { title: string; rows: string[][] }) {
           <p className="rounded-[14px] bg-[#f8fbff] p-3 text-[12px] font-[800] text-[#64748b]">표시할 데이터가 없습니다.</p>
         ) : (
           rows.map((row, index) => (
-            <div key={`${title}-${index}`} className="grid grid-cols-3 gap-2 rounded-[14px] border border-[#eef2f7] bg-[#fbfdff] px-3 py-2 text-[12px] font-[850] text-[#475569]">
+            <div key={`${title}-${index}`} className="grid grid-cols-3 gap-2 rounded-[14px] border border-[#e5eaf3] bg-[#fbfdff] px-3 py-2 text-[12px] font-[850] text-[#475569]">
               <span className="truncate font-[950] text-[#111827]">{row[0]}</span>
               <span className="truncate">{row[1]}</span>
               <span className="truncate text-right">{row[2]}</span>
