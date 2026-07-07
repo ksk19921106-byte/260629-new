@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
@@ -153,10 +153,10 @@ const homeSearchItems = [
 ];
 
 const statusStyles: Record<RequestStatus, string> = {
-  요청접수: "bg-slate-100 text-slate-600 border-slate-200",
-  "VIPS팀 확인중": "bg-blue-50 text-[#075bdc] border-blue-200",
-  완료: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  반려: "bg-red-50 text-red-600 border-red-200"
+  요청접수: "ops-status-muted",
+  "VIPS팀 확인중": "ops-status-info",
+  완료: "ops-status-info",
+  반려: "ops-status-attention"
 };
 
 const fallbackRequests: RequestItem[] = [
@@ -186,11 +186,11 @@ function Header({ userName, title, subtitle }: { userName?: string; title?: stri
   return (
     <header className="flex min-h-[64px] items-start justify-between">
       <div>
-        <p className="mb-1 text-[12px] font-[850] text-[#2f6fed]">전자부품 유통 SALES 운영형 SaaS</p>
+        <p className="mb-1 text-[12px] font-[850] text-[#1D50A2]">전자부품 유통 SALES 운영형 SaaS</p>
         <h1 className="text-[26px] font-[900] leading-8 tracking-[-0.01em] text-[#151922]">{title ?? `${userName}님, 오늘의 요청 흐름을 정리해볼까요?`}</h1>
         <p className="mt-1 text-[13px] font-[650] text-[#667085]">{subtitle ?? "세금계산서, 수금, 월마감 리스크를 한 화면에서 읽고 다음 행동으로 이어집니다."}</p>
       </div>
-      <div className="flex items-center gap-3 pr-1 text-[#2f6fed]">
+      <div className="flex items-center gap-3 pr-1 text-[#1D50A2]">
         <button className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#e7ecf4] bg-white shadow-sm">
           <Bell size={23} strokeWidth={2.1} />
           <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#0b63df] text-[11px] font-[800] text-white">3</span>
@@ -269,7 +269,7 @@ function HomeActionCenter({ userName }: { userName: string }) {
 
   return (
     <section className="space-y-4">
-      <article className="relative overflow-hidden rounded-[30px] border border-[#ffd9cf] bg-[linear-gradient(135deg,#fffafa_0%,#fff7ed_48%,#fff_100%)] p-7 shadow-[0_20px_55px_rgba(184,65,32,0.12)]">
+      <article className="relative overflow-hidden rounded-[30px] border border-[#ffd9cf] bg-[linear-gradient(135deg,#fffafa_0%,#fff5ec_48%,#fff_100%)] p-7 shadow-[0_20px_55px_rgba(184,65,32,0.12)]">
         <div className="absolute right-9 top-8 hidden h-[150px] w-[150px] rounded-full bg-[#fff0e6] lg:block" />
         <div className="absolute right-[92px] top-[52px] hidden h-[88px] w-[88px] rounded-full border-[18px] border-[#ff4d45]/80 lg:block" />
         <div className="absolute right-[126px] top-[86px] hidden h-[22px] w-[22px] rounded-full bg-[#ff4d45] lg:block" />
@@ -303,13 +303,13 @@ function HomeActionCenter({ userName }: { userName: string }) {
             <div className="mt-4 grid gap-3">
               <div className="flex items-center justify-between rounded-2xl bg-[#fff4ef] px-4 py-3">
                 <span className="text-[13px] font-[850] text-[#4d5668]">월마감 체크 필요</span>
-                <span className="text-[22px] font-[950] text-[#ef3f32]">6건</span>
+                <span className="text-[22px] font-[950] text-[#F39945]">6건</span>
               </div>
-              <div className="flex items-center justify-between rounded-2xl bg-[#eef6ff] px-4 py-3">
+              <div className="flex items-center justify-between rounded-2xl bg-[#edf4ff] px-4 py-3">
                 <span className="text-[13px] font-[850] text-[#4d5668]">수금 확인 필요</span>
-                <span className="text-[22px] font-[950] text-[#1769e8]">1건</span>
+                <span className="text-[22px] font-[950] text-[#1D50A2]">1건</span>
               </div>
-              <button onClick={() => (window.location.href = "/month-end")} className="mt-2 flex h-13 items-center justify-center gap-2 rounded-2xl bg-[#ef3f32] px-5 py-4 text-[15px] font-[950] text-white shadow-[0_14px_24px_rgba(239,63,50,0.22)] transition hover:-translate-y-0.5">
+              <button onClick={() => (window.location.href = "/month-end")} className="mt-2 flex h-13 items-center justify-center gap-2 rounded-2xl bg-[#F39945] px-5 py-4 text-[15px] font-[950] text-white shadow-[0_14px_24px_rgba(239,63,50,0.22)] transition hover:-translate-y-0.5">
                 월마감·수금 점검하기
                 <ArrowRight size={18} />
               </button>
@@ -325,13 +325,13 @@ function HomeActionCenter({ userName }: { userName: string }) {
               <h2 className="text-[20px] font-[950] tracking-[-0.01em] text-[#151922]">월마감 체크</h2>
               <p className="mt-1 text-[13px] font-[650] leading-5 text-[#667085]">계산서, 출고, Deduct 등 월마감 전 반드시 확인해야 할 거래입니다.</p>
             </div>
-            <span className="rounded-full bg-[#fff0ed] px-3 py-1 text-[12px] font-[900] text-[#e53d32]">6건</span>
+            <span className="rounded-full bg-[#fff5ec] px-3 py-1 text-[12px] font-[900] text-[#e53d32]">6건</span>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3">
             {closeItems.map((item) => (
               <div key={item.label} className="rounded-[20px] border border-[#eef1f6] bg-[#fbfcff] p-4">
                 <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
-                  item.tone === "rose" ? "bg-[#fff0ed] text-[#ef3f32]" : item.tone === "orange" ? "bg-[#fff7e8] text-[#e98715]" : item.tone === "violet" ? "bg-[#f4efff] text-[#7c50d8]" : "bg-[#eafaf7] text-[#16816d]"
+                  item.tone === "rose" ? "bg-[#fff5ec] text-[#F39945]" : item.tone === "orange" ? "bg-[#fff5ec] text-[#F39945]" : item.tone === "violet" ? "bg-[#edf4ff] text-[#1D50A2]" : "bg-[#eafaf7] text-[#1D50A2]"
                 }`}>
                   <item.icon size={20} strokeWidth={2.2} />
                 </span>
@@ -353,7 +353,7 @@ function HomeActionCenter({ userName }: { userName: string }) {
               <h2 className="text-[20px] font-[950] tracking-[-0.01em] text-[#151922]">수금 체크</h2>
               <p className="mt-1 text-[13px] font-[650] leading-5 text-[#667085]">입금확인, 수금매칭, AR 보류 건을 확인합니다.</p>
             </div>
-            <span className="rounded-full bg-[#eef6ff] px-3 py-1 text-[12px] font-[900] text-[#1769e8]">수금 이슈</span>
+            <span className="rounded-full bg-[#edf4ff] px-3 py-1 text-[12px] font-[900] text-[#1D50A2]">수금 이슈</span>
           </div>
           <div className="mt-5 space-y-3">
             {collectionItems.map((item) => (
@@ -361,7 +361,7 @@ function HomeActionCenter({ userName }: { userName: string }) {
                 item.emphasis ? "border-[#cfe1ff] bg-[#f3f8ff]" : "border-[#eef1f6] bg-[#fbfcff]"
               }`}>
                 <div className="flex items-center gap-3">
-                  <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${item.emphasis ? "bg-white text-[#1769e8]" : "bg-[#f1f4f8] text-[#5b6578]"}`}>
+                  <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${item.emphasis ? "bg-white text-[#1D50A2]" : "bg-[#f1f4f8] text-[#5b6578]"}`}>
                     <Banknote size={20} strokeWidth={2.2} />
                   </span>
                   <span className="text-[14px] font-[850] text-[#384255]">{item.label}</span>
@@ -370,7 +370,7 @@ function HomeActionCenter({ userName }: { userName: string }) {
               </div>
             ))}
           </div>
-          <button onClick={() => (window.location.href = "/collections")} className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#1769e8] text-[14px] font-[900] text-white transition hover:-translate-y-0.5">
+          <button onClick={() => (window.location.href = "/collections")} className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#1D50A2] text-[14px] font-[900] text-white transition hover:-translate-y-0.5">
             수금 현황 확인하기
             <ArrowRight size={17} />
           </button>
@@ -379,7 +379,7 @@ function HomeActionCenter({ userName }: { userName: string }) {
 
       <article className="flex items-center justify-between rounded-[24px] border border-[#ffd8d4] bg-[#fff6f4] px-5 py-4">
         <div className="flex items-center gap-4">
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#ef3f32] shadow-sm">
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#F39945] shadow-sm">
             <PackageCheck size={23} strokeWidth={2.2} />
           </span>
           <div>
@@ -387,7 +387,7 @@ function HomeActionCenter({ userName }: { userName: string }) {
             <p className="mt-1 text-[13px] font-[650] text-[#667085]">요청 전, 아직 종료되지 않은 거래를 먼저 확인해주세요.</p>
           </div>
         </div>
-        <button onClick={() => (window.location.href = "/month-end")} className="flex h-11 items-center gap-2 rounded-2xl bg-white px-5 text-[13px] font-[900] text-[#ef3f32] shadow-sm">
+        <button onClick={() => (window.location.href = "/month-end")} className="flex h-11 items-center gap-2 rounded-2xl bg-white px-5 text-[13px] font-[900] text-[#F39945] shadow-sm">
           월마감 체크로 이동
           <ArrowRight size={16} />
         </button>
@@ -447,7 +447,7 @@ function HomeUnifiedSearch() {
               onClick={() => (window.location.href = item.type === "FAQ" ? "/faq" : "/guide")}
               className="rounded-2xl border border-[#eef1f6] bg-white px-4 py-3 text-left transition hover:-translate-y-0.5 hover:border-[#cfe0fb] hover:shadow-sm"
             >
-              <span className="rounded-full bg-[#eef5ff] px-2.5 py-1 text-[11px] font-[900] text-[#1f5fe0]">{item.type}</span>
+              <span className="rounded-full bg-[#edf4ff] px-2.5 py-1 text-[11px] font-[900] text-[#1f5fe0]">{item.type}</span>
               <p className="mt-2 text-[13px] font-[900] leading-5 text-[#151922]">{item.title}</p>
               <p className="mt-1 line-clamp-2 text-[12px] font-[650] leading-5 text-[#667085]">{item.body}</p>
             </button>
@@ -501,12 +501,12 @@ function CompactHomeDashboard({
   const recentItems = requestItems.slice(0, 4);
 
   const iconTone = (tone: string) => {
-    if (tone === "green") return "bg-[#e7f8f1] text-[#0d9b6c]";
-    if (tone === "violet") return "bg-[#f2eaff] text-[#8b5cf6]";
-    if (tone === "orange") return "bg-[#fff0dc] text-[#f08b1a]";
-    if (tone === "teal") return "bg-[#e8fbfb] text-[#0ea5a8]";
+    if (tone === "green") return "bg-[#edf4ff] text-[#1D50A2]";
+    if (tone === "violet") return "bg-[#edf4ff] text-[#1D50A2]";
+    if (tone === "orange") return "bg-[#fff0dc] text-[#F39945]";
+    if (tone === "teal") return "bg-[#edf4ff] text-[#1D50A2]";
     if (tone === "pink") return "bg-[#ffeaf2] text-[#f04583]";
-    return "bg-[#eaf2ff] text-[#1769e8]";
+    return "bg-[#eaf2ff] text-[#1D50A2]";
   };
 
   return (
@@ -523,13 +523,13 @@ function CompactHomeDashboard({
         <div className="flex items-center gap-4">
           <button className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#e7ecf4] bg-white shadow-sm">
             <Bell size={20} className="text-[#667085]" />
-            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ef3f32] px-1 text-[10px] font-[900] text-white">12</span>
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#F39945] px-1 text-[10px] font-[900] text-white">12</span>
           </button>
           <div className="text-right">
             <p className="text-[13px] font-[900] text-[#151922]">{userName} Kim</p>
             <p className="text-[11px] font-[700] text-[#8a95a8]">영업1팀</p>
           </div>
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f3f7ff] text-[#1769e8]">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f3f7ff] text-[#1D50A2]">
             <UserRound size={21} />
           </span>
         </div>
@@ -569,7 +569,7 @@ function CompactHomeDashboard({
 
           <div className="mt-4 flex items-center justify-between rounded-[22px] bg-[#ff3647] px-8 py-5 text-white shadow-[0_16px_32px_rgba(239,63,50,0.22)]">
             <div className="flex items-center gap-5">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/95 text-[#ef3f32]">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/95 text-[#F39945]">
                 <AlertTriangle size={27} />
               </span>
               <p className="text-[18px] font-[950] leading-7">확인 필요 거래를 먼저 해결해야<br />VIPS팀 요청을 진행할 수 있어요.</p>
@@ -594,7 +594,7 @@ function CompactHomeDashboard({
                 <item.icon size={24} />
               </span>
               <span className="mt-3 whitespace-pre-line text-[13px] font-[900] leading-[18px] text-[#151922]">{item.label}</span>
-              {item.badge && <span className="absolute bottom-3 rounded-full bg-[#ffeff3] px-2 py-0.5 text-[10px] font-[950] text-[#ef3f68]">{item.badge}</span>}
+              {item.badge && <span className="absolute bottom-3 rounded-full bg-[#ffeff3] px-2 py-0.5 text-[10px] font-[950] text-[#F39945]">{item.badge}</span>}
             </button>
           ))}
         </div>
@@ -607,7 +607,7 @@ function CompactHomeDashboard({
             <button onClick={() => (window.location.href = "/request-status")} className="text-[12px] font-[900] text-[#667085]">더보기</button>
           </div>
           <div className="mt-4 grid grid-cols-4 overflow-hidden rounded-2xl border border-[#e6edf6] text-center">
-            {[["접수", "12", "#1769e8"], ["처리중", "8", "#f08b1a"], ["완료", "23", "#0d9b6c"], ["반려", "2", "#ef3f50"]].map(([label, value, color]) => (
+            {[["접수", "12", "#1D50A2"], ["처리중", "8", "#F39945"], ["완료", "23", "#1D50A2"], ["반려", "2", "#F39945"]].map(([label, value, color]) => (
               <div key={label} className="border-r border-[#e6edf6] px-4 py-3 last:border-r-0">
                 <p className="text-[12px] font-[900]" style={{ color }}>{label}</p>
                 <p className="mt-1 text-[28px] font-[950]" style={{ color }}>{value}</p>
@@ -617,7 +617,7 @@ function CompactHomeDashboard({
           <div className="mt-4 space-y-3">
             {recentItems.map((item) => (
               <button key={item.id} onClick={() => onSelectRequest(item)} className="grid w-full grid-cols-[90px_1fr_70px_56px] items-center gap-3 text-left text-[13px]">
-                <span className="rounded-full bg-[#f2f6ff] px-3 py-1 text-center text-[11px] font-[900] text-[#1769e8]">{item.type}</span>
+                <span className="rounded-full bg-[#f2f6ff] px-3 py-1 text-center text-[11px] font-[900] text-[#1D50A2]">{item.type}</span>
                 <span className="truncate font-[800] text-[#344054]">{item.companyName || item.result}</span>
                 <span className={`rounded-full px-2 py-1 text-center text-[11px] font-[900] ${statusStyles[item.status]}`}>{item.status}</span>
                 <span className="text-right text-[11px] font-[750] text-[#8a95a8]">방금</span>
@@ -663,7 +663,7 @@ function CompactHomeDashboard({
             <RunnerMark />
             <div>
               <p className="text-[13px] font-[950] text-[#151922]">달뱅 챌린지</p>
-              <p className="mt-1 text-[12px] font-[750] text-[#1769e8]">7일 연속 출석 중!</p>
+              <p className="mt-1 text-[12px] font-[750] text-[#1D50A2]">7일 연속 출석 중!</p>
               <p className="mt-2 text-[12px] font-[850] text-[#667085]">7 / 10일</p>
             </div>
           </div>
@@ -695,7 +695,7 @@ function CompactHomeDashboard({
       </div>
       <footer className="mt-5 flex items-center justify-between px-1 pb-2 text-[11px] font-[750] text-[#8a95a8]">
         <div className="flex items-center gap-2">
-          <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#1769e8] text-[10px] font-[950] text-white">I</span>
+          <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#1D50A2] text-[10px] font-[950] text-white">I</span>
           <span className="font-[900] text-[#1d2f4f]">ICBANQ OPS</span>
           <span>© ICBANQ. All rights reserved.</span>
         </div>
@@ -756,13 +756,13 @@ function IcbHomeDashboard({
     { title: "월마감 전 출고 흐름 확인", count: "3건", icon: Truck, tone: "green" }
   ];
   const toneClass = (tone: string) => {
-    if (tone === "green") return "bg-[#e7f8f1] text-[#0d9b6c]";
-    if (tone === "violet") return "bg-[#f2eaff] text-[#8b5cf6]";
-    if (tone === "orange") return "bg-[#fff0dc] text-[#f08b1a]";
-    if (tone === "teal") return "bg-[#e8fbfb] text-[#0ea5a8]";
+    if (tone === "green") return "bg-[#edf4ff] text-[#1D50A2]";
+    if (tone === "violet") return "bg-[#edf4ff] text-[#1D50A2]";
+    if (tone === "orange") return "bg-[#fff0dc] text-[#F39945]";
+    if (tone === "teal") return "bg-[#edf4ff] text-[#1D50A2]";
     if (tone === "pink") return "bg-[#ffeaf2] text-[#f04583]";
-    if (tone === "rose") return "bg-[#fff0ef] text-[#ef3f50]";
-    return "bg-[#eaf2ff] text-[#1769e8]";
+    if (tone === "rose") return "bg-[#fff5ec] text-[#F39945]";
+    return "bg-[#eaf2ff] text-[#1D50A2]";
   };
 
   return (
@@ -783,13 +783,13 @@ function IcbHomeDashboard({
         <div className="flex items-center gap-4 pt-1">
           <button className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[#e7ecf4] bg-white shadow-sm">
             <Bell size={20} className="text-[#667085]" />
-            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ef3f32] px-1 text-[10px] font-[900] text-white">12</span>
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#F39945] px-1 text-[10px] font-[900] text-white">12</span>
           </button>
           <div className="text-right">
             <p className="text-[13px] font-[900] text-[#151922]">{userName} Kim</p>
             <p className="text-[11px] font-[700] text-[#8a95a8]">영업1팀</p>
           </div>
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f3f7ff] text-[#1769e8]"><UserRound size={21} /></span>
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f3f7ff] text-[#1D50A2]"><UserRound size={21} /></span>
         </div>
       </div>
 
@@ -797,7 +797,7 @@ function IcbHomeDashboard({
         <div className="absolute right-10 top-8 hidden h-[210px] w-[210px] rounded-full bg-[#fff0eb] lg:block" />
         <div className="absolute right-[82px] top-[40px] hidden h-[150px] w-[150px] rounded-full border-[28px] border-[#ff4b43] lg:block" />
         <div className="absolute right-[142px] top-[100px] hidden h-8 w-8 rounded-full bg-[#ff4b43] lg:block" />
-        <div className="absolute right-[118px] top-[78px] hidden h-4 w-[96px] rotate-[-28deg] rounded-full bg-[#f08b1a] shadow-lg lg:block" />
+        <div className="absolute right-[118px] top-[78px] hidden h-4 w-[96px] rotate-[-28deg] rounded-full bg-[#F39945] shadow-lg lg:block" />
         <div className="relative z-10 max-w-[760px]">
           <p className="text-[19px] font-[950] tracking-[-0.01em] text-[#151922]">{userName}님, 오늘도 거래를 끝까지 책임져요!</p>
           <h1 className="mt-3 text-[46px] font-[950] leading-tight tracking-[-0.04em] text-[#151922]">확인 필요 거래가 <span className="text-[#ef2f2f]">7건</span> 있습니다</h1>
@@ -806,8 +806,8 @@ function IcbHomeDashboard({
             {[
               ["확인 필요 거래", "7건", "text-[#ef2f2f]"],
               ["총 금액", formatWon(actionSummary.totalNeedCheckAmount), "text-[#151922]"],
-              ["월마감 체크 필요", "6건", "text-[#f08b1a]"],
-              ["수금 확인 필요", "1건", "text-[#1769e8]"]
+              ["월마감 체크 필요", "6건", "text-[#F39945]"],
+              ["수금 확인 필요", "1건", "text-[#1D50A2]"]
             ].map(([label, value, color]) => (
               <div key={label} className="rounded-[20px] border border-[#edf1f6] bg-[#fbfcff] px-4 py-4">
                 <p className="text-[12px] font-[850] text-[#667085]">{label}</p>
@@ -829,7 +829,7 @@ function IcbHomeDashboard({
               <h2 className="text-[22px] font-[950] text-[#151922]">월마감 체크</h2>
               <p className="mt-1 text-[13px] font-[700] text-[#667085]">계산서, 출고, Deduct 등 월마감 전 확인할 거래입니다.</p>
             </div>
-            <span className="rounded-full bg-[#fff0ef] px-3 py-1 text-[12px] font-[950] text-[#ef3f50]">6건</span>
+            <span className="rounded-full bg-[#fff5ec] px-3 py-1 text-[12px] font-[950] text-[#F39945]">6건</span>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3">
             {monthlyItems.map((item) => (
@@ -850,13 +850,13 @@ function IcbHomeDashboard({
               <h2 className="text-[22px] font-[950] text-[#151922]">수금 체크</h2>
               <p className="mt-1 text-[13px] font-[700] text-[#667085]">입금확인, 수금매칭, AR 보류 건을 확인합니다.</p>
             </div>
-            <span className="rounded-full bg-[#eef6ff] px-3 py-1 text-[12px] font-[950] text-[#1769e8]">수금 이슈</span>
+            <span className="rounded-full bg-[#edf4ff] px-3 py-1 text-[12px] font-[950] text-[#1D50A2]">수금 이슈</span>
           </div>
           <div className="mt-5 space-y-3">
             {collectionItems.map((item) => (
               <div key={item.label} className={`flex min-h-[76px] items-center justify-between rounded-[22px] border px-4 ${item.hot ? "border-[#cfe1ff] bg-[#f3f8ff]" : "border-[#eef1f6] bg-[#fbfcff]"}`}>
                 <div className="flex items-center gap-3">
-                  <span className={`flex h-11 w-11 items-center justify-center rounded-full ${item.hot ? "bg-white text-[#1769e8]" : "bg-[#f1f4f8] text-[#667085]"}`}><Banknote size={21} /></span>
+                  <span className={`flex h-11 w-11 items-center justify-center rounded-full ${item.hot ? "bg-white text-[#1D50A2]" : "bg-[#f1f4f8] text-[#667085]"}`}><Banknote size={21} /></span>
                   <div>
                     <p className="text-[14px] font-[900] text-[#30394a]">{item.label}</p>
                     <p className="mt-1 text-[12px] font-[750] text-[#667085]">{item.sub}</p>
@@ -866,22 +866,22 @@ function IcbHomeDashboard({
               </div>
             ))}
           </div>
-          <button onClick={() => (window.location.href = "/collections")} className="mt-5 h-[48px] w-full rounded-2xl bg-[#1769e8] text-[14px] font-[950] text-white">수금 현황 확인하기</button>
+          <button onClick={() => (window.location.href = "/collections")} className="mt-5 h-[48px] w-full rounded-2xl bg-[#1D50A2] text-[14px] font-[950] text-white">수금 현황 확인하기</button>
         </article>
       </div>
 
       <article className="relative overflow-hidden rounded-[26px] border border-[#ffd8d4] bg-[#fff6f4] p-5 shadow-[0_12px_28px_rgba(239,63,50,0.08)]">
         <div className="flex items-center justify-between gap-5">
           <div className="flex items-center gap-4">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-[#ef3f50] shadow-sm"><AlertTriangle size={27} /></span>
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-[#F39945] shadow-sm"><AlertTriangle size={27} /></span>
             <div>
               <p className="text-[18px] font-[950] text-[#151922]">월마감·수금 확인이 끝나야 VIPS팀 요청을 진행할 수 있어요.</p>
               <p className="mt-1 text-[13px] font-[750] text-[#667085]">요청 전, 아직 종료되지 않은 거래를 먼저 확인해주세요.</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="hidden h-16 w-16 items-center justify-center rounded-[22px] bg-white shadow-sm lg:flex"><span className="h-9 w-9 rounded-full bg-[#1769e8]" /></div>
-            <button onClick={() => (window.location.href = "/month-end")} className="h-[48px] rounded-full bg-[#ef3f50] px-7 text-[14px] font-[950] text-white">거래 종료 점검센터로 이동</button>
+            <div className="hidden h-16 w-16 items-center justify-center rounded-[22px] bg-white shadow-sm lg:flex"><span className="h-9 w-9 rounded-full bg-[#1D50A2]" /></div>
+            <button onClick={() => (window.location.href = "/month-end")} className="h-[48px] rounded-full bg-[#F39945] px-7 text-[14px] font-[950] text-white">거래 종료 점검센터로 이동</button>
           </div>
         </div>
       </article>
@@ -896,7 +896,7 @@ function IcbHomeDashboard({
             <button key={item.kind} onClick={() => onSelectRequestKind(item.kind)} className="relative flex h-[118px] flex-col items-center justify-center rounded-[20px] border border-[#edf1f6] bg-white text-center shadow-[0_10px_24px_rgba(21,31,53,0.045)] transition hover:-translate-y-0.5 hover:border-[#cbdaf5]">
               <span className={`flex h-12 w-12 items-center justify-center rounded-full ${toneClass(item.tone)}`}><item.icon size={23} /></span>
               <span className="mt-3 whitespace-pre-line text-[13px] font-[900] leading-[18px] text-[#151922]">{item.label}</span>
-              {item.badge && <span className="absolute bottom-3 rounded-full bg-[#ffeff3] px-2 py-0.5 text-[10px] font-[950] text-[#ef3f68]">{item.badge}</span>}
+              {item.badge && <span className="absolute bottom-3 rounded-full bg-[#ffeff3] px-2 py-0.5 text-[10px] font-[950] text-[#F39945]">{item.badge}</span>}
             </button>
           ))}
         </div>
@@ -908,7 +908,7 @@ function IcbHomeDashboard({
           <button onClick={() => (window.location.href = "/request-status")} className="text-[12px] font-[900] text-[#667085]">더보기</button>
         </div>
         <div className="mt-4 grid grid-cols-4 overflow-hidden rounded-2xl border border-[#e6edf6] text-center">
-          {[["접수", "12", "#1769e8"], ["처리중", "8", "#f08b1a"], ["완료", "23", "#0d9b6c"], ["반려", "2", "#ef3f50"]].map(([label, value, color]) => (
+          {[["접수", "12", "#1D50A2"], ["처리중", "8", "#F39945"], ["완료", "23", "#1D50A2"], ["반려", "2", "#F39945"]].map(([label, value, color]) => (
             <div key={label} className="border-r border-[#e6edf6] px-4 py-3 last:border-r-0">
               <p className="text-[12px] font-[900]" style={{ color }}>{label}</p>
               <p className="mt-1 text-[28px] font-[950]" style={{ color }}>{value}</p>
@@ -918,7 +918,7 @@ function IcbHomeDashboard({
         <div className="mt-4 grid gap-3">
           {recentItems.map((item) => (
             <button key={item.id} onClick={() => onSelectRequest(item)} className="grid w-full grid-cols-[110px_1fr_84px_64px] items-center gap-3 rounded-2xl border border-[#edf1f6] px-4 py-3 text-left text-[13px]">
-              <span className="rounded-full bg-[#f2f6ff] px-3 py-1 text-center text-[11px] font-[900] text-[#1769e8]">{item.type}</span>
+              <span className="rounded-full bg-[#f2f6ff] px-3 py-1 text-center text-[11px] font-[900] text-[#1D50A2]">{item.type}</span>
               <span className="truncate font-[850] text-[#344054]">{item.companyName || item.result}</span>
               <span className={`rounded-full px-2 py-1 text-center text-[11px] font-[900] ${statusStyles[item.status]}`}>{item.status}</span>
               <span className="text-right text-[11px] font-[750] text-[#8a95a8]">방금</span>
@@ -1012,13 +1012,13 @@ function StableHomeDashboard({
   const recentItems = requestItems.slice(0, 4);
   const searchChips = ["수정세금계산서", "입금확인", "보증보험", "수금매칭", "계산서매칭"];
   const toneClass = (tone: string) => {
-    if (tone === "red") return "bg-[#fff0ef] text-[#ef3f50]";
-    if (tone === "orange") return "bg-[#fff3df] text-[#f08b1a]";
-    if (tone === "purple") return "bg-[#f3edff] text-[#8b5cf6]";
-    if (tone === "green") return "bg-[#e9f8f1] text-[#0d9b6c]";
-    if (tone === "teal") return "bg-[#e8fbfb] text-[#0ea5a8]";
+    if (tone === "red") return "bg-[#fff5ec] text-[#F39945]";
+    if (tone === "orange") return "bg-[#fff3df] text-[#F39945]";
+    if (tone === "purple") return "bg-[#edf4ff] text-[#1D50A2]";
+    if (tone === "green") return "bg-[#edf4ff] text-[#1D50A2]";
+    if (tone === "teal") return "bg-[#edf4ff] text-[#1D50A2]";
     if (tone === "pink") return "bg-[#ffeaf2] text-[#f04583]";
-    return "bg-[#eaf2ff] text-[#1769e8]";
+    return "bg-[#eaf2ff] text-[#1D50A2]";
   };
   const monthlyItems: Array<{ label: string; count: string; amount: string; icon: typeof FileText; tone: string }> = [
     { label: "계산서 발행 필요", count: "3건", amount: formatWon(monthlyCloseStatus.invoiceRequiredAmount), icon: FileText, tone: "red" },
@@ -1074,8 +1074,8 @@ function StableHomeDashboard({
             {[
               ["확인 필요 거래", "7건", "text-[#ef2f2f]"],
               ["총 금액", formatWon(actionSummary.totalNeedCheckAmount), "text-[#151922]"],
-              ["월마감 체크 필요", "6건", "text-[#f08b1a]"],
-              ["수금 확인 필요", "1건", "text-[#1769e8]"]
+              ["월마감 체크 필요", "6건", "text-[#F39945]"],
+              ["수금 확인 필요", "1건", "text-[#1D50A2]"]
             ].map(([label, value, color]) => (
               <div key={label} className="h-[66px] min-w-0 overflow-hidden rounded-[16px] border border-[#edf1f6] bg-[#fbfcff] px-[14px] py-2">
                 <p className="truncate text-[12px] font-[850] text-[#667085]">{label}</p>
@@ -1088,9 +1088,9 @@ function StableHomeDashboard({
             <ArrowRight size={16} />
           </button>
         </div>
-        <div className="relative flex min-w-0 items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#fff4ef_0%,#eef5ff_100%)]">
+        <div className="relative flex min-w-0 items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#fff4ef_0%,#edf4ff_100%)]">
           <div className="absolute right-7 top-6 h-[164px] w-[164px] rounded-full bg-white/65" />
-          <MascotAsset src="/assets/mascots/hero-mascot.png" alt="ICBANQ OPS 히어로 마스코트" fallback="★" className="relative h-[170px] w-[170px] rounded-full" />
+          <MascotAsset src="/assets/brand/bandol-full.png" alt="ICBANQ 반돌이" fallback="★" className="relative h-[170px] w-[170px] rounded-full" />
         </div>
       </article>
 
@@ -1101,7 +1101,7 @@ function StableHomeDashboard({
               <h2 className="truncate text-[20px] font-[950] text-[#151922]">월마감 체크</h2>
               <p className="mt-1 truncate text-[12px] font-[700] text-[#667085]">계산서, 출고, Deduct 등 월마감 전 확인할 거래입니다.</p>
             </div>
-            <span className="shrink-0 rounded-full bg-[#fff0ef] px-3 py-1 text-[12px] font-[950] text-[#ef3f50]">6건</span>
+            <span className="shrink-0 rounded-full bg-[#fff5ec] px-3 py-1 text-[12px] font-[950] text-[#F39945]">6건</span>
           </div>
           <div className="mt-3 grid min-w-0 grid-cols-2 gap-2.5">
             {monthlyItems.map((item) => (
@@ -1126,13 +1126,13 @@ function StableHomeDashboard({
               <h2 className="truncate text-[20px] font-[950] text-[#151922]">수금 체크</h2>
               <p className="mt-1 truncate text-[12px] font-[700] text-[#667085]">입금확인, 수금매칭, AR 보류 건을 확인합니다.</p>
             </div>
-            <span className="shrink-0 rounded-full bg-[#eef6ff] px-3 py-1 text-[12px] font-[950] text-[#1769e8]">수금 이슈</span>
+            <span className="shrink-0 rounded-full bg-[#edf4ff] px-3 py-1 text-[12px] font-[950] text-[#1D50A2]">수금 이슈</span>
           </div>
           <div className="mt-3 space-y-2">
             {collectionItems.map((item) => (
               <div key={item.label} className={`flex h-[42px] min-w-0 items-center justify-between gap-3 overflow-hidden rounded-[14px] border px-3 ${item.hot ? "border-[#cfe1ff] bg-[#f3f8ff]" : "border-[#eef1f6] bg-[#fbfcff]"}`}>
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${item.hot ? "bg-white text-[#1769e8]" : "bg-[#f1f4f8] text-[#667085]"}`}><Banknote size={14} /></span>
+                  <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${item.hot ? "bg-white text-[#1D50A2]" : "bg-[#f1f4f8] text-[#667085]"}`}><Banknote size={14} /></span>
                   <div className="min-w-0">
                     <p className="truncate text-[12px] font-[900] text-[#30394a]">{item.label}</p>
                     <p className="truncate text-[11px] font-[750] text-[#667085]">{item.sub}</p>
@@ -1142,7 +1142,7 @@ function StableHomeDashboard({
               </div>
             ))}
           </div>
-          <button onClick={() => (window.location.href = "/collections")} className="mt-3 h-[38px] w-full rounded-[14px] bg-[#1769e8] text-[13px] font-[950] text-white">수금 현황 확인하기</button>
+          <button onClick={() => (window.location.href = "/collections")} className="mt-3 h-[38px] w-full rounded-[14px] bg-[#1D50A2] text-[13px] font-[950] text-white">수금 현황 확인하기</button>
         </article>
       </div>
 
@@ -1156,7 +1156,7 @@ function StableHomeDashboard({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-4">
-            <MascotAsset src="/assets/mascots/gatekeeper-mascot.png" alt="VIPS 요청 게이트키퍼 마스코트" fallback="!" className="hidden h-16 w-20 bg-white/70 lg:flex" />
+            <MascotAsset src="/assets/brand/bandol-full.png" alt="ICBANQ 반돌이" fallback="!" className="hidden h-16 w-20 bg-white/70 lg:flex" />
             <button onClick={() => (window.location.href = "/month-end")} className="h-[38px] rounded-full bg-[#ef8a1a] px-5 text-[13px] font-[950] text-white">거래 종료 점검센터로 이동</button>
           </div>
         </div>
@@ -1184,7 +1184,7 @@ function StableHomeDashboard({
             <button onClick={() => (window.location.href = "/request-status")} className="text-[11px] font-[900] text-[#667085]">더보기</button>
           </div>
           <div className="mt-3 grid grid-cols-4 overflow-hidden rounded-[14px] border border-[#e6edf6] text-center">
-            {[["접수", "12", "#1769e8"], ["처리중", "8", "#f08b1a"], ["완료", "23", "#0d9b6c"], ["반려", "2", "#ef3f50"]].map(([label, value, color]) => (
+            {[["접수", "12", "#1D50A2"], ["처리중", "8", "#F39945"], ["완료", "23", "#1D50A2"], ["반려", "2", "#F39945"]].map(([label, value, color]) => (
               <div key={label} className="border-r border-[#e6edf6] px-3 py-2 last:border-r-0">
                 <p className="text-[11px] font-[900]" style={{ color }}>{label}</p>
                 <p className="text-[20px] font-[950]" style={{ color }}>{value}</p>
@@ -1192,9 +1192,9 @@ function StableHomeDashboard({
             ))}
           </div>
           <button onClick={() => recentItems[0] && onSelectRequest(recentItems[0])} className="mt-3 grid w-full min-w-0 grid-cols-[92px_minmax(0,1fr)_62px_110px] items-center gap-2 rounded-[14px] border border-[#edf1f6] px-3 py-2 text-left text-[12px]">
-            <span className="truncate rounded-full bg-[#f2f6ff] px-2 py-1 text-center text-[10px] font-[900] text-[#1769e8]">세금계산서</span>
+            <span className="truncate rounded-full bg-[#f2f6ff] px-2 py-1 text-center text-[10px] font-[900] text-[#1D50A2]">세금계산서</span>
             <span className="truncate font-[850] text-[#344054]">아이씨뱅큐</span>
-            <span className="rounded-full bg-[#e9f8f1] px-2 py-1 text-center text-[10px] font-[900] text-[#0d9b6c]">완료</span>
+            <span className="rounded-full bg-[#edf4ff] px-2 py-1 text-center text-[10px] font-[900] text-[#1D50A2]">완료</span>
             <span className="truncate text-right text-[10px] font-[750] text-[#8a95a8]">2026.05.18 11:37</span>
           </button>
         </article>
@@ -1263,7 +1263,7 @@ function Field({
     <label className="block">
       <span className="mb-2 flex items-center gap-1 text-[13px] font-[800] text-[#1d2f4f]">
         {label}
-        {required && <span className="text-red-500">*</span>}
+        {required && <span className="text-[#F39945]">*</span>}
       </span>
       <input
         type={type}
@@ -1272,10 +1272,10 @@ function Field({
         placeholder={placeholder}
         onChange={(event) => onChange?.(event.target.value)}
         className={`h-11 w-full rounded-md border bg-white px-3 text-[14px] font-[600] text-[#10203f] outline-none transition placeholder:text-[#8a9bb4] ${
-          error ? "border-red-400 bg-red-50/40" : "border-[#cfdbea] focus:border-[#075bdc] focus:ring-2 focus:ring-blue-100"
+          error ? "border-[#F39945] bg-[#fff5ec]" : "border-[#cfdbea] focus:border-[#1D50A2] focus:ring-2 focus:ring-[#dbe7f5]"
         } ${readOnly ? "bg-[#f4f8fd] text-[#0d45ad]" : ""}`}
       />
-      {error && <p className="mt-1 text-[12px] font-[700] text-red-600">누락된 필수 항목입니다.</p>}
+      {error && <p className="mt-1 text-[12px] font-[700] text-[#F39945]">누락된 필수 항목입니다.</p>}
     </label>
   );
 }
@@ -1330,7 +1330,7 @@ function InfoDialog({
             <div className="rounded-md bg-[#f4f8fd] px-4 py-3">
               {["업체명", "담당자명", "사업자등록번호"].map((item) => (
                 <p key={item} className="flex items-center gap-2 py-1 text-[13px] font-[700] text-[#34496b]">
-                  <CheckCircle2 size={15} className="text-[#075bdc]" />
+                  <CheckCircle2 size={15} className="text-[#1D50A2]" />
                   {item} IKI 등록 확인
                 </p>
               ))}
@@ -1342,7 +1342,7 @@ function InfoDialog({
             <div className="rounded-md bg-[#f4f8fd] px-4 py-3">
               {["원 계산서 발행월 확인", "마감 여부 확인", "수정 사유 증빙 확인"].map((item) => (
                 <p key={item} className="flex items-center gap-2 py-1 text-[13px] font-[700] text-[#34496b]">
-                  <CheckCircle2 size={15} className="text-[#075bdc]" />
+                  <CheckCircle2 size={15} className="text-[#1D50A2]" />
                   {item}
                 </p>
               ))}
@@ -1355,7 +1355,7 @@ function InfoDialog({
               {content.cancel}
             </button>
           )}
-          <button onClick={onConfirm} className="h-10 rounded-md bg-[#075bdc] px-6 text-[13px] font-[850] text-white">
+          <button onClick={onConfirm} className="h-10 rounded-md bg-[#1D50A2] px-6 text-[13px] font-[850] text-white">
             {content.confirm}
           </button>
         </div>
@@ -1367,16 +1367,16 @@ function InfoDialog({
 function GateBanner({ visible }: { visible: boolean }) {
   if (!visible) return null;
   return (
-    <section className="mb-[11px] flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-5 py-4">
+    <section className="mb-[11px] flex items-center justify-between rounded-lg border border-[rgba(243,153,69,0.30)] bg-[#fff5ec] px-5 py-4">
       <div>
-        <p className="text-[15px] font-[850] text-red-700">미종료 거래가 남아 있어 VIPS팀 요청 진입이 불가합니다.</p>
+        <p className="text-[15px] font-[850] text-[#b85f18]">미종료 거래가 남아 있어 VIPS팀 요청 진입이 불가합니다.</p>
         <p className="mt-1 text-[12px] font-[650] text-[#5b6b84]">거래 종료 관리에서 내 미종료 거래를 확인하고 IKI에서 정리해주세요.</p>
       </div>
       <div className="flex gap-2">
-        <button onClick={() => (window.location.href = "/month-end")} className="h-10 rounded-md bg-red-600 px-4 text-[13px] font-[850] text-white">
+        <button onClick={() => (window.location.href = "/month-end")} className="h-10 rounded-md bg-[#F39945] px-4 text-[13px] font-[850] text-white">
           미종료 거래 확인하기
         </button>
-        <button onClick={() => window.open("https://iki.icbanq.com", "_blank", "noopener,noreferrer")} className="h-10 rounded-md bg-[#075bdc] px-4 text-[13px] font-[850] text-white">
+        <button onClick={() => window.open("https://iki.icbanq.com", "_blank", "noopener,noreferrer")} className="h-10 rounded-md bg-[#1D50A2] px-4 text-[13px] font-[850] text-white">
           IKI 월마감 바로가기
         </button>
       </div>
@@ -1410,7 +1410,7 @@ function TopOperations({
           {tasks.map((task) => (
             <button key={task.title} className="grid min-h-[58px] w-full grid-cols-[36px_1fr_28px_14px] items-center gap-3 rounded-2xl border border-[#eef1f6] bg-white px-3 text-left transition hover:-translate-y-0.5 hover:border-[#dfe7f3] hover:shadow-sm">
               <span className={`flex h-9 w-9 items-center justify-center rounded-[14px] ${
-                task.tone === "rose" ? "bg-[#fff0ed] text-[#d4552f]" : task.tone === "green" ? "bg-[#e9f8f2] text-[#16815f]" : task.tone === "amber" ? "bg-[#fff8da] text-[#9a7100]" : "bg-[#eef4ff] text-[#2f6fed]"
+                task.tone === "rose" ? "bg-[#fff5ec] text-[#F39945]" : task.tone === "green" ? "bg-[#edf4ff] text-[#1D50A2]" : task.tone === "amber" ? "bg-[#fff5ec] text-[#F39945]" : "bg-[#eef4ff] text-[#1D50A2]"
               }`}>
                 <task.icon size={18} strokeWidth={2.25} />
               </span>
@@ -1456,7 +1456,7 @@ function TopOperations({
             <ul className="mt-3 grid grid-cols-2 gap-2">
               {["반려 요청 최소화", "월마감 기한 내 완료", "수금 확인 지연 없음", "VIPS팀 요청 정확도 유지"].map((item) => (
                 <li key={item} className="flex items-center gap-2 text-[12px] font-[700] text-[#31445e]">
-                  <CheckCircle2 size={15} className="text-emerald-600" />
+                  <CheckCircle2 size={15} className="text-[#1D50A2]" />
                   {item}
                 </li>
               ))}
@@ -1465,7 +1465,7 @@ function TopOperations({
         </div>
         <div className="mt-3 grid grid-cols-2 border-t border-[#edf1f6] pt-3 text-[13px]">
           <p className="font-[650] text-[#34496b]">연속 달성 <b className="ml-2 text-[#0a2c6f]">5개월</b></p>
-          <p className="text-right font-[650] text-[#34496b]">이번 달 달성률 <b className="ml-3 text-[20px] text-[#075bdc]">100%</b></p>
+          <p className="text-right font-[650] text-[#34496b]">이번 달 달성률 <b className="ml-3 text-[20px] text-[#1D50A2]">100%</b></p>
         </div>
       </article>
 
@@ -1506,7 +1506,7 @@ function TopOperations({
           </div>
           <div className="flex items-center justify-between pt-2">
             <span className="text-[12px] font-[750] text-[#5b6b84]">출처</span>
-            <span className="text-[13px] font-[850] text-[#075bdc]">ExchangeRate API</span>
+            <span className="text-[13px] font-[850] text-[#1D50A2]">ExchangeRate API</span>
           </div>
         </div>
         {historicalExchangeRates.length > 0 && <div className="hidden" data-exchange-history-ready="true" />}
@@ -1667,7 +1667,7 @@ function RequestShortcuts({ onSelect }: { onSelect: (kind: RequestKind) => void 
               onClick={() => onSelect(kind)}
               className="flex h-[126px] flex-col items-center justify-center rounded-[20px] border border-[#edf1f6] bg-white px-3 text-center transition hover:-translate-y-0.5 hover:border-[#bdd0fa] hover:bg-[#f8fbff] hover:shadow-sm"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#d4e4f7] bg-[#f3f8ff] text-[#075bdc]">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#d4e4f7] bg-[#f3f8ff] text-[#1D50A2]">
                 <Icon size={23} strokeWidth={2.05} />
               </span>
               <p className="mt-3 text-[12px] font-[800] leading-[18px] text-[#10203f]">{shortcutLabels[kind] ?? config.title}</p>
@@ -1677,7 +1677,7 @@ function RequestShortcuts({ onSelect }: { onSelect: (kind: RequestKind) => void 
         })}
         <a
           href="/requests"
-          className="flex h-[126px] flex-col items-center justify-center rounded-[20px] border border-dashed border-[#c7d7eb] bg-[#f8fbff] px-3 text-center transition hover:-translate-y-0.5 hover:border-[#075bdc] hover:bg-[#eef5ff]"
+          className="flex h-[126px] flex-col items-center justify-center rounded-[20px] border border-dashed border-[#c7d7eb] bg-[#f8fbff] px-3 text-center transition hover:-translate-y-0.5 hover:border-[#1D50A2] hover:bg-[#edf4ff]"
         >
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#6b7d98] shadow-sm">
             <PlusCircle size={23} strokeWidth={2} />
@@ -1691,8 +1691,8 @@ function RequestShortcuts({ onSelect }: { onSelect: (kind: RequestKind) => void 
 }
 
 function BadgeMark({ tone = "blue" }: { tone?: "blue" | "green" | "gray" }) {
-  const fill = tone === "green" ? "#2f8f62" : tone === "gray" ? "#65758b" : "#075bdc";
-  const dark = tone === "green" ? "#176041" : tone === "gray" ? "#3b4758" : "#083b91";
+  const fill = tone === "green" ? "#1D50A2" : tone === "gray" ? "#65758b" : "#1D50A2";
+  const dark = tone === "green" ? "#1D50A2" : tone === "gray" ? "#3b4758" : "#083b91";
 
   return (
     <svg width="58" height="58" viewBox="0 0 64 64" aria-hidden="true">
@@ -1740,11 +1740,11 @@ function MyBadgesCard() {
       <div className="mt-4 rounded-2xl border border-[#e7ecf4] bg-[#f8fbff] px-4 py-3">
         <div className="flex items-center justify-between">
           <span className="text-[12px] font-[800] text-[#34496b]">이번 분기 성과 포인트</span>
-          <span className="text-[13px] font-[850] text-[#075bdc]">7 / 10</span>
+          <span className="text-[13px] font-[850] text-[#1D50A2]">7 / 10</span>
         </div>
         <div className="mt-2 grid grid-cols-10 gap-1">
           {Array.from({ length: 10 }).map((_, index) => (
-            <span key={index} className={`h-3 rounded-full ${index < 7 ? "bg-[#8b5cf6]" : "bg-[#dce6f3]"}`} />
+            <span key={index} className={`h-3 rounded-full ${index < 7 ? "bg-[#1D50A2]" : "bg-[#dce6f3]"}`} />
           ))}
         </div>
       </div>
@@ -1756,7 +1756,7 @@ function RunnerMark() {
   return (
     <svg width="74" height="74" viewBox="0 0 90 74" aria-hidden="true">
       <path d="M8 61c13 5 43 6 67 0" stroke="#d7e6f8" strokeWidth="5" strokeLinecap="round" />
-      <circle cx="53" cy="14" r="7" fill="#0b4fb7" />
+      <circle cx="53" cy="14" r="7" fill="#1D50A2" />
       <path d="M40 27c7-8 18-7 25 2l5 7-8 5-4-6-11 12-13-8 6-12Z" fill="#0b63df" />
       <path d="m39 41-15 12m23-7-6 17m25-31 12-6M24 53l-9 8m26 2 14 5" stroke="#0b3f92" strokeWidth="6" strokeLinecap="round" />
       <path d="M31 26c-8 5-15 7-20 6" stroke="#2f8fef" strokeWidth="5" strokeLinecap="round" />
@@ -1769,11 +1769,11 @@ function BookChallengeMark() {
   return (
     <svg width="74" height="74" viewBox="0 0 90 74" aria-hidden="true">
       <path d="M22 19c12 0 18 5 23 10 5-5 11-10 23-10v38c-11 0-18 4-23 9-5-5-12-9-23-9V19Z" fill="#e9f6ee" />
-      <path d="M45 29v36M22 19v38c11 0 18 4 23 9V29c-5-5-11-10-23-10Zm46 0v38c-11 0-18 4-23 9V29c5-5 11-10 23-10Z" fill="none" stroke="#2f8f62" strokeWidth="4" strokeLinejoin="round" />
-      <path d="M31 29h7M31 38h8M52 31h8M52 40h7" stroke="#2f8f62" strokeWidth="3" strokeLinecap="round" opacity=".75" />
+      <path d="M45 29v36M22 19v38c11 0 18 4 23 9V29c-5-5-11-10-23-10Zm46 0v38c-11 0-18 4-23 9V29c5-5 11-10 23-10Z" fill="none" stroke="#1D50A2" strokeWidth="4" strokeLinejoin="round" />
+      <path d="M31 29h7M31 38h8M52 31h8M52 40h7" stroke="#1D50A2" strokeWidth="3" strokeLinecap="round" opacity=".75" />
       <circle cx="28" cy="10" r="3" fill="#f6a04d" opacity=".75" />
       <path d="M44 8v8M61 10l-5 7" stroke="#f6a04d" strokeWidth="3" strokeLinecap="round" opacity=".7" />
-      <circle cx="45" cy="68" r="5" fill="#2f8f62" />
+      <circle cx="45" cy="68" r="5" fill="#1D50A2" />
     </svg>
   );
 }
@@ -1798,10 +1798,10 @@ function ExploreAndHelp() {
               <h2 className="text-[18px] font-[900] text-[#151922]">검색하기</h2>
               <p className="mt-1 text-[12px] font-[600] text-[#5b6b84]">페이지 이동 없이 홈에서 바로 실무 상황을 찾습니다.</p>
             </div>
-            <Search size={18} className="text-[#075bdc]" />
+            <Search size={18} className="text-[#1D50A2]" />
           </div>
           <div className="mt-4 flex h-12 items-center gap-3 rounded-2xl border border-[#e1e7f0] bg-[#f8fbff] px-4">
-            <Search size={16} className="shrink-0 text-[#075bdc]" />
+            <Search size={16} className="shrink-0 text-[#1D50A2]" />
             <input
               value={homeSearchQuery}
               onChange={(event) => {
@@ -1839,7 +1839,7 @@ function ExploreAndHelp() {
                       className="flex w-full items-center justify-between bg-white px-3 py-2.5 text-left hover:bg-[#f8fbff]"
                     >
                       <span className="text-[13px] font-[850] text-[#10203f]">{item.title}</span>
-                      <ChevronRight size={15} className={`text-[#075bdc] transition ${open ? "rotate-90" : ""}`} />
+                      <ChevronRight size={15} className={`text-[#1D50A2] transition ${open ? "rotate-90" : ""}`} />
                     </button>
                     {open && <p className="border-t border-[#eef3fa] bg-[#f8fbff] px-3 py-3 text-[12px] font-[650] leading-5 text-[#435a7b]">{item.body}</p>}
                   </section>
@@ -1883,13 +1883,13 @@ function ExploreAndHelp() {
           <button className="h-9 shrink-0 rounded-full bg-[#1f5fe0] px-4 text-[12px] font-[850] text-white">참여</button>
         </article>
         <article className="flex min-h-[142px] items-center gap-4 rounded-[24px] border border-[#e7ecf4] bg-gradient-to-br from-white to-[#f3efff] px-5 py-4 shadow-[0_12px_30px_rgba(21,31,53,0.055)]">
-          <div className="flex h-[92px] w-[98px] shrink-0 items-center justify-center rounded-[24px] bg-[#edf7f0] text-[#075bdc]">
+          <div className="flex h-[92px] w-[98px] shrink-0 items-center justify-center rounded-[24px] bg-[#edf7f0] text-[#1D50A2]">
             <BookChallengeMark />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[17px] font-[900] text-[#151922]">북뱅 챌린지</p>
             <p className="mt-1 text-[12px] font-[650] leading-5 text-[#667085]">완독 배지 2개. 조용히 쌓이는 실무 이해를 기록합니다.</p>
-            <div className="mt-3 flex gap-1.5"><span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-[850] text-[#2f8f62]">완독 배지</span><span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-[850] text-[#7c6ce4]">학습 streak</span></div>
+            <div className="mt-3 flex gap-1.5"><span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-[850] text-[#1D50A2]">완독 배지</span><span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-[850] text-[#7c6ce4]">학습 streak</span></div>
           </div>
           <button className="h-9 shrink-0 rounded-full bg-[#1f5fe0] px-4 text-[12px] font-[850] text-white">참여</button>
         </article>
@@ -1952,7 +1952,7 @@ function VipsRequestForm({
       <div className="mt-[11px] rounded-lg border border-[#dce6f3] bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-[#dce6f3] px-6 py-4">
           <div>
-            <p className="text-[12px] font-[850] uppercase tracking-[0.08em] text-[#075bdc]">VIPS Request</p>
+            <p className="text-[12px] font-[850] uppercase tracking-[0.08em] text-[#1D50A2]">VIPS Request</p>
             <h2 className="mt-1 text-[20px] font-[850] text-[#10203f]">{config.formTitle}</h2>
             <p className="mt-1 text-[13px] font-[600] text-[#5b6b84]">{config.subtitle}</p>
           </div>
@@ -1980,7 +1980,7 @@ function VipsRequestForm({
                     <select
                       value={values.trackingMatchStatus}
                       onChange={(event) => onChange("trackingMatchStatus", event.target.value)}
-                      className="h-11 w-full rounded-md border border-[#cfdbea] bg-white px-3 text-[14px] font-[600] text-[#10203f] outline-none focus:border-[#075bdc] focus:ring-2 focus:ring-blue-100"
+                      className="h-11 w-full rounded-md border border-[#cfdbea] bg-white px-3 text-[14px] font-[600] text-[#10203f] outline-none focus:border-[#1D50A2] focus:ring-2 focus:ring-[#dbe7f5]"
                     >
                       <option value="">선택 안함</option>
                       <option value="매칭 필요">매칭 필요</option>
@@ -2004,7 +2004,7 @@ function VipsRequestForm({
                         value={values.trackingMatchMemo}
                         onChange={(event) => onChange("trackingMatchMemo", event.target.value)}
                         placeholder="확인이 필요한 출고/거래 정보를 입력해 주세요."
-                        className="h-11 w-full rounded-md border border-[#cfdbea] bg-white px-3 text-[14px] font-[600] text-[#10203f] outline-none focus:border-[#075bdc] focus:ring-2 focus:ring-blue-100"
+                        className="h-11 w-full rounded-md border border-[#cfdbea] bg-white px-3 text-[14px] font-[600] text-[#10203f] outline-none focus:border-[#1D50A2] focus:ring-2 focus:ring-[#dbe7f5]"
                       />
                     </label>
                   )}
@@ -2016,17 +2016,17 @@ function VipsRequestForm({
                   <Field label="수정사항" required value={values.revisionChange} placeholder="예: 품목명/금액/발행월 변경" error={showError("revisionChange")} onChange={(value) => onChange("revisionChange", value)} />
                   <label className="col-span-2 block">
                     <span className="mb-2 flex items-center gap-1 text-[13px] font-[800] text-[#1d2f4f]">
-                      수정이유 <span className="text-red-500">*</span>
+                      수정이유 <span className="text-[#F39945]">*</span>
                     </span>
                     <textarea
                       value={values.revisionReason}
                       onChange={(event) => onChange("revisionReason", event.target.value)}
                       placeholder="전월 계산서 수정은 월마감 및 부가세 신고 흐름에 영향을 줄 수 있으므로 사유를 구체적으로 남겨주세요."
-                      className={`h-[86px] w-full resize-none rounded-md border bg-white px-3 py-3 text-[14px] font-[600] text-[#10203f] outline-none transition placeholder:text-[#8a9bb4] focus:border-[#075bdc] focus:ring-2 focus:ring-blue-100 ${
-                        showError("revisionReason") ? "border-red-400 bg-red-50/40" : "border-[#cfdbea]"
+                      className={`h-[86px] w-full resize-none rounded-md border bg-white px-3 py-3 text-[14px] font-[600] text-[#10203f] outline-none transition placeholder:text-[#8a9bb4] focus:border-[#1D50A2] focus:ring-2 focus:ring-[#dbe7f5] ${
+                        showError("revisionReason") ? "border-[#F39945] bg-[#fff5ec]" : "border-[#cfdbea]"
                       }`}
                     />
-                    {showError("revisionReason") && <p className="mt-1 text-[12px] font-[700] text-red-600">누락된 필수 항목입니다.</p>}
+                    {showError("revisionReason") && <p className="mt-1 text-[12px] font-[700] text-[#F39945]">누락된 필수 항목입니다.</p>}
                   </label>
                 </>
               )}
@@ -2042,13 +2042,13 @@ function VipsRequestForm({
                   <Field label="입금일자" required type="date" value={values.depositDate} error={showError("depositDate")} onChange={(value) => onChange("depositDate", value)} />
                   <label className="block">
                     <span className="mb-2 flex items-center gap-1 text-[13px] font-[800] text-[#1d2f4f]">
-                      입금계좌 <span className="text-red-500">*</span>
+                      입금계좌 <span className="text-[#F39945]">*</span>
                     </span>
                     <select
                       value={values.depositAccount}
                       onChange={(event) => onChange("depositAccount", event.target.value)}
-                      className={`h-11 w-full rounded-md border bg-white px-3 text-[14px] font-[600] text-[#10203f] outline-none focus:border-[#075bdc] focus:ring-2 focus:ring-blue-100 ${
-                        showError("depositAccount") ? "border-red-400 bg-red-50/40" : "border-[#cfdbea]"
+                      className={`h-11 w-full rounded-md border bg-white px-3 text-[14px] font-[600] text-[#10203f] outline-none focus:border-[#1D50A2] focus:ring-2 focus:ring-[#dbe7f5] ${
+                        showError("depositAccount") ? "border-[#F39945] bg-[#fff5ec]" : "border-[#cfdbea]"
                       }`}
                     >
                       <option value="">입금계좌 선택</option>
@@ -2058,7 +2058,7 @@ function VipsRequestForm({
                       <option value="기업은행(01014)">기업은행(01014)</option>
                       <option value="어음발행">어음발행</option>
                     </select>
-                    {showError("depositAccount") && <p className="mt-1 text-[12px] font-[700] text-red-600">누락된 필수 항목입니다.</p>}
+                    {showError("depositAccount") && <p className="mt-1 text-[12px] font-[700] text-[#F39945]">누락된 필수 항목입니다.</p>}
                   </label>
                   <Field label="입금자명" required value={values.depositorName} placeholder="예: 홍길동" error={showError("depositorName")} onChange={(value) => onChange("depositorName", value)} />
                   <Field label="입금금액" required type="number" value={values.depositAmount} placeholder="0" error={showError("depositAmount")} onChange={(value) => onChange("depositAmount", value)} />
@@ -2069,16 +2069,16 @@ function VipsRequestForm({
                   <Field label="결제일자" required type="date" value={values.paymentDate} error={showError("paymentDate")} onChange={(value) => onChange("paymentDate", value)} />
                   <Field label="결제금액" required type="number" value={values.paymentAmount} placeholder="0" error={showError("paymentAmount")} onChange={(value) => onChange("paymentAmount", value)} />
                   <label className="block">
-                    <span className="mb-2 flex items-center gap-1 text-[13px] font-[800] text-[#1d2f4f]">카드매출전표 업로드 <span className="text-red-500">*</span></span>
+                    <span className="mb-2 flex items-center gap-1 text-[13px] font-[800] text-[#1d2f4f]">카드매출전표 업로드 <span className="text-[#F39945]">*</span></span>
                     <input
                       type="file"
                       onChange={(event) => onFileSelect(event.target.files?.[0]?.name ?? "")}
-                      className={`flex h-11 w-full items-center rounded-md border bg-white px-3 text-[13px] font-[650] text-[#10203f] outline-none file:mr-3 file:rounded file:border-0 file:bg-[#eef5ff] file:px-3 file:py-1 file:text-[12px] file:font-[800] file:text-[#075bdc] ${
-                        showError("cardReceiptName") ? "border-red-400 bg-red-50/40" : "border-[#cfdbea]"
+                      className={`flex h-11 w-full items-center rounded-md border bg-white px-3 text-[13px] font-[650] text-[#10203f] outline-none file:mr-3 file:rounded file:border-0 file:bg-[#edf4ff] file:px-3 file:py-1 file:text-[12px] file:font-[800] file:text-[#1D50A2] ${
+                        showError("cardReceiptName") ? "border-[#F39945] bg-[#fff5ec]" : "border-[#cfdbea]"
                       }`}
                     />
-                    {values.cardReceiptName && <p className="mt-1 text-[12px] font-[750] text-[#075bdc]">{values.cardReceiptName}</p>}
-                    {showError("cardReceiptName") && <p className="mt-1 text-[12px] font-[700] text-red-600">누락된 필수 항목입니다.</p>}
+                    {values.cardReceiptName && <p className="mt-1 text-[12px] font-[750] text-[#1D50A2]">{values.cardReceiptName}</p>}
+                    {showError("cardReceiptName") && <p className="mt-1 text-[12px] font-[700] text-[#F39945]">누락된 필수 항목입니다.</p>}
                   </label>
                 </>
               )}
@@ -2088,7 +2088,7 @@ function VipsRequestForm({
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-[13px] font-[850] text-[#1d2f4f]">
-                          요청 구분 <span className="text-red-500">*</span>
+                          요청 구분 <span className="text-[#F39945]">*</span>
                         </p>
                         <p className="mt-1 text-[12px] font-[650] text-[#5b6b84]">보증보험 요청 방식이 달라지는 핵심 분기값입니다.</p>
                       </div>
@@ -2114,29 +2114,29 @@ function VipsRequestForm({
                             onClick={() => onChange("guaranteeRequestType", option.value)}
                             className={`min-h-[92px] rounded-md border px-4 py-3 text-left transition ${
                               selected
-                                ? "border-[#075bdc] bg-white shadow-[inset_0_0_0_1px_#075bdc]"
+                                ? "border-[#1D50A2] bg-white shadow-[inset_0_0_0_1px_#1D50A2]"
                                 : showError("guaranteeRequestType")
-                                  ? "border-red-400 bg-red-50/40"
-                                  : "border-[#dce6f3] bg-white hover:border-blue-200"
+                                  ? "border-[#F39945] bg-[#fff5ec]"
+                                  : "border-[#dce6f3] bg-white hover:border-[rgba(29,80,162,0.22)]"
                             }`}
                           >
-                            <span className={`text-[14px] font-[850] ${selected ? "text-[#075bdc]" : "text-[#10203f]"}`}>{option.title}</span>
+                            <span className={`text-[14px] font-[850] ${selected ? "text-[#1D50A2]" : "text-[#10203f]"}`}>{option.title}</span>
                             <span className="mt-2 block text-[12px] font-[650] leading-5 text-[#5b6b84]">{option.description}</span>
                           </button>
                         );
                       })}
                     </div>
-                    {showError("guaranteeRequestType") && <p className="mt-2 text-[12px] font-[700] text-red-600">누락된 필수 항목입니다.</p>}
+                    {showError("guaranteeRequestType") && <p className="mt-2 text-[12px] font-[700] text-[#F39945]">누락된 필수 항목입니다.</p>}
                   </div>
                   <label className="block">
                     <span className="mb-2 flex items-center gap-1 text-[13px] font-[800] text-[#1d2f4f]">
-                      보증보험 종류 <span className="text-red-500">*</span>
+                      보증보험 종류 <span className="text-[#F39945]">*</span>
                     </span>
                     <select
                       value={values.guaranteeType}
                       onChange={(event) => onChange("guaranteeType", event.target.value)}
                       className={`h-11 w-full rounded-md border bg-white px-3 text-[14px] font-[600] text-[#10203f] outline-none ${
-                        showError("guaranteeType") ? "border-red-400 bg-red-50/40" : "border-[#cfdbea] focus:border-[#075bdc] focus:ring-2 focus:ring-blue-100"
+                        showError("guaranteeType") ? "border-[#F39945] bg-[#fff5ec]" : "border-[#cfdbea] focus:border-[#1D50A2] focus:ring-2 focus:ring-[#dbe7f5]"
                       }`}
                     >
                       <option value="">선택</option>
@@ -2144,7 +2144,7 @@ function VipsRequestForm({
                       <option value="하자이행">하자이행</option>
                       <option value="선금이행">선금이행</option>
                     </select>
-                    {showError("guaranteeType") && <p className="mt-1 text-[12px] font-[700] text-red-600">누락된 필수 항목입니다.</p>}
+                    {showError("guaranteeType") && <p className="mt-1 text-[12px] font-[700] text-[#F39945]">누락된 필수 항목입니다.</p>}
                   </label>
                   <Field label="보증요율" required value={values.guaranteeRate} placeholder="예: 0.8% 또는 0.8" error={showError("guaranteeRate")} onChange={(value) => onChange("guaranteeRate", value)} />
                   <Field label="보증기간 시작일" required type="date" value={values.guaranteeStartDate} error={showError("guaranteeStartDate")} onChange={(value) => onChange("guaranteeStartDate", value)} />
@@ -2153,19 +2153,19 @@ function VipsRequestForm({
                   <Field label="계약금액(VAT 포함)" required type="number" value={values.contractAmount} placeholder="0" error={showError("contractAmount")} onChange={(value) => onChange("contractAmount", value)} />
                   <label className="block">
                     <span className="mb-2 flex items-center gap-1 text-[13px] font-[800] text-[#1d2f4f]">
-                      계약서 첨부 <span className="text-red-500">*</span>
+                      계약서 첨부 <span className="text-[#F39945]">*</span>
                     </span>
                     <input
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
                       onChange={(event) => onFileSelect(event.target.files?.[0]?.name ?? "", "contractFileName")}
-                      className={`flex h-11 w-full items-center rounded-md border bg-white px-3 text-[13px] font-[650] text-[#10203f] outline-none file:mr-3 file:rounded file:border-0 file:bg-[#eef5ff] file:px-3 file:py-1 file:text-[12px] file:font-[800] file:text-[#075bdc] ${
-                        showError("contractFileName") ? "border-red-400 bg-red-50/40" : "border-[#cfdbea]"
+                      className={`flex h-11 w-full items-center rounded-md border bg-white px-3 text-[13px] font-[650] text-[#10203f] outline-none file:mr-3 file:rounded file:border-0 file:bg-[#edf4ff] file:px-3 file:py-1 file:text-[12px] file:font-[800] file:text-[#1D50A2] ${
+                        showError("contractFileName") ? "border-[#F39945] bg-[#fff5ec]" : "border-[#cfdbea]"
                       }`}
                     />
-                    {values.contractFileName && !invalidContractFile && <p className="mt-1 text-[12px] font-[750] text-[#075bdc]">업로드 완료 · {values.contractFileName}</p>}
-                    {invalidContractFile && <p className="mt-1 text-[12px] font-[700] text-red-600">PDF, JPG, JPEG, PNG 파일만 첨부할 수 있습니다.</p>}
-                    {showError("contractFileName") && <p className="mt-1 text-[12px] font-[700] text-red-600">계약서를 첨부해야 요청 제출이 가능합니다.</p>}
+                    {values.contractFileName && !invalidContractFile && <p className="mt-1 text-[12px] font-[750] text-[#1D50A2]">업로드 완료 · {values.contractFileName}</p>}
+                    {invalidContractFile && <p className="mt-1 text-[12px] font-[700] text-[#F39945]">PDF, JPG, JPEG, PNG 파일만 첨부할 수 있습니다.</p>}
+                    {showError("contractFileName") && <p className="mt-1 text-[12px] font-[700] text-[#F39945]">계약서를 첨부해야 요청 제출이 가능합니다.</p>}
                     <p className="mt-1 text-[11px] font-[650] text-[#7a8ba4]">PDF, JPG, JPEG, PNG 첨부 가능</p>
                   </label>
                 </>
@@ -2174,7 +2174,7 @@ function VipsRequestForm({
                 <>
                   <div className="col-span-2 rounded-lg border border-[#dce6f3] bg-[#f8fbff] p-4">
                     <p className="text-[13px] font-[850] text-[#1d2f4f]">
-                      요청 유형 <span className="text-red-500">*</span>
+                      요청 유형 <span className="text-[#F39945]">*</span>
                     </p>
                     <p className="mt-1 text-[12px] font-[650] text-[#5b6b84]">계산서와 트래킹 흐름을 연결하거나 잘못된 연결을 해제합니다.</p>
                     <div className="mt-3 grid grid-cols-2 gap-3">
@@ -2187,10 +2187,10 @@ function VipsRequestForm({
                             onClick={() => onChange("invoiceMatchType", option)}
                             className={`h-[66px] rounded-md border px-4 text-left transition ${
                               selected
-                                ? "border-[#075bdc] bg-white text-[#075bdc] shadow-[inset_0_0_0_1px_#075bdc]"
+                                ? "border-[#1D50A2] bg-white text-[#1D50A2] shadow-[inset_0_0_0_1px_#1D50A2]"
                                 : showError("invoiceMatchType")
-                                  ? "border-red-400 bg-red-50/40 text-[#10203f]"
-                                  : "border-[#dce6f3] bg-white text-[#10203f] hover:border-blue-200"
+                                  ? "border-[#F39945] bg-[#fff5ec] text-[#10203f]"
+                                  : "border-[#dce6f3] bg-white text-[#10203f] hover:border-[rgba(29,80,162,0.22)]"
                             }`}
                           >
                             <span className="text-[14px] font-[850]">{option}</span>
@@ -2198,23 +2198,23 @@ function VipsRequestForm({
                         );
                       })}
                     </div>
-                    {showError("invoiceMatchType") && <p className="mt-2 text-[12px] font-[700] text-red-600">누락된 필수 항목입니다.</p>}
+                    {showError("invoiceMatchType") && <p className="mt-2 text-[12px] font-[700] text-[#F39945]">누락된 필수 항목입니다.</p>}
                   </div>
                   <Field label="계산서 링크" required value={values.invoiceLink} placeholder="계산서 링크 입력" error={showError("invoiceLink")} onChange={(value) => onChange("invoiceLink", value)} />
                   <Field label="트래킹 링크" required value={values.trackingLink} placeholder="트래킹 링크 입력" error={showError("trackingLink")} onChange={(value) => onChange("trackingLink", value)} />
                   <label className="col-span-2 block">
                     <span className="mb-2 flex items-center gap-1 text-[13px] font-[800] text-[#1d2f4f]">
-                      요청 사유 <span className="text-red-500">*</span>
+                      요청 사유 <span className="text-[#F39945]">*</span>
                     </span>
                     <textarea
                       value={values.matchReason}
                       onChange={(event) => onChange("matchReason", event.target.value)}
                       placeholder="매칭 또는 해제가 필요한 사유를 입력해 주세요."
-                      className={`h-[86px] w-full resize-none rounded-md border bg-white px-3 py-3 text-[14px] font-[600] text-[#10203f] outline-none transition placeholder:text-[#8a9bb4] focus:border-[#075bdc] focus:ring-2 focus:ring-blue-100 ${
-                        showError("matchReason") ? "border-red-400 bg-red-50/40" : "border-[#cfdbea]"
+                      className={`h-[86px] w-full resize-none rounded-md border bg-white px-3 py-3 text-[14px] font-[600] text-[#10203f] outline-none transition placeholder:text-[#8a9bb4] focus:border-[#1D50A2] focus:ring-2 focus:ring-[#dbe7f5] ${
+                        showError("matchReason") ? "border-[#F39945] bg-[#fff5ec]" : "border-[#cfdbea]"
                       }`}
                     />
-                    {showError("matchReason") && <p className="mt-1 text-[12px] font-[700] text-red-600">누락된 필수 항목입니다.</p>}
+                    {showError("matchReason") && <p className="mt-1 text-[12px] font-[700] text-[#F39945]">누락된 필수 항목입니다.</p>}
                   </label>
                 </>
               )}
@@ -2222,7 +2222,7 @@ function VipsRequestForm({
                 <>
                   <div className="col-span-2 rounded-lg border border-[#dce6f3] bg-[#f8fbff] p-4">
                     <p className="text-[13px] font-[850] text-[#1d2f4f]">
-                      요청 유형 <span className="text-red-500">*</span>
+                      요청 유형 <span className="text-[#F39945]">*</span>
                     </p>
                     <p className="mt-1 text-[12px] font-[650] text-[#5b6b84]">수금과 트래킹 또는 세금계산서 흐름을 연결하거나 잘못된 연결을 해제합니다.</p>
                     <div className="mt-3 grid grid-cols-2 gap-3">
@@ -2235,10 +2235,10 @@ function VipsRequestForm({
                             onClick={() => onChange("collectionMatchType", option)}
                             className={`h-[66px] rounded-md border px-4 text-left transition ${
                               selected
-                                ? "border-[#075bdc] bg-white text-[#075bdc] shadow-[inset_0_0_0_1px_#075bdc]"
+                                ? "border-[#1D50A2] bg-white text-[#1D50A2] shadow-[inset_0_0_0_1px_#1D50A2]"
                                 : showError("collectionMatchType")
-                                  ? "border-red-400 bg-red-50/40 text-[#10203f]"
-                                  : "border-[#dce6f3] bg-white text-[#10203f] hover:border-blue-200"
+                                  ? "border-[#F39945] bg-[#fff5ec] text-[#10203f]"
+                                  : "border-[#dce6f3] bg-white text-[#10203f] hover:border-[rgba(29,80,162,0.22)]"
                             }`}
                           >
                             <span className="text-[14px] font-[850]">{option}</span>
@@ -2246,24 +2246,24 @@ function VipsRequestForm({
                         );
                       })}
                     </div>
-                    {showError("collectionMatchType") && <p className="mt-2 text-[12px] font-[700] text-red-600">누락된 필수 항목입니다.</p>}
+                    {showError("collectionMatchType") && <p className="mt-2 text-[12px] font-[700] text-[#F39945]">누락된 필수 항목입니다.</p>}
                   </div>
                   <Field label="수금 링크" required value={values.collectionLink} placeholder="수금 링크 입력" error={showError("collectionLink")} onChange={(value) => onChange("collectionLink", value)} />
                   <Field label="트래킹 URL" required value={values.collectionTrackingUrl} placeholder="트래킹 URL 입력" error={showError("collectionTrackingUrl")} onChange={(value) => onChange("collectionTrackingUrl", value)} />
                   <Field label="세금계산서 링크" required value={values.collectionInvoiceLink} placeholder="세금계산서 링크 입력" error={showError("collectionInvoiceLink")} onChange={(value) => onChange("collectionInvoiceLink", value)} />
                   <label className="col-span-2 block">
                     <span className="mb-2 flex items-center gap-1 text-[13px] font-[800] text-[#1d2f4f]">
-                      요청 사유 <span className="text-red-500">*</span>
+                      요청 사유 <span className="text-[#F39945]">*</span>
                     </span>
                     <textarea
                       value={values.matchReason}
                       onChange={(event) => onChange("matchReason", event.target.value)}
                       placeholder="매칭 또는 해제가 필요한 사유를 입력해 주세요."
-                      className={`h-[86px] w-full resize-none rounded-md border bg-white px-3 py-3 text-[14px] font-[600] text-[#10203f] outline-none transition placeholder:text-[#8a9bb4] focus:border-[#075bdc] focus:ring-2 focus:ring-blue-100 ${
-                        showError("matchReason") ? "border-red-400 bg-red-50/40" : "border-[#cfdbea]"
+                      className={`h-[86px] w-full resize-none rounded-md border bg-white px-3 py-3 text-[14px] font-[600] text-[#10203f] outline-none transition placeholder:text-[#8a9bb4] focus:border-[#1D50A2] focus:ring-2 focus:ring-[#dbe7f5] ${
+                        showError("matchReason") ? "border-[#F39945] bg-[#fff5ec]" : "border-[#cfdbea]"
                       }`}
                     />
-                    {showError("matchReason") && <p className="mt-1 text-[12px] font-[700] text-red-600">누락된 필수 항목입니다.</p>}
+                    {showError("matchReason") && <p className="mt-1 text-[12px] font-[700] text-[#F39945]">누락된 필수 항목입니다.</p>}
                   </label>
                 </>
               )}
@@ -2273,16 +2273,16 @@ function VipsRequestForm({
             </div>
 
             <label className="mt-5 block">
-              <span className="mb-2 flex items-center gap-1 text-[13px] font-[800] text-[#1d2f4f]">비고 {required("note") && <span className="text-red-500">*</span>}</span>
+              <span className="mb-2 flex items-center gap-1 text-[13px] font-[800] text-[#1d2f4f]">비고 {required("note") && <span className="text-[#F39945]">*</span>}</span>
               <textarea
                 value={values.note}
                 onChange={(event) => onChange("note", event.target.value)}
                 placeholder="VIPS팀 확인이 필요한 내용을 입력해 주세요."
-                className={`h-[96px] w-full resize-none rounded-md border bg-white px-3 py-3 text-[14px] font-[600] text-[#10203f] outline-none transition placeholder:text-[#8a9bb4] focus:border-[#075bdc] focus:ring-2 focus:ring-blue-100 ${
-                  showError("note") ? "border-red-400 bg-red-50/40" : "border-[#cfdbea]"
+                className={`h-[96px] w-full resize-none rounded-md border bg-white px-3 py-3 text-[14px] font-[600] text-[#10203f] outline-none transition placeholder:text-[#8a9bb4] focus:border-[#1D50A2] focus:ring-2 focus:ring-[#dbe7f5] ${
+                  showError("note") ? "border-[#F39945] bg-[#fff5ec]" : "border-[#cfdbea]"
                 }`}
               />
-              {showError("note") && <p className="mt-1 text-[12px] font-[700] text-red-600">누락된 필수 항목입니다.</p>}
+              {showError("note") && <p className="mt-1 text-[12px] font-[700] text-[#F39945]">누락된 필수 항목입니다.</p>}
             </label>
           </div>
 
@@ -2291,9 +2291,9 @@ function VipsRequestForm({
             <div className="mt-4 space-y-3 text-[13px]">
               <div className="flex justify-between gap-3"><span className="text-[#5b6b84]">요청종류</span><span className="max-w-[150px] truncate font-[800] text-[#10203f]">{config.title}</span></div>
               <div className="flex justify-between gap-3"><span className="text-[#5b6b84]">업체명</span><span className="max-w-[150px] truncate font-[800] text-[#10203f]">{values.companyName || "-"}</span></div>
-              <div className="flex justify-between gap-3"><span className="text-[#5b6b84]">상태</span><span className="font-[850] text-[#075bdc]">요청접수</span></div>
+              <div className="flex justify-between gap-3"><span className="text-[#5b6b84]">상태</span><span className="font-[850] text-[#1D50A2]">요청접수</span></div>
               {submitted && !isValid && (
-                <div className="mt-5 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[12px] font-[800] text-red-600">
+                <div className="mt-5 rounded-md border border-[rgba(243,153,69,0.30)] bg-[#fff5ec] px-3 py-2 text-[12px] font-[800] text-[#F39945]">
                   {kind === "guaranteeInsurance" && showError("contractFileName")
                     ? "계약서를 첨부해야 요청 제출이 가능합니다."
                     : invalidContractFile
@@ -2304,7 +2304,7 @@ function VipsRequestForm({
             </div>
             <div className="mt-6">
               <div onClick={!isValid ? onInvalidSubmit : undefined}>
-                <button disabled={!isValid} onClick={onSubmit} className={`h-11 w-full rounded-md text-[14px] font-[850] ${isValid ? "bg-[#075bdc] text-white shadow-sm" : "pointer-events-none cursor-not-allowed bg-[#d7e1ef] text-[#74849b]"}`}>
+                <button disabled={!isValid} onClick={onSubmit} className={`h-11 w-full rounded-md text-[14px] font-[850] ${isValid ? "bg-[#1D50A2] text-white shadow-sm" : "pointer-events-none cursor-not-allowed bg-[#d7e1ef] text-[#74849b]"}`}>
                   제출
                 </button>
               </div>
@@ -2541,3 +2541,5 @@ export default function HomePage() {
     </Suspense>
   );
 }
+
+

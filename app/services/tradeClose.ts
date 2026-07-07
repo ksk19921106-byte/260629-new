@@ -1,4 +1,4 @@
-export type TradeCloseRecord = {
+﻿export type TradeCloseRecord = {
   id: string;
   salesOwner: string;
   customerName: string;
@@ -153,3 +153,4 @@ export async function fetchTradeCloseDashboard(user?: string): Promise<TradeClos
   }
   return requestJson<TradeCloseDashboard & { currentUser?: TradeCloseUserSummary }>(url);
 }
+

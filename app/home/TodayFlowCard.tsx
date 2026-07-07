@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 const flowItems = [
-  ["수정세금계산서 재확인", "2건", "text-[#ef4444]"],
-  ["카드전표 누락 보완", "1건", "text-[#f97316]"],
-  ["수금매칭 보류 점검", "1건", "text-[#2563eb]"]
+  ["수정세금계산서 재확인", "2건", "text-[#F39945]"],
+  ["카드전표 누락 보완", "1건", "text-[#F39945]"],
+  ["수금매칭 보류 점검", "1건", "text-[#1D50A2]"]
 ];
 
 export function TodayFlowCard() {
@@ -25,3 +25,4 @@ export function TodayFlowCard() {
     </section>
   );
 }
+

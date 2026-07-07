@@ -1,13 +1,13 @@
-"use client";
+﻿"use client";
 
 import { AlertTriangle, CalendarCheck, ClipboardList, WalletCards } from "lucide-react";
 import { summary } from "./homeData";
 
 const kpis = [
-  { label: "오늘 할 일", value: `${summary.totalNeedCheckCount}건`, color: "text-[#ef4444]", bg: "bg-[#fff0ef]", icon: ClipboardList },
-  { label: "월마감 이슈", value: `${summary.monthlyNeedCount}건`, color: "text-[#f97316]", bg: "bg-[#fff4e8]", icon: CalendarCheck },
-  { label: "수금 이슈", value: `${summary.collectionNeedCount}건`, color: "text-[#2563eb]", bg: "bg-[#eef6ff]", icon: WalletCards },
-  { label: "반려/지연", value: `${summary.delayedRequestCount}건`, color: "text-[#ef4444]", bg: "bg-[#fff0ef]", icon: AlertTriangle }
+  { label: "오늘 할 일", value: `${summary.totalNeedCheckCount}건`, color: "text-[#F39945]", bg: "bg-[#fff5ec]", icon: ClipboardList },
+  { label: "월마감 이슈", value: `${summary.monthlyNeedCount}건`, color: "text-[#F39945]", bg: "bg-[#fff4e8]", icon: CalendarCheck },
+  { label: "수금 이슈", value: `${summary.collectionNeedCount}건`, color: "text-[#1D50A2]", bg: "bg-[#edf4ff]", icon: WalletCards },
+  { label: "반려/지연", value: `${summary.delayedRequestCount}건`, color: "text-[#F39945]", bg: "bg-[#fff5ec]", icon: AlertTriangle }
 ];
 
 export function SummaryKpiStrip() {
@@ -29,3 +29,4 @@ export function SummaryKpiStrip() {
     </div>
   );
 }
+

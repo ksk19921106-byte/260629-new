@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 
-export type TestUserName = "Sally" | "Tommy_G" | "Morgan" | "Harvey" | "Eric" | "Tommy";
+export type TestUserName = "Sally" | "Vincent" | "Gavin" | "Tommy_G" | "Morgan" | "Harvey" | "Eric" | "Tommy";
 export type UserRole = "SALES" | "VIPS";
 export type AccessRole = "admin" | "manager" | "sales";
 
@@ -17,11 +17,13 @@ export type TestUser = {
 
 export const TEST_USERS: TestUser[] = [
   { name: "Sally", email: "sally@icbanq.com", team: "VIPS팀", role: "VIPS", accessRole: "admin", salesName: "Sally" },
+  { name: "Vincent", email: "vincent@icbanq.com", team: "VIPS팀", role: "VIPS", accessRole: "admin", salesName: "Vincent" },
+  { name: "Gavin", email: "gavin@icbanq.com", team: "VIPS팀", role: "VIPS", accessRole: "admin", salesName: "Gavin" },
   { name: "Tommy_G", email: "tommy.g@icbanq.com", team: "영업1팀", role: "SALES", accessRole: "manager", salesName: "Tommy_G" },
   { name: "Morgan", email: "morgan@icbanq.com", team: "영업1팀", role: "SALES", accessRole: "sales", salesName: "Morgan" },
   { name: "Harvey", email: "harvey@icbanq.com", team: "영업1팀", role: "SALES", accessRole: "sales", salesName: "Harvey" },
   { name: "Eric", email: "eric@icbanq.com", team: "영업1팀", role: "SALES", accessRole: "sales", salesName: "Eric" },
-  { name: "Tommy", email: "tommy@icbanq.com", team: "영업3팀", role: "SALES", accessRole: "sales", salesName: "Tommy" }
+  { name: "Tommy", email: "tommy@icbanq.com", team: "영업3팀", role: "SALES", accessRole: "admin", salesName: "Tommy" }
 ];
 
 const STORAGE_KEY = "icbanq.ops.selectedUser";
@@ -95,3 +97,4 @@ export function useSelectedUser() {
     users: TEST_USERS
   };
 }
+

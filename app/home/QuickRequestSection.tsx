@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { RequestKind } from "../services/formValidation";
 import { quickRequests } from "./homeData";
@@ -11,7 +11,7 @@ export function QuickRequestSection({ onSelectRequestKind }: { onSelectRequestKi
           <h2 className="text-[16px] font-[950] text-[#111827]">VIPS팀 요청 바로가기</h2>
           <p className="mt-0.5 text-[11px] font-[750] text-[#64748b]">필요한 요청만 빠르게 시작합니다.</p>
         </div>
-        <button onClick={() => (window.location.href = "/requests")} className="h-8 rounded-full border border-[#e9eef6] bg-[#f8fbff] px-3 text-[11px] font-[900] text-[#2563eb]">
+        <button onClick={() => (window.location.href = "/requests")} className="h-8 rounded-full border border-[#e9eef6] bg-[#f8fbff] px-3 text-[11px] font-[900] text-[#1D50A2]">
           전체 메뉴
         </button>
       </div>
@@ -23,7 +23,7 @@ export function QuickRequestSection({ onSelectRequestKind }: { onSelectRequestKi
             onClick={() => onSelectRequestKind(item.kind)}
             className="flex h-[72px] min-w-0 items-center gap-2 overflow-hidden rounded-[16px] border border-[#edf2f8] bg-[#fbfcff] px-3 text-left shadow-[0_4px_10px_rgba(15,23,42,0.022)] transition hover:-translate-y-0.5 hover:border-[#cbd5e1]"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#eef5ff] text-[#2563eb]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#edf4ff] text-[#1D50A2]">
               <item.icon size={18} />
             </span>
             <span className="min-w-0 whitespace-pre-line text-[12px] font-[900] leading-[15px] text-[#111827]">{item.label}</span>
@@ -33,3 +33,4 @@ export function QuickRequestSection({ onSelectRequestKind }: { onSelectRequestKi
     </section>
   );
 }
+

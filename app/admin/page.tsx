@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { BarChart3, CheckCircle2, FileText, RefreshCw, Save, Search, ShieldCheck, UserX } from "lucide-react";
@@ -12,15 +12,15 @@ import { fetchRequests, updateRequest, type RequestItem, type RequestStatus } fr
 const statusOptions: RequestStatus[] = ["요청접수", "VIPS팀 확인중", "완료", "반려"];
 
 const statusStyles: Record<RequestStatus, string> = {
-  요청접수: "bg-slate-100 text-slate-600 border-slate-200",
-  "VIPS팀 확인중": "bg-blue-50 text-[#075bdc] border-blue-200",
-  완료: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  반려: "bg-red-50 text-red-600 border-red-200"
+  요청접수: "ops-status-muted",
+  "VIPS팀 확인중": "ops-status-info",
+  완료: "ops-status-info",
+  반려: "ops-status-attention"
 };
 
 const blockStatusStyles: Record<MonthEndGateStatus, string> = {
-  OK: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  BLOCK: "bg-red-50 text-red-600 border-red-200"
+  OK: "ops-status-info",
+  BLOCK: "ops-status-attention"
 };
 
 type DraftMap = Record<string, { status: RequestStatus; result: string }>;
@@ -132,7 +132,7 @@ export default function AdminPage() {
         <section className="rounded-lg border border-[#dce6f3] bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="flex items-center gap-2 text-[12px] font-[800] uppercase tracking-[0.08em] text-[#075bdc]">
+              <p className="flex items-center gap-2 text-[12px] font-[800] uppercase tracking-[0.08em] text-[#1D50A2]">
                 <ShieldCheck size={16} />
                 VIPS Operation
               </p>
@@ -141,7 +141,7 @@ export default function AdminPage() {
             </div>
             <div className="flex items-center gap-2">
               {message && (
-                <span className="flex h-9 items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 text-[12px] font-[750] text-emerald-700">
+                <span className="flex h-9 items-center gap-2 rounded-md border border-[rgba(29,80,162,0.18)] bg-[#edf4ff] px-3 text-[12px] font-[750] text-[#1D50A2]">
                   <CheckCircle2 size={15} />
                   {message}
                 </span>
@@ -176,7 +176,7 @@ export default function AdminPage() {
           <div className="mt-5 grid grid-cols-[1fr_1.2fr] gap-4">
             <section className="rounded-md border border-[#dce6f3] bg-white p-4">
               <p className="flex items-center gap-2 text-[14px] font-[850] text-[#10203f]">
-                <BarChart3 size={17} className="text-[#075bdc]" />
+                <BarChart3 size={17} className="text-[#1D50A2]" />
                 요청 상태 차트
               </p>
               <div className="mt-4 space-y-3">
@@ -187,7 +187,7 @@ export default function AdminPage() {
                       <span>{item.count}건</span>
                     </div>
                     <div className="h-2 rounded-full bg-[#edf3fb]">
-                      <div className="h-2 rounded-full bg-[#075bdc]" style={{ width: `${items.length ? Math.max((item.count / items.length) * 100, 8) : 0}%` }} />
+                      <div className="h-2 rounded-full bg-[#1D50A2]" style={{ width: `${items.length ? Math.max((item.count / items.length) * 100, 8) : 0}%` }} />
                     </div>
                   </div>
                 ))}
@@ -199,7 +199,7 @@ export default function AdminPage() {
               <div className="mt-4 grid grid-cols-3 gap-3">
                 {kanbanGroups.map((group) => (
                   <div key={group.title} className="min-h-[120px] rounded-md bg-[#f8fbff] p-3">
-                    <p className="text-[12px] font-[850] text-[#075bdc]">{group.title}</p>
+                    <p className="text-[12px] font-[850] text-[#1D50A2]">{group.title}</p>
                     <div className="mt-3 space-y-2">
                       {group.items.slice(0, 3).map((item) => (
                         <button key={item.id} onClick={() => setDetailRequest(item)} className="w-full rounded border border-[#dce6f3] bg-white px-3 py-2 text-left text-[12px] font-[700] text-[#10203f]">
@@ -218,14 +218,14 @@ export default function AdminPage() {
         <section className="rounded-lg border border-[#dce6f3] bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-[#dce6f3] px-6 py-5">
             <div>
-              <p className="flex items-center gap-2 text-[12px] font-[800] uppercase tracking-[0.08em] text-[#075bdc]">
+              <p className="flex items-center gap-2 text-[12px] font-[800] uppercase tracking-[0.08em] text-[#1D50A2]">
                 <FileText size={16} />
                 Request Status Management
               </p>
               <h2 className="mt-1 text-[20px] font-[850] tracking-[-0.01em] text-[#10203f]">요청 상태 관리</h2>
             </div>
             <div className="flex h-10 w-[360px] items-center gap-2 rounded-md border border-[#cfdbea] bg-white px-3">
-              <Search size={17} className="text-[#075bdc]" />
+              <Search size={17} className="text-[#1D50A2]" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -282,14 +282,14 @@ export default function AdminPage() {
                       onClick={(event) => event.stopPropagation()}
                       onChange={(event) => handleDraftChange(item.id, { result: event.target.value })}
                       placeholder="예: TX-20260518-003 발행 완료"
-                      className="mr-3 h-9 rounded-md border border-[#cfdbea] bg-white px-3 text-[13px] font-[650] text-[#10203f] outline-none focus:border-[#075bdc] focus:ring-2 focus:ring-blue-100"
+                      className="mr-3 h-9 rounded-md border border-[#cfdbea] bg-white px-3 text-[13px] font-[650] text-[#10203f] outline-none focus:border-[#1D50A2] focus:ring-2 focus:ring-[#dbe7f5]"
                     />
                     <button
                       onClick={(event) => {
                         event.stopPropagation();
                         handleSave(item);
                       }}
-                      className="mx-auto flex h-9 w-[72px] items-center justify-center gap-1 rounded-md bg-[#075bdc] text-[12px] font-[800] text-white"
+                      className="mx-auto flex h-9 w-[72px] items-center justify-center gap-1 rounded-md bg-[#1D50A2] text-[12px] font-[800] text-white"
                     >
                       <Save size={14} />
                       저장
@@ -304,7 +304,7 @@ export default function AdminPage() {
         <section className="rounded-lg border border-[#dce6f3] bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-[#dce6f3] px-6 py-5">
             <div>
-              <p className="flex items-center gap-2 text-[12px] font-[800] uppercase tracking-[0.08em] text-[#075bdc]">
+              <p className="flex items-center gap-2 text-[12px] font-[800] uppercase tracking-[0.08em] text-[#1D50A2]">
                 <UserX size={16} />
                 Month-End Gatekeeper
               </p>
@@ -337,7 +337,7 @@ export default function AdminPage() {
                       data-block-user={user}
                       onClick={() => handleBlockChange(user, "BLOCK")}
                       disabled={status === "BLOCK"}
-                      className={`h-9 rounded-md px-4 text-[12px] font-[850] ${status === "BLOCK" ? "cursor-not-allowed bg-[#d7e1ef] text-[#74849b]" : "bg-red-600 text-white"}`}
+                      className={`h-9 rounded-md px-4 text-[12px] font-[850] ${status === "BLOCK" ? "cursor-not-allowed bg-[#d7e1ef] text-[#74849b]" : "bg-[#F39945] text-white"}`}
                     >
                       차단
                     </button>
@@ -346,7 +346,7 @@ export default function AdminPage() {
                       data-block-user={user}
                       onClick={() => handleBlockChange(user, "OK")}
                       disabled={status === "OK"}
-                      className={`h-9 rounded-md px-4 text-[12px] font-[850] ${status === "OK" ? "cursor-not-allowed bg-[#d7e1ef] text-[#74849b]" : "bg-[#075bdc] text-white"}`}
+                      className={`h-9 rounded-md px-4 text-[12px] font-[850] ${status === "OK" ? "cursor-not-allowed bg-[#d7e1ef] text-[#74849b]" : "bg-[#1D50A2] text-white"}`}
                     >
                       차단해제
                     </button>
@@ -360,8 +360,8 @@ export default function AdminPage() {
               __html: `
                 (() => {
                   const statusClass = {
-                    OK: "w-fit rounded-full border px-3 py-1 text-[12px] font-[850] bg-emerald-50 text-emerald-700 border-emerald-200",
-                    BLOCK: "w-fit rounded-full border px-3 py-1 text-[12px] font-[850] bg-red-50 text-red-600 border-red-200"
+                    OK: "w-fit rounded-full border px-3 py-1 text-[12px] font-[850] ops-status-info",
+                    BLOCK: "w-fit rounded-full border px-3 py-1 text-[12px] font-[850] ops-status-attention"
                   };
                   const applyStatus = (user, status) => {
                     const statusTarget = document.querySelector('[data-block-status="' + user + '"]');
@@ -376,8 +376,8 @@ export default function AdminPage() {
                       button.className = disabled
                         ? "h-9 rounded-md px-4 text-[12px] font-[850] cursor-not-allowed bg-[#d7e1ef] text-[#74849b]"
                         : action === "BLOCK"
-                          ? "h-9 rounded-md px-4 text-[12px] font-[850] bg-red-600 text-white"
-                          : "h-9 rounded-md px-4 text-[12px] font-[850] bg-[#075bdc] text-white";
+                          ? "h-9 rounded-md px-4 text-[12px] font-[850] bg-[#F39945] text-white"
+                          : "h-9 rounded-md px-4 text-[12px] font-[850] bg-[#1D50A2] text-white";
                     });
                   };
                   const bindButtons = () => {
@@ -440,3 +440,4 @@ export default function AdminPage() {
     </OpsShell>
   );
 }
+

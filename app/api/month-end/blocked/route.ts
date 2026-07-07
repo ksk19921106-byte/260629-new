@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+﻿import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import type { MonthEndGateStatus } from "../../../services/monthEndGate";
@@ -78,3 +78,4 @@ export async function PATCH(request: Request) {
     }
   });
 }
+

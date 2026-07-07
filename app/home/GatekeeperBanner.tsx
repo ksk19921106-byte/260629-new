@@ -1,12 +1,12 @@
-"use client";
+﻿"use client";
 
 import { AlertTriangle } from "lucide-react";
 
 export function GatekeeperBanner() {
   return (
-    <section className="flex h-[54px] min-w-0 items-center overflow-hidden rounded-[18px] border border-[#fecaca] bg-[#fff1f2] px-4 shadow-[0_8px_18px_rgba(239,68,68,0.055)]">
+    <section className="flex h-[54px] min-w-0 items-center overflow-hidden rounded-[18px] border border-[#fecaca] bg-[#fff5ec] px-4 shadow-[0_8px_18px_rgba(239,68,68,0.055)]">
       <div className="flex min-w-0 items-center gap-3">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-[#ef4444] shadow-sm">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-[#F39945] shadow-sm">
           <AlertTriangle size={17} />
         </span>
         <div className="min-w-0">
@@ -17,3 +17,4 @@ export function GatekeeperBanner() {
     </section>
   );
 }
+

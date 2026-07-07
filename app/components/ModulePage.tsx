@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+﻿import type { ReactNode } from "react";
 import { OpsShell } from "./OpsShell";
 
 export function ModulePage({
@@ -14,17 +14,17 @@ export function ModulePage({
 }) {
   return (
     <OpsShell>
-      <section className="min-w-0 px-6 py-5">
-        <div className="ops-card min-w-0 p-5">
-          <div className="flex min-h-[72px] items-center justify-between gap-4 border-b border-[#eef2f7] pb-4">
+      <section className="min-w-0 px-8 py-7">
+        <div className="mx-auto min-w-0 max-w-[1540px]">
+          <div className="mb-5 flex min-h-[76px] items-center justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#2563eb]">{eyebrow}</p>
-              <h1 className="mt-1 truncate text-[24px] font-[950] tracking-[-0.02em] text-[#111827]">{title}</h1>
-              <p className="mt-1 text-[13px] font-[700] leading-5 text-[#64748b]">{description}</p>
+              <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#1D50A2]">{eyebrow}</p>
+              <h1 className="mt-1 truncate text-[28px] font-[950] tracking-[-0.03em] text-[#10203f]">{title}</h1>
+              <p className="mt-1 text-[13px] font-[750] leading-5 text-[#50627d]">{description}</p>
             </div>
           </div>
           {children ?? (
-            <div className="mt-5 rounded-[16px] border border-dashed border-[#c6d4e9] bg-[#f8fbff] px-5 py-8 text-[13px] font-[750] text-[#64748b]">
+            <div className="rounded-[22px] border border-dashed border-[#c6d4e9] bg-white px-5 py-8 text-[13px] font-[750] text-[#64748b] shadow-[0_14px_38px_rgba(15,23,42,0.055)]">
               이 영역은 이후 운영 기능 확장을 위한 기본 화면입니다.
             </div>
           )}
@@ -33,3 +33,4 @@ export function ModulePage({
     </OpsShell>
   );
 }
+

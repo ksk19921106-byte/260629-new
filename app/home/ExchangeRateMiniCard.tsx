@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 export type MiniExchangeRate = {
   rate?: number;
@@ -28,3 +28,4 @@ export function ExchangeRateMiniCard({ exchange }: { exchange: MiniExchangeRate 
     </section>
   );
 }
+

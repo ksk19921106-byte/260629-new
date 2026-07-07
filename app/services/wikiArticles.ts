@@ -1,4 +1,4 @@
-export type WikiCategory = "iki" | "ops" | "tax" | "faq" | "mistake" | "glossary";
+﻿export type WikiCategory = "iki" | "ops" | "tax" | "faq" | "mistake" | "glossary";
 
 export type WikiArticle = {
   id: string;
@@ -677,3 +677,4 @@ function completeRelated(id: string, current: string[]) {
   const merged = [...current, ...fallback].filter((item) => item !== id);
   return Array.from(new Set(merged)).slice(0, 5);
 }
+

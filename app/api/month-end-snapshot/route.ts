@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "fs/promises";
+﻿import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import type { ClosingSnapshot } from "../../services/closingPasteParser";
@@ -39,3 +39,4 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ ok: true, snapshot });
 }
+

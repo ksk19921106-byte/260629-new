@@ -55,6 +55,7 @@ export type RequestFormValues = {
   collectionInvoiceLink: string;
   monthEndCase: string;
   note: string;
+  assignedOwners: string;
 };
 
 export type RequestFormField = keyof RequestFormValues;
@@ -190,7 +191,8 @@ export const initialRequestFormValues: RequestFormValues = {
   collectionTrackingUrl: "",
   collectionInvoiceLink: "",
   monthEndCase: "",
-  note: ""
+  note: "",
+  assignedOwners: ""
 };
 
 export function validateRequestForm(kind: RequestKind, values: RequestFormValues) {

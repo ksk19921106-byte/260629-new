@@ -1,6 +1,14 @@
-import type { RequestFormValues, RequestKind } from "./formValidation";
+﻿import type { RequestFormValues, RequestKind } from "./formValidation";
 
 export type RequestStatus = "요청접수" | "VIPS팀 확인중" | "완료" | "반려";
+
+export type RequestAttachmentPreview = {
+  field: string;
+  label: string;
+  name: string;
+  type: string;
+  dataUrl: string;
+};
 
 export type RequestItem = {
   id: string;
@@ -20,6 +28,8 @@ export type RequestItem = {
   result: string;
   processor: string;
   processedAt: string;
+  assignedOwners?: string[];
+  attachments?: RequestAttachmentPreview[];
   details?: Record<string, string>;
 };
 
@@ -82,3 +92,4 @@ export async function updateRequest(payload: RequestUpdatePayload): Promise<Requ
   const data = (await response.json()) as { item: RequestItem };
   return data.item;
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
@@ -138,10 +138,10 @@ const titleOverrides: Record<string, string> = {
 };
 
 const toneStyle = {
-  blue: "bg-[#eef5ff] text-[#2563eb]",
-  orange: "bg-[#fff7ed] text-[#f97316]",
-  red: "bg-[#fff1f2] text-[#ef4444]",
-  green: "bg-[#eefdf4] text-[#16a34a]"
+  blue: "bg-[#edf4ff] text-[#1D50A2]",
+  orange: "bg-[#fff5ec] text-[#F39945]",
+  red: "bg-[#fff5ec] text-[#F39945]",
+  green: "bg-[#edf4ff] text-[#1D50A2]"
 };
 
 function textOf(article: WikiArticle) {
@@ -278,11 +278,11 @@ function SolutionArticle({ article, onPick }: { article: WikiArticle; onPick: (a
     <article className="ops-card min-w-0 p-5">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#eef2f7] pb-4">
         <div className="min-w-0">
-          <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#2563eb]">FAST SOLUTION</p>
+          <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#1D50A2]">FAST SOLUTION</p>
           <h2 className="mt-1 text-[24px] font-[950] tracking-[-0.02em] text-[#111827]">{displayTitle(article)}</h2>
           <p className="mt-1 max-w-[760px] text-[13px] font-[750] leading-5 text-[#64748b]">{article.description}</p>
         </div>
-        <span className="rounded-full bg-[#eef5ff] px-3 py-1.5 text-[12px] font-[950] text-[#2563eb]">{wikiCategoryLabels[article.category]}</span>
+        <span className="rounded-full bg-[#edf4ff] px-3 py-1.5 text-[12px] font-[950] text-[#1D50A2]">{wikiCategoryLabels[article.category]}</span>
       </div>
 
       <div className="mt-5 grid gap-5">
@@ -311,9 +311,9 @@ function SolutionArticle({ article, onPick }: { article: WikiArticle; onPick: (a
           </div>
         </section>
 
-        <section className="rounded-[18px] border border-[#fed7aa] bg-[#fff7ed] p-4">
+        <section className="rounded-[18px] border border-[#f7c999] bg-[#fff5ec] p-4">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-[#f97316]" />
+            <AlertTriangle className="h-5 w-5 text-[#F39945]" />
             <h3 className="text-[15px] font-[950] text-[#111827]">가장 많이 막히는 경우</h3>
           </div>
           <div className="mt-3 grid gap-2">
@@ -334,13 +334,13 @@ function SolutionArticle({ article, onPick }: { article: WikiArticle; onPick: (a
                 key={item.id}
                 type="button"
                 onClick={() => onPick(item)}
-                className="rounded-full border border-[#dbe7f5] bg-white px-3 py-2 text-[12px] font-[900] text-[#334155] transition hover:border-[#2563eb] hover:text-[#2563eb]"
+                className="rounded-full border border-[#dbe7f5] bg-white px-3 py-2 text-[12px] font-[900] text-[#334155] transition hover:border-[#1D50A2] hover:text-[#1D50A2]"
               >
                 {displayTitle(item)}
               </button>
             ))}
             {article.relatedRoutes?.map((route) => (
-              <Link key={route.path} href={route.path} className="rounded-full bg-[#eef5ff] px-3 py-2 text-[12px] font-[950] text-[#2563eb] transition hover:bg-[#dbeafe]">
+              <Link key={route.path} href={route.path} className="rounded-full bg-[#edf4ff] px-3 py-2 text-[12px] font-[950] text-[#1D50A2] transition hover:bg-[#dbeafe]">
                 {route.label}
               </Link>
             ))}
@@ -375,11 +375,11 @@ export default function GuidePage() {
     >
       <div className="mt-5 space-y-4">
         <section className="ops-card overflow-hidden p-5">
-          <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#2563eb]">SEARCH FIRST</p>
+          <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#1D50A2]">SEARCH FIRST</p>
           <h2 className="mt-1 text-[28px] font-[950] tracking-[-0.03em] text-[#111827]">무엇이 막혔나요?</h2>
           <p className="mt-1 text-[13px] font-[750] leading-5 text-[#64748b]">기능 이름을 몰라도 상황을 입력하면 바로 해결 문서를 찾아드립니다.</p>
           <div className="mt-4 flex min-h-[52px] items-center gap-3 rounded-full border border-[#dbe7f5] bg-white px-5 shadow-[0_10px_28px_rgba(37,99,235,0.08)]">
-            <Search className="h-5 w-5 shrink-0 text-[#2563eb]" />
+            <Search className="h-5 w-5 shrink-0 text-[#1D50A2]" />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -393,7 +393,7 @@ export default function GuidePage() {
                 key={chip}
                 type="button"
                 onClick={() => setQuery(chip)}
-                className="rounded-full bg-[#f1f5f9] px-3 py-1.5 text-[12px] font-[900] text-[#475569] transition hover:bg-[#eef5ff] hover:text-[#2563eb]"
+                className="rounded-full bg-[#f1f5f9] px-3 py-1.5 text-[12px] font-[900] text-[#475569] transition hover:bg-[#edf4ff] hover:text-[#1D50A2]"
               >
                 {chip}
               </button>
@@ -410,7 +410,7 @@ export default function GuidePage() {
                 key={category.id}
                 type="button"
                 onClick={() => handleCategory(category.id)}
-                className={`ops-card min-w-0 p-4 text-left transition hover:-translate-y-0.5 ${active ? "border-[#2563eb] bg-[#f8fbff]" : ""}`}
+                className={`ops-card min-w-0 p-4 text-left transition hover:-translate-y-0.5 ${active ? "border-[#1D50A2] bg-[#f8fbff]" : ""}`}
               >
                 <div className={`ops-icon-circle ${toneStyle[category.tone]}`}>
                   <Icon className="h-5 w-5" />
@@ -426,10 +426,10 @@ export default function GuidePage() {
           <aside className="ops-card min-w-0 p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#2563eb]">SOLUTION LIST</p>
+                <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#1D50A2]">SOLUTION LIST</p>
                 <h3 className="mt-1 text-[18px] font-[950] text-[#111827]">관련 업무</h3>
               </div>
-              <span className="rounded-full bg-[#eef5ff] px-3 py-1 text-[12px] font-[950] text-[#2563eb]">{visibleResults.length}</span>
+              <span className="rounded-full bg-[#edf4ff] px-3 py-1 text-[12px] font-[950] text-[#1D50A2]">{visibleResults.length}</span>
             </div>
             <div className="mt-4 max-h-[720px] space-y-2 overflow-y-auto pr-1">
               {visibleResults.map((article) => {
@@ -441,7 +441,7 @@ export default function GuidePage() {
                     type="button"
                     onClick={() => setSelectedArticle(article)}
                     className={`w-full rounded-[18px] border px-4 py-3 text-left transition ${
-                      active ? "border-[#2563eb] bg-[#eef5ff]" : "border-[#e5edf7] bg-white hover:border-[#bfdbfe] hover:bg-[#f8fbff]"
+                      active ? "border-[#1D50A2] bg-[#edf4ff]" : "border-[#e5edf7] bg-white hover:border-[#bfdbfe] hover:bg-[#f8fbff]"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -464,3 +464,5 @@ export default function GuidePage() {
     </ModulePage>
   );
 }
+
+

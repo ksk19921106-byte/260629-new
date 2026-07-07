@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 const statusItems = [
   { label: "접수", value: "12", color: "text-[#64748b]", bg: "bg-[#f1f5f9]" },
-  { label: "처리중", value: "8", color: "text-[#f97316]", bg: "bg-[#fff7ed]" },
-  { label: "완료", value: "23", color: "text-[#16a34a]", bg: "bg-[#eefdf4]" },
-  { label: "반려", value: "2", color: "text-[#ef4444]", bg: "bg-[#fff1f2]" }
+  { label: "처리중", value: "8", color: "text-[#F39945]", bg: "bg-[#fff5ec]" },
+  { label: "완료", value: "23", color: "text-[#1D50A2]", bg: "bg-[#edf4ff]" },
+  { label: "반려", value: "2", color: "text-[#F39945]", bg: "bg-[#fff5ec]" }
 ];
 
 export function RequestStatusSection() {
@@ -15,7 +15,7 @@ export function RequestStatusSection() {
           <h2 className="text-[16px] font-[950] text-[#111827]">나의 요청현황</h2>
           <p className="mt-0.5 text-[11px] font-[750] text-[#64748b]">요청 상태를 한눈에 확인합니다.</p>
         </div>
-        <button onClick={() => (window.location.href = "/request-status")} className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e9eef6] bg-[#f8fbff] text-[15px] font-[950] text-[#2563eb] shadow-sm transition hover:bg-[#eef5ff]">
+        <button onClick={() => (window.location.href = "/request-status")} className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e9eef6] bg-[#f8fbff] text-[15px] font-[950] text-[#1D50A2] shadow-sm transition hover:bg-[#edf4ff]">
           →
         </button>
       </div>
@@ -34,3 +34,4 @@ export function RequestStatusSection() {
     </section>
   );
 }
+

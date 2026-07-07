@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { ArrowRight, BookOpenCheck, ChevronDown, HelpCircle, Search, ShieldAlert } from "lucide-react";
@@ -95,7 +95,7 @@ export default function FaqPage() {
             className="rounded-[22px] border border-[#e7ecf4] bg-[#fbfdff] p-4 transition hover:border-[#b9cff1] hover:bg-white"
           >
             <div className="flex items-center justify-between">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#eef5ff] text-[#075bdc]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#edf4ff] text-[#1D50A2]">
                 <tile.icon size={21} />
               </div>
               <ArrowRight size={16} className="text-[#8a9bb4]" />
@@ -108,7 +108,7 @@ export default function FaqPage() {
 
       <div className="mt-5 rounded-[24px] border border-[#e7ecf4] bg-white p-4 shadow-[0_10px_26px_rgba(21,31,53,0.045)]">
         <div className="flex h-12 items-center gap-3 rounded-2xl border border-[#dce6f3] bg-[#fbfdff] px-4">
-          <Search size={18} className="text-[#075bdc]" />
+          <Search size={18} className="text-[#1D50A2]" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -121,7 +121,7 @@ export default function FaqPage() {
             <button
               key={item}
               onClick={() => setQuery(item)}
-              className="rounded-full bg-[#eef5ff] px-3 py-1.5 text-[12px] font-[850] text-[#075bdc] transition hover:bg-[#dceaff]"
+              className="rounded-full bg-[#edf4ff] px-3 py-1.5 text-[12px] font-[850] text-[#1D50A2] transition hover:bg-[#dceaff]"
             >
               {item}
             </button>
@@ -143,7 +143,7 @@ export default function FaqPage() {
                   <span className="block text-[15px] font-[900] text-[#10203f]">{item.title}</span>
                   <span className="mt-1 block text-[12px] font-[650] leading-5 text-[#5b6b84]">{item.short}</span>
                 </span>
-                <ChevronDown size={18} className={`text-[#075bdc] transition ${open ? "rotate-180" : ""}`} />
+                <ChevronDown size={18} className={`text-[#1D50A2] transition ${open ? "rotate-180" : ""}`} />
               </button>
               {open && <p className="border-t border-[#eef3fa] bg-[#f8fbff] px-5 py-4 text-[13px] font-[700] leading-6 text-[#435a7b]">{item.body}</p>}
             </section>
@@ -156,3 +156,4 @@ export default function FaqPage() {
     </ModulePage>
   );
 }
+

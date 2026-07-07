@@ -1,8 +1,8 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+﻿import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { REQUEST_FORM_CONFIGS, type RequestFormValues, type RequestKind } from "../../services/formValidation";
-import type { RequestCreatePayload, RequestItem, RequestStatus, RequestUpdatePayload } from "../../services/requestStorage";
+import type { RequestAttachmentPreview, RequestCreatePayload, RequestItem, RequestStatus, RequestUpdatePayload } from "../../services/requestStorage";
 
 export const runtime = "nodejs";
 
@@ -32,6 +32,7 @@ const excelHeaders = [
   "비고",
   "처리자",
   "처리일시",
+  "배정담당자",
   "상세정보"
 ];
 
@@ -77,6 +78,62 @@ function asDetails(value: unknown): Record<string, string> {
   return {};
 }
 
+function asStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) return value.map((item) => asText(item)).filter(Boolean);
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return [];
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) return asStringArray(parsed);
+    } catch {
+      // comma separated legacy value
+    }
+    return trimmed.split(",").map((item) => item.trim()).filter(Boolean);
+  }
+  return [];
+}
+
+function asAttachments(value: unknown): RequestAttachmentPreview[] {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => item as Partial<RequestAttachmentPreview>)
+      .filter((item) => item.name && item.dataUrl)
+      .map((item) => ({
+        field: asText(item.field),
+        label: asText(item.label, "첨부파일"),
+        name: asText(item.name),
+        type: asText(item.type),
+        dataUrl: asText(item.dataUrl)
+      }));
+  }
+  if (typeof value === "string") {
+    try {
+      return asAttachments(JSON.parse(value));
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function buildAttachments(values: RequestFormValues): RequestAttachmentPreview[] {
+  const source = values as unknown as Record<string, string>;
+  return Object.entries(source)
+    .filter(([key, value]) => key.endsWith("PreviewData") && value)
+    .map(([key, dataUrl]) => {
+      const field = key.replace(/PreviewData$/, "");
+      return {
+        field,
+        label: source[`${field}PreviewLabel`] || "첨부파일",
+        name: source[field] || "첨부파일",
+        type: source[`${field}PreviewType`] || "",
+        dataUrl
+      };
+    });
+}
+
 function pick(row: Record<string, unknown>, keys: string[], fallback = "") {
   const key = keys.find((candidate) => row[candidate] !== undefined);
   return key ? asText(row[key], fallback) : fallback;
@@ -105,7 +162,9 @@ function legacyRowToRequest(row: Record<string, unknown>): RequestRow {
     note: pick(row, ["note", "비고"], legacy[14] ?? ""),
     processor: pick(row, ["processor", "처리자"], legacy[15] ?? "-"),
     processedAt: pick(row, ["processedAt", "처리일시"], legacy[16] ?? "-"),
-    details: asDetails(row.details ?? row.상세정보 ?? legacy[17])
+    assignedOwners: asStringArray(row.assignedOwners ?? row.배정담당자 ?? legacy[17]),
+    attachments: asAttachments(row.attachments ?? row.첨부미리보기),
+    details: asDetails(row.details ?? row.상세정보 ?? legacy[18])
   };
 }
 
@@ -182,6 +241,7 @@ function rowValues(row: RequestRow) {
     row.note,
     row.processor,
     row.processedAt,
+    (row.assignedOwners ?? []).join(", "),
     JSON.stringify(row.details ?? {})
   ];
 }
@@ -333,7 +393,9 @@ function buildRow(kind: RequestKind, id: string, requestedAt: string, requester:
     contactEmail: values.contactEmail,
     note: values.note,
     processor: "-",
-    processedAt: "-"
+    processedAt: "-",
+    assignedOwners: asStringArray(values.assignedOwners),
+    attachments: buildAttachments(values)
   };
 
   if (kind === "depositConfirmation") {
@@ -575,3 +637,4 @@ export async function PATCH(request: Request) {
     }
   });
 }
+

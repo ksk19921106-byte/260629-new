@@ -1,4 +1,4 @@
-import {
+﻿import {
   Banknote,
   CalendarCheck,
   CreditCard,
@@ -127,8 +127,9 @@ export const quickRequests: Array<{ kind: RequestKind; label: string; icon: Luci
 ];
 
 export function toneClass(tone: string) {
-  if (tone === "needCheck" || tone === "red") return "bg-[#fff1f2] text-[#ef4444]";
-  if (tone === "inProgress" || tone === "orange") return "bg-[#fff7ed] text-[#f97316]";
-  if (tone === "done" || tone === "green") return "bg-[#eefdf4] text-[#16a34a]";
+  if (tone === "needCheck" || tone === "red") return "bg-[#fff5ec] text-[#F39945]";
+  if (tone === "inProgress" || tone === "orange") return "bg-[#fff5ec] text-[#F39945]";
+  if (tone === "done" || tone === "green") return "bg-[#edf4ff] text-[#1D50A2]";
   return "bg-[#f1f5f9] text-[#64748b]";
 }
+

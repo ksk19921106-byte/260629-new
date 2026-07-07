@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 const metrics = [
   { label: "거래 종료율", value: "68%", color: "text-[#64748b]" },
-  { label: "수금률", value: "85%", color: "text-[#16a34a]" },
+  { label: "수금률", value: "85%", color: "text-[#1D50A2]" },
   { label: "최근 정확도", value: "97%", color: "text-[#64748b]" }
 ];
 
@@ -29,3 +29,4 @@ export function PerformanceMiniCard() {
     </button>
   );
 }
+

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { getUsdKrwExchangeRates } from "../../../services/exchangeRateServer";
 
 export const runtime = "nodejs";
@@ -29,3 +29,4 @@ export async function GET() {
     attempts: result.debug.attempts
   });
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -24,28 +24,28 @@ import { REQUEST_FORM_CONFIGS, type RequestKind } from "../services/formValidati
 
 const requestCards: Array<{
   kind: RequestKind;
-  group: "계산서" | "수금" | "계약" | "매칭" | "월마감";
+  group: "전체" | "계산서" | "수금" | "계약" | "월마감";
   icon: LucideIcon;
   summary: string;
   chips: string[];
 }> = [
-  { kind: "taxInvoice", group: "계산서", icon: FileText, summary: "품목 내역 입력 시 공급가액, VAT, 합계액 자동 계산", chips: ["발행일자", "다품목", "자동계산"] },
-  { kind: "revisedTaxInvoice", group: "계산서", icon: RotateCcw, summary: "전월 수정 여부 확인 후 기존 계산서와 수정 사유 접수", chips: ["사전확인", "수정사유", "리스크"] },
-  { kind: "reverseIssueApproval", group: "계산서", icon: ShieldCheck, summary: "역발행 사이트, 최종금액, 건수 기준으로 처리 요청", chips: ["역발행", "최종금액", "건수"] },
-  { kind: "depositConfirmation", group: "수금", icon: Landmark, summary: "입금일자, 계좌, 입금자명, 금액 기준으로 수금 확인", chips: ["회사계좌", "입금확인", "수금"] },
-  { kind: "cardPayment", group: "수금", icon: CreditCard, summary: "카드매출전표 첨부 기준으로 카드결제 확인 요청", chips: ["전표필수", "카드결제", "대조"] },
-  { kind: "guaranteeInsurance", group: "계약", icon: BadgeCheck, summary: "계약서 첨부와 보증조건 기준으로 보험 처리 요청", chips: ["계약서", "보증기간", "VAT포함"] },
-  { kind: "invoiceMatching", group: "매칭", icon: Link2, summary: "계산서와 트래킹 흐름 연결 또는 잘못된 연결 해제", chips: ["매칭", "해제", "트래킹"] },
-  { kind: "collectionMatching", group: "매칭", icon: Landmark, summary: "입금, 거래, 세금계산서 흐름 연결 또는 해제", chips: ["수금매칭", "부분입금", "해제"] },
-  { kind: "monthEndCheck", group: "월마감", icon: FileCheck2, summary: "IKI 월마감 확인 중 VIPS팀 확인 필요 건 접수", chips: ["Gatekeeper", "IKI확인", "리스크"] }
+  { kind: "taxInvoice", group: "계산서", icon: FileText, summary: "품목, 수량, 단가를 기준으로 공급가액과 VAT를 계산합니다.", chips: ["세금계산서", "VAT", "트래킹"] },
+  { kind: "revisedTaxInvoice", group: "계산서", icon: RotateCcw, summary: "전월 계산서 수정은 월마감과 부가세 흐름을 먼저 확인합니다.", chips: ["수정발행", "전월수정", "팝업확인"] },
+  { kind: "reverseIssueApproval", group: "계산서", icon: ShieldCheck, summary: "역발행 사이트, 최종금액, 건수를 정리해 승인 요청합니다.", chips: ["역발행", "승인", "금액"] },
+  { kind: "depositConfirmation", group: "수금", icon: Landmark, summary: "입금일자, 금액, 계좌를 기준으로 입금 흐름을 확인합니다.", chips: ["입금확인", "수금", "계좌"] },
+  { kind: "cardPayment", group: "수금", icon: CreditCard, summary: "카드전표 첨부를 기준으로 카드결제 확인을 요청합니다.", chips: ["카드전표", "첨부필수", "수금"] },
+  { kind: "guaranteeInsurance", group: "계약", icon: BadgeCheck, summary: "계약서와 계약금액 기준으로 보증보험 요청을 진행합니다.", chips: ["계약", "보증보험", "VAT포함"] },
+  { kind: "invoiceMatching", group: "계산서", icon: Link2, summary: "계산서와 트래킹 흐름을 연결하거나 해제합니다.", chips: ["매칭", "해제", "트래킹"] },
+  { kind: "collectionMatching", group: "수금", icon: Landmark, summary: "입금, 계산서, 트래킹 흐름을 연결하거나 해제합니다.", chips: ["수금매칭", "입금매칭", "해제"] },
+  { kind: "monthEndCheck", group: "월마감", icon: FileCheck2, summary: "IKI 월마감 확인 후 VIPS 요청 가능 여부를 점검합니다.", chips: ["Gatekeeper", "월마감", "통제"] }
 ];
 
-const groups = ["전체", "계산서", "수금", "계약", "매칭", "월마감"] as const;
+const groups = ["전체", "계산서", "수금", "계약", "월마감"] as const;
 
 const helpCards = [
-  { title: "어떤 요청인지 모르겠어요", body: "계산서/수금/매칭 흐름 기준으로 먼저 고르면 됩니다.", icon: Search },
-  { title: "거래가 아직 안 끝났어요", body: "미종료 거래가 있으면 요청 진입이 차단됩니다. 거래 종료 관리에서 확인해주세요.", icon: ShieldCheck },
-  { title: "VIPS팀 문의 바로가기", body: "요청 전 애매한 건은 VIPS팀에 먼저 확인합니다.", icon: MessageCircle }
+  { title: "요청 전 먼저 확인하세요", body: "월마감, 수금, 계산서 흐름이 막혀 있으면 요청이 반려될 수 있습니다.", icon: Search },
+  { title: "월마감 미완료 시 제한", body: "미종료 거래가 남아 있으면 VIPS팀 요청 진입이 제한됩니다.", icon: ShieldCheck },
+  { title: "VIPS팀에 정확히 전달", body: "필수값과 첨부파일을 함께 남기면 처리 시간이 줄어듭니다.", icon: MessageCircle }
 ];
 
 export default function RequestsPage() {
@@ -80,7 +80,7 @@ export default function RequestsPage() {
         title="VIPS팀 요청 제한"
         description="미종료 거래가 남아 있으면 VIPS팀 요청 기능을 사용할 수 없습니다."
       >
-        <div className="mt-6 rounded-[20px] border border-red-100 bg-red-50 px-5 py-8 text-center text-[14px] font-[750] leading-6 text-[#435a7b]">
+        <div className="mt-6 rounded-[20px] border border-[rgba(243,153,69,0.30)] bg-[#fff5ec] px-5 py-8 text-center text-[14px] font-[750] leading-6 text-[#435a7b]">
           미종료 거래가 남아 있어 VIPS팀 요청 진입이 불가합니다.
         </div>
         <BlockedGateDialog open={true} onClose={() => window.history.back()} />
@@ -92,7 +92,7 @@ export default function RequestsPage() {
     <ModulePage
       eyebrow="VIPS Requests"
       title="VIPS팀 요청"
-      description="필요한 요청을 검색하거나 카테고리로 골라 전용 Form으로 이동합니다."
+      description="필요한 요청을 검색하거나 카테고리로 고르면 전용 Form으로 이동합니다."
     >
       <section className="ops-card mt-5 overflow-hidden bg-[#fbfcff]">
         <div className="grid grid-cols-[1.1fr_0.9fr] gap-4 px-5 py-5">
@@ -101,18 +101,18 @@ export default function RequestsPage() {
               <span className="ops-icon-circle">
                 <Sparkles size={20} />
               </span>
-              <p className="text-[12px] font-[950] uppercase tracking-[0.08em] text-[#2563eb]">Request Support Center</p>
+              <p className="text-[12px] font-[950] uppercase tracking-[0.08em] text-[#1D50A2]">Request Support Center</p>
             </div>
             <h2 className="mt-3 text-[26px] font-[950] tracking-[-0.025em] text-[#111827]">무슨 요청이 필요하세요?</h2>
             <p className="mt-2 text-[13px] font-[700] leading-5 text-[#64748b]">
               전자부품 유통 SALES 흐름에 맞춰 계산서, 수금, 매칭, 월마감 요청을 빠르게 찾습니다.
             </p>
             <div className="mt-5 flex h-12 items-center gap-3 rounded-[16px] border border-[#e5eaf3] bg-white px-4 shadow-sm">
-              <Search size={19} className="text-[#2563eb]" />
+              <Search size={19} className="text-[#1D50A2]" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="예: 전월 수정, 입금확인, 카드전표, 수금매칭"
+                placeholder="전월 수정, 입금확인, 카드전표, 수금매칭"
                 className="h-full min-w-0 flex-1 bg-transparent text-[14px] font-[750] text-[#10203f] outline-none placeholder:text-[#8a9bb4]"
               />
             </div>
@@ -141,7 +141,7 @@ export default function RequestsPage() {
             type="button"
             onClick={() => setActiveGroup(group)}
             className={`h-10 rounded-full px-4 text-[13px] font-[900] transition ${
-              activeGroup === group ? "bg-[#2563eb] text-white shadow-sm" : "border border-[#e5eaf3] bg-white text-[#64748b] hover:bg-[#f8fbff]"
+              activeGroup === group ? "bg-[#1D50A2] text-white shadow-sm" : "border border-[#e5eaf3] bg-white text-[#64748b] hover:bg-[#f8fbff]"
             }`}
           >
             {group}
@@ -189,56 +189,8 @@ export default function RequestsPage() {
       )}
 
       <div className="mt-5 rounded-[18px] border border-[#dce6f3] bg-[#fbfdff] px-4 py-3 text-[12px] font-[750] leading-5 text-[#435a7b]">
-        미종료 거래가 남아 있어 VIPS팀 요청 진입이 불가합니다. 요청이 막히면 거래 종료 관리에서 내 미종료 거래를 먼저 확인해주세요.
+        월마감 미완료 시 VIPS팀 요청 진입이 제한됩니다. 요청 전 미종료 거래를 먼저 확인해주세요.
       </div>
-
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            (() => {
-              const users = { Sally: true, Harvey: true, Tommy: true };
-              const currentUser = () => {
-                const params = new URLSearchParams(window.location.search);
-                const fromUrl = params.get("user");
-                if (users[fromUrl]) {
-                  window.localStorage.setItem("icbanq.ops.selectedUser", fromUrl);
-                  return fromUrl;
-                }
-                const stored = window.localStorage.getItem("icbanq.ops.selectedUser");
-                return users[stored] ? stored : "Sally";
-              };
-              const showBlockedGate = (user) => {
-                if (document.querySelector("[data-request-menu-blocked-gate]")) return;
-                const list = document.querySelector("[data-request-menu-list]");
-                if (list) list.style.display = "none";
-                const panel = document.createElement("div");
-                panel.setAttribute("data-request-menu-blocked-gate", "true");
-                panel.className = "mt-6 rounded-[22px] border border-red-100 bg-red-50 px-5 py-8 text-center";
-                panel.innerHTML = '<p class="text-[18px] font-[900] text-[#10203f]">VIPS팀 요청 진입 불가</p><p class="mt-2 text-[13px] font-[700] leading-6 text-[#435a7b]">' + user + '님은 미종료 거래가 남아 있습니다. 거래가 정상 종료되기 전에는 모든 VIPS팀 요청 메뉴에 진입할 수 없습니다.</p>';
-                const anchor = document.querySelector("[data-request-menu-list]");
-                if (anchor && anchor.parentElement) anchor.parentElement.insertBefore(panel, anchor);
-
-                const modal = document.createElement("div");
-                modal.setAttribute("data-request-menu-blocked-gate", "true");
-                modal.className = "fixed inset-0 z-[80] flex items-center justify-center bg-[#0d1b3e]/35 px-4";
-                modal.innerHTML = '<div class="w-[520px] rounded-[24px] border border-red-100 bg-white p-6 shadow-[0_26px_80px_rgba(30,37,52,0.24)]"><p class="text-[18px] font-[900] text-[#10203f]">VIPS팀 요청 진입 불가</p><p class="mt-3 whitespace-pre-line text-[13px] font-[700] leading-6 text-[#435a7b]">미종료 거래가 남아 있어 VIPS팀 요청 진입이 불가합니다.\\n거래 종료 관리에서 남은 거래를 먼저 확인해주세요.</p><div class="mt-5 flex gap-2"><button data-open-trades="true" class="h-11 flex-1 rounded-xl bg-red-600 text-[13px] font-[900] text-white">미종료 거래 확인하기</button><button data-open-iki="true" class="h-11 flex-1 rounded-xl bg-[#075bdc] text-[13px] font-[900] text-white">IKI 월마감 바로가기</button><button data-back-home="true" class="h-11 flex-1 rounded-xl border border-[#dce6f3] bg-white text-[13px] font-[900] text-[#34496b]">홈으로</button></div></div>';
-                document.body.appendChild(modal);
-                modal.querySelector("[data-open-trades]")?.addEventListener("click", () => window.location.href = "/month-end");
-                modal.querySelector("[data-open-iki]")?.addEventListener("click", () => window.open("https://iki.icbanq.com", "_blank", "noopener,noreferrer"));
-                modal.querySelector("[data-back-home]")?.addEventListener("click", () => {
-                  window.location.href = "/";
-                });
-              };
-              fetch("/api/month-end/blocked?user=" + encodeURIComponent(currentUser()), { cache: "no-store" })
-                .then((response) => response.json())
-                .then((result) => {
-                  if (result && result.isBlocked) showBlockedGate(result.user || currentUser());
-                })
-                .catch(() => {});
-            })();
-          `
-        }}
-      />
     </ModulePage>
   );
 }

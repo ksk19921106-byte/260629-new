@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 export function EducationQuickCard() {
   return (
@@ -10,7 +10,8 @@ export function EducationQuickCard() {
           <span key={chip} className="rounded-full bg-[#f3f6fb] px-3 py-1 text-[11px] font-[850] text-[#475569]">{chip}</span>
         ))}
       </div>
-      <button onClick={() => (window.location.href = "/guide")} className="mt-3 rounded-xl bg-[#eef5ff] px-4 py-2 text-[12px] font-[900] text-[#2563eb]">교육센터 이동</button>
+      <button onClick={() => (window.location.href = "/guide")} className="mt-3 rounded-xl bg-[#edf4ff] px-4 py-2 text-[12px] font-[900] text-[#1D50A2]">교육센터 이동</button>
     </section>
   );
 }
+

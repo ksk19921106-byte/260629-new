@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, ArrowRight, Banknote, CheckCircle2, CircleDollarSign, Search, ShieldCheck, UserRound } from "lucide-react";
@@ -39,9 +39,9 @@ const filterOptions: Array<{ key: TableFilter; label: string }> = [
 ];
 
 const priorityStyle = {
-  high: "bg-[#fff0ef] text-[#dc2626] border-[#ffd0cb]",
-  medium: "bg-[#fff7e8] text-[#d97706] border-[#ffe3b5]",
-  low: "bg-[#eef6ff] text-[#2563eb] border-[#cfe2ff]"
+  high: "bg-[#fff5ec] text-[#b85f18] border-[#f7c999]",
+  medium: "bg-[#fff5ec] text-[#b85f18] border-[#f7c999]",
+  low: "bg-[#edf4ff] text-[#1D50A2] border-[#cfe2ff]"
 };
 
 function priorityLabel(priority: CollectionIssue["priority"]) {
@@ -51,9 +51,9 @@ function priorityLabel(priority: CollectionIssue["priority"]) {
 }
 
 function statusStyle(status: ReceivableRecord["status"]) {
-  if (status === "완료") return "bg-[#ecfdf5] text-[#059669]";
-  if (status === "부분수금") return "bg-[#fff7e8] text-[#d97706]";
-  return "bg-[#fff0ef] text-[#dc2626]";
+  if (status === "완료") return "bg-[#edf4ff] text-[#1D50A2]";
+  if (status === "부분수금") return "bg-[#fff5ec] text-[#b85f18]";
+  return "bg-[#fff5ec] text-[#b85f18]";
 }
 
 export default function CollectionsPage() {
@@ -194,7 +194,7 @@ export default function CollectionsPage() {
         <section className="ops-card bg-[linear-gradient(135deg,#ffffff_0%,#f8fbff_58%,#fff7f3_100%)] p-5">
           <div className="grid gap-5 lg:grid-cols-[1fr_260px]">
             <div>
-              <div className="flex items-center gap-2 text-[#2563eb]">
+              <div className="flex items-center gap-2 text-[#1D50A2]">
                 <ShieldCheck size={18} />
                 <p className="text-[11px] font-[950] uppercase tracking-[0.08em]">{isAdmin ? "VIPS COLLECTION VIEW" : "MY COLLECTION VIEW"}</p>
               </div>
@@ -219,7 +219,7 @@ export default function CollectionsPage() {
               <p className="text-[12px] font-[900] text-[#64748b]">오늘의 Collection Score</p>
               <div className="mt-3 flex items-end justify-between gap-3">
                 <p className="text-[48px] font-[950] leading-none tracking-[-0.05em] text-[#111827]">{collectionScore}<span className="text-[20px]">점</span></p>
-                <span className={`rounded-full px-3 py-1 text-[12px] font-[950] ${scoreLabel === "Healthy" ? "bg-[#ecfdf5] text-[#059669]" : scoreLabel === "Attention" ? "bg-[#fff7e8] text-[#d97706]" : "bg-[#fff0ef] text-[#dc2626]"}`}>
+                <span className={`rounded-full px-3 py-1 text-[12px] font-[950] ${scoreLabel === "Healthy" ? "bg-[#edf4ff] text-[#1D50A2]" : scoreLabel === "Attention" ? "bg-[#fff5ec] text-[#b85f18]" : "bg-[#fff5ec] text-[#b85f18]"}`}>
                   {scoreLabel}
                 </span>
               </div>
@@ -244,7 +244,7 @@ export default function CollectionsPage() {
                 {selectedUser.name}님의 전체 수금 대상 {composition.totalRecords}건 중 완료 {composition.completedRecords.length}건, 부분수금 {composition.partialRecords.length}건, 미수 {composition.unpaidRecords.length}건입니다.
               </p>
             </div>
-            <div className="rounded-full bg-[#f8fbff] px-3 py-1.5 text-[12px] font-[900] text-[#2563eb]">완료 기준 수금률 {composition.collectionRate}%</div>
+            <div className="rounded-full bg-[#f8fbff] px-3 py-1.5 text-[12px] font-[900] text-[#1D50A2]">완료 기준 수금률 {composition.collectionRate}%</div>
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-4">
             <SummaryTile label="전체 수금 대상" count={`${composition.totalRecords}건`} amount={formatKrwShort(composition.totalExpected)} tone="blue" />
@@ -258,7 +258,7 @@ export default function CollectionsPage() {
               <p className="text-[12px] font-[850] text-[#64748b]">{todayProgress}%</p>
             </div>
             <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#e7ecf4]">
-              <span className="block h-full rounded-full bg-[#2563eb] transition-all" style={{ width: `${todayProgress}%` }} />
+              <span className="block h-full rounded-full bg-[#1D50A2] transition-all" style={{ width: `${todayProgress}%` }} />
             </div>
           </div>
         </section>
@@ -271,7 +271,7 @@ export default function CollectionsPage() {
           <article
             ref={topSectionRef}
             className={`ops-card min-w-0 overflow-hidden p-4 transition ${
-              highlightTop ? "border-[#2563eb] ring-4 ring-blue-100" : "border-[#dce6f3]"
+              highlightTop ? "border-[#1D50A2] ring-4 ring-blue-100" : "border-[#dce6f3]"
             }`}
           >
             <div className="flex items-start justify-between gap-3">
@@ -279,7 +279,7 @@ export default function CollectionsPage() {
                 <h3 className="text-[20px] font-[950] tracking-[-0.02em] text-[#111827]">오늘 확인해야 할 수금 TOP5</h3>
                 <p className="mt-1 text-[13px] font-[750] text-[#64748b]">우선순위와 확인 이유를 기준으로 먼저 볼 거래를 정리했습니다.</p>
               </div>
-              <span className="rounded-full bg-[#fff0ef] px-3 py-1 text-[12px] font-[950] text-[#dc2626]">{openIssues.length}건</span>
+              <span className="rounded-full bg-[#fff5ec] px-3 py-1 text-[12px] font-[950] text-[#b85f18]">{openIssues.length}건</span>
             </div>
             <div className="mt-4 space-y-3">
               {openIssues.slice(0, 5).length === 0 ? (
@@ -309,7 +309,7 @@ export default function CollectionsPage() {
                       <MiniAmount label="차액" value={formatKrwShort(issue.diff)} strong />
                     </div>
                     <div className="mt-3 flex justify-end">
-                      <button onClick={() => { setActiveIssue(issue); setActionMemo(""); }} className="text-[12px] font-[900] text-[#2563eb]">
+                      <button onClick={() => { setActiveIssue(issue); setActionMemo(""); }} className="text-[12px] font-[900] text-[#1D50A2]">
                         메모 / 완료 처리
                       </button>
                     </div>
@@ -343,7 +343,7 @@ export default function CollectionsPage() {
                   type="button"
                   onClick={() => setFilter(option.key)}
                 className={`h-9 rounded-full px-4 text-[12px] font-[900] transition ${
-                    filter === option.key ? "bg-[#2563eb] text-white" : "border border-[#e5eaf3] bg-white text-[#475569] hover:bg-[#f8fbff]"
+                    filter === option.key ? "bg-[#1D50A2] text-white" : "border border-[#e5eaf3] bg-white text-[#475569] hover:bg-[#f8fbff]"
                   }`}
                 >
                   {option.label}
@@ -376,7 +376,7 @@ export default function CollectionsPage() {
                         </div>
                         <span className="truncate font-[900] text-[#111827]">{formatKrwShort(record.expected)}</span>
                         <span className="truncate font-[850] text-[#475569]">{formatKrwShort(record.paid)}</span>
-                        <span className="truncate font-[900] text-[#dc2626]">{formatKrwShort(record.diff)}</span>
+                        <span className="truncate font-[900] text-[#b85f18]">{formatKrwShort(record.diff)}</span>
                         <span className={`rounded-full px-2 py-1 text-center text-[11px] font-[950] ${statusStyle(record.status)}`}>{record.status}</span>
                         <span className="font-[850] text-[#64748b]">{record.overdueDays}일</span>
                         <span className="font-[850] text-[#64748b]">{record.agingBucket}</span>
@@ -389,7 +389,7 @@ export default function CollectionsPage() {
                             }
                           }}
                           disabled={!issue}
-                          className="h-8 rounded-full bg-[#f3f7ff] px-3 text-[11px] font-[900] text-[#2563eb] disabled:bg-[#f8fafc] disabled:text-[#94a3b8]"
+                          className="h-8 rounded-full bg-[#f3f7ff] px-3 text-[11px] font-[900] text-[#1D50A2] disabled:bg-[#f8fafc] disabled:text-[#94a3b8]"
                         >
                           {issue ? issueActionLabel(issue) : "완료됨"}
                         </button>
@@ -419,7 +419,7 @@ export default function CollectionsPage() {
                   <h3 className="text-[20px] font-[950] tracking-[-0.02em] text-[#111827]">담당자 미매칭 수금건</h3>
                   <p className="mt-1 text-[13px] font-[750] text-[#64748b]">담당자_DB에 연결되지 않은 수금건입니다. 1차 버전은 화면에서 임시 지정합니다.</p>
                 </div>
-                <span className="rounded-full bg-[#fff0ef] px-3 py-1 text-[12px] font-[950] text-[#dc2626]">{unmappedRecords.length}건</span>
+                <span className="rounded-full bg-[#fff5ec] px-3 py-1 text-[12px] font-[950] text-[#b85f18]">{unmappedRecords.length}건</span>
               </div>
               <div className="mt-4 overflow-hidden rounded-[18px] border border-[#e7ecf4]">
                 <div className="grid grid-cols-[1fr_108px_108px_108px_82px_1fr_92px_118px] gap-2 bg-[#f8fbff] px-4 py-3 text-[11px] font-[950] text-[#64748b]">
@@ -441,10 +441,10 @@ export default function CollectionsPage() {
                         <span className="truncate font-[950] text-[#111827]">{record.name}</span>
                         <span className="truncate font-[900] text-[#111827]">{formatKrwShort(record.expected)}</span>
                         <span className="truncate font-[850] text-[#475569]">{formatKrwShort(record.paid)}</span>
-                        <span className="truncate font-[900] text-[#dc2626]">{formatKrwShort(record.diff)}</span>
+                        <span className="truncate font-[900] text-[#b85f18]">{formatKrwShort(record.diff)}</span>
                         <span className={`rounded-full px-2 py-1 text-center text-[11px] font-[950] ${statusStyle(record.status)}`}>{record.status}</span>
                         <span className="truncate font-[800] text-[#64748b]">{record.basis ?? "-"}</span>
-                        <span className="truncate font-[900] text-[#2563eb]">{record.fSales || "확인 필요"}</span>
+                        <span className="truncate font-[900] text-[#1D50A2]">{record.fSales || "확인 필요"}</span>
                         <button onClick={() => assignSales(record)} className="h-8 rounded-lg bg-[#111827] px-3 text-[11px] font-[950] text-white">담당자 지정</button>
                       </div>
                     ))
@@ -469,7 +469,7 @@ export default function CollectionsPage() {
           <div className="w-full max-w-[520px] rounded-[24px] bg-white p-6 shadow-2xl">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[12px] font-[950] uppercase tracking-[0.08em] text-[#2563eb]">COLLECTION ACTION</p>
+                <p className="text-[12px] font-[950] uppercase tracking-[0.08em] text-[#1D50A2]">COLLECTION ACTION</p>
                 <h3 className="mt-2 text-[24px] font-[950] tracking-[-0.02em] text-[#111827]">{activeIssue.company}</h3>
                 <p className="mt-1 text-[13px] font-[800] text-[#64748b]">{activeIssue.reason}</p>
               </div>
@@ -486,13 +486,13 @@ export default function CollectionsPage() {
               <textarea
                 value={actionMemo}
                 onChange={(event) => setActionMemo(event.target.value)}
-                className="mt-2 h-24 w-full resize-none rounded-[16px] border border-[#dce6f3] bg-[#fbfdff] p-3 text-[13px] font-[750] outline-none focus:border-[#2563eb]"
+                className="mt-2 h-24 w-full resize-none rounded-[16px] border border-[#dce6f3] bg-[#fbfdff] p-3 text-[13px] font-[750] outline-none focus:border-[#1D50A2]"
                 placeholder="확인 내용이나 후속 액션을 남겨주세요."
               />
             </label>
             <div className="mt-5 flex justify-end gap-2">
               <button onClick={() => setActiveIssue(null)} className="h-10 rounded-xl border border-[#dce6f3] bg-white px-4 text-[13px] font-[900] text-[#475569]">닫기</button>
-              <button onClick={() => completeIssue(activeIssue, "request_vips")} className="h-10 rounded-xl bg-[#eef6ff] px-4 text-[13px] font-[950] text-[#2563eb]">
+              <button onClick={() => completeIssue(activeIssue, "request_vips")} className="h-10 rounded-xl bg-[#edf4ff] px-4 text-[13px] font-[950] text-[#1D50A2]">
                 VIPS 확인 요청
               </button>
               <button onClick={() => completeIssue(activeIssue)} className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#111827] px-4 text-[13px] font-[950] text-white">
@@ -509,10 +509,10 @@ export default function CollectionsPage() {
 
 function KpiCard({ icon: Icon, label, value, tone }: { icon: typeof AlertCircle; label: string; value: string; tone: "red" | "orange" | "blue" | "green" | "slate" }) {
   const toneClass = {
-    red: "bg-[#fff0ef] text-[#dc2626]",
-    orange: "bg-[#fff7e8] text-[#d97706]",
-    blue: "bg-[#eef6ff] text-[#2563eb]",
-    green: "bg-[#ecfdf5] text-[#0d9b6c]",
+    red: "bg-[#fff5ec] text-[#b85f18]",
+    orange: "bg-[#fff5ec] text-[#b85f18]",
+    blue: "bg-[#edf4ff] text-[#1D50A2]",
+    green: "bg-[#edf4ff] text-[#1D50A2]",
     slate: "bg-[#f8fafc] text-[#475569]"
   }[tone];
 
@@ -529,10 +529,10 @@ function KpiCard({ icon: Icon, label, value, tone }: { icon: typeof AlertCircle;
 
 function SummaryTile({ label, count, amount, tone }: { label: string; count: string; amount: string; tone: "blue" | "green" | "orange" | "red" }) {
   const toneClass = {
-    blue: "bg-[#eef6ff] text-[#2563eb]",
-    green: "bg-[#ecfdf5] text-[#059669]",
-    orange: "bg-[#fff7e8] text-[#d97706]",
-    red: "bg-[#fff0ef] text-[#dc2626]"
+    blue: "bg-[#edf4ff] text-[#1D50A2]",
+    green: "bg-[#edf4ff] text-[#1D50A2]",
+    orange: "bg-[#fff5ec] text-[#b85f18]",
+    red: "bg-[#fff5ec] text-[#b85f18]"
   }[tone];
 
   return (
@@ -548,7 +548,7 @@ function MiniAmount({ label, value, strong }: { label: string; value: string; st
   return (
     <div className="min-w-0 rounded-[14px] border border-[#e5eaf3] bg-white px-3 py-2">
       <p className="text-[10px] font-[850] text-[#94a3b8]">{label}</p>
-      <p className={`mt-1 truncate text-[12px] font-[950] ${strong ? "text-[#dc2626]" : "text-[#111827]"}`}>{value}</p>
+      <p className={`mt-1 truncate text-[12px] font-[950] ${strong ? "text-[#b85f18]" : "text-[#111827]"}`}>{value}</p>
     </div>
   );
 }
@@ -566,7 +566,7 @@ function AdminPanel({ title, rows }: { title: string; rows: string[][] }) {
   return (
     <article className="ops-card min-w-0 overflow-hidden p-4">
       <div className="flex items-center gap-2">
-        <UserRound size={17} className="text-[#2563eb]" />
+        <UserRound size={17} className="text-[#1D50A2]" />
         <h3 className="truncate text-[17px] font-[950] text-[#111827]">{title}</h3>
       </div>
       <div className="mt-4 space-y-2">
@@ -585,3 +585,5 @@ function AdminPanel({ title, rows }: { title: string; rows: string[][] }) {
     </article>
   );
 }
+
+

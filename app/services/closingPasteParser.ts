@@ -46,27 +46,27 @@ export type ClosingParseResult = {
 
 const issueMeta: Record<ClosingIssueType, { label: string; action: string }> = {
   invoice_required: {
-    label: "계산서 발행 필요",
-    action: "출고는 완료됐지만 계산서가 아직 연결되지 않았습니다. 세금계산서 발행 요청이 필요합니다."
+    label: "출고O/계산서X",
+    action: "고객사 출고는 완료되었지만 계산서가 미발행된 건입니다. 세금계산서 발행 요청이 필요합니다."
   },
   shipment_check: {
-    label: "출고 확인 필요",
-    action: "입고와 계산서 흐름은 있으나 출고 상태가 비어 있습니다. 출고 진행 여부를 확인해주세요."
+    label: "입고O/출고X/계산서O",
+    action: "입고 및 계산서 발행은 완료되었지만 고객에게 출고되지 않은 건입니다. 출고 진행 여부를 확인해주세요."
   },
   long_pending: {
-    label: "장기 미진행 거래",
-    action: "입고 이후 출고와 계산서가 모두 멈춰 있습니다. 거래 진행 상태를 먼저 확인해주세요."
+    label: "입고O/출고X/계산서X",
+    action: "입고된 건이지만 고객에게 출고 및 계산서 발행이 되지 않은 건입니다. 거래 진행 상태를 먼저 확인해주세요."
   },
   collection_check: {
-    label: "수금 확인 필요",
+    label: "지연AR",
     action: "AR 지연 금액이 있습니다. 입금 확인 또는 수금관리 확인이 필요합니다."
   },
   deduct_check: {
-    label: "차감/공제 확인 필요",
-    action: "Deduct 금액이 있습니다. 차감 사유와 반영 여부를 확인해주세요."
+    label: "Deduct 확인 필요",
+    action: "Deduct 금액이 있습니다. Deduct 사유와 반영 여부를 확인해주세요."
   },
   sales_unshipped: {
-    label: "세일즈 미출고 확인 필요",
+    label: "세일즈 미출고",
     action: "세일즈 미출고 건입니다. 출고 처리 가능 여부와 보류 사유를 확인해주세요."
   }
 };
@@ -181,7 +181,7 @@ function parseErpMultiLinePaste(text: string, uploadedBy: string, uploadedAt: st
     const salesPair = cells[2] || "미지정";
     const companyCount = normalizeCount(cells[3]);
     const { fSales, iSales } = splitSalesPair(salesPair);
-    const company = `${team} ${fSales} / ${iSales} 월마감 집계`;
+    const company = cells[4] && !/^-?\d[\d,]*$/.test(cells[4]) ? cells[4] : `${team} ${fSales} / ${iSales} 월마감 집계`;
     const shipmentDays = normalizeMoney(cells[6]);
     const taxIssueDays = normalizeMoney(cells[7]);
 
@@ -251,7 +251,7 @@ export function getIssueActionLabel(issueType: ClosingIssueType) {
     case "collection_check":
       return "수금관리 이동";
     case "deduct_check":
-      return "차감 사유 입력";
+      return "Deduct 사유 입력";
     case "sales_unshipped":
       return "출고 처리 확인";
     default:

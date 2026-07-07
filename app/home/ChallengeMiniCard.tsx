@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 
@@ -21,7 +21,7 @@ export function ChallengeMiniCard() {
           className="flex h-[86px] items-center gap-2 rounded-[16px] border border-[#edf2f8] bg-[#fbfcff] px-3 shadow-[0_4px_10px_rgba(15,23,42,0.02)] transition hover:border-[#cbd5e1]"
         >
           <span className="relative h-[58px] w-[58px] shrink-0">
-            <Image src="/assets/mascots/dalbaeng.png" alt="달뱅 챌린지" fill sizes="58px" className="object-contain" />
+            <Image src="/assets/brand/bandol-full.png" alt="달뱅 챌린지" fill sizes="58px" className="object-contain" />
           </span>
           <span className="min-w-0">
             <span className="block truncate text-[13px] font-[950] text-[#111827]">달뱅</span>
@@ -35,7 +35,7 @@ export function ChallengeMiniCard() {
           className="flex h-[86px] items-center gap-2 rounded-[16px] border border-[#edf2f8] bg-[#fbfcff] px-3 shadow-[0_4px_10px_rgba(15,23,42,0.02)] transition hover:border-[#cbd5e1]"
         >
           <span className="relative h-[58px] w-[58px] shrink-0">
-            <Image src="/assets/mascots/bookbaeng.png" alt="북뱅 챌린지" fill sizes="58px" className="object-contain" />
+            <Image src="/assets/brand/bansoon-full.png" alt="북뱅 챌린지" fill sizes="58px" className="object-contain" />
           </span>
           <span className="min-w-0">
             <span className="block truncate text-[13px] font-[950] text-[#111827]">북뱅</span>
@@ -46,3 +46,4 @@ export function ChallengeMiniCard() {
     </section>
   );
 }
+

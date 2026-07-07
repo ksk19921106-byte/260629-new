@@ -1,4 +1,4 @@
-import { inflateRawSync } from "node:zlib";
+﻿import { inflateRawSync } from "node:zlib";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
@@ -202,3 +202,4 @@ export async function POST(request: Request) {
 
   return NextResponse.json(buildTradeCloseSummary(records));
 }
+

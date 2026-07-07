@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -131,11 +131,11 @@ function isToday(item: RequestItem) {
 }
 
 function toneClass(tone: StatusTone) {
-  if (tone === "red") return "bg-[#fff1f2] text-[#ef4444]";
-  if (tone === "orange") return "bg-[#fff7ed] text-[#f97316]";
-  if (tone === "green") return "bg-[#eefdf4] text-[#16a34a]";
+  if (tone === "red") return "bg-[#fff5ec] text-[#F39945]";
+  if (tone === "orange") return "bg-[#fff5ec] text-[#F39945]";
+  if (tone === "green") return "bg-[#edf4ff] text-[#1D50A2]";
   if (tone === "gray") return "bg-[#f1f5f9] text-[#64748b]";
-  return "bg-[#eef5ff] text-[#2563eb]";
+  return "bg-[#edf4ff] text-[#1D50A2]";
 }
 
 function statusLabel(status: IssueStatus) {
@@ -203,11 +203,11 @@ function TodayAlertCard() {
     <section className="ops-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#ef4444]">Today Alert</p>
+          <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#F39945]">Today Alert</p>
           <h2 className="mt-1 text-[20px] font-[950] tracking-[-0.03em] text-[#111827]">오늘 먼저 확인할 이슈</h2>
           <p className="mt-1 text-[12px] font-[750] text-[#64748b]">VIPS팀이 오늘 우선 확인해야 할 운영 병목입니다.</p>
         </div>
-        <span className="rounded-full bg-[#fff1f2] px-3 py-1.5 text-[12px] font-[950] text-[#ef4444]">High 2</span>
+        <span className="rounded-full bg-[#fff5ec] px-3 py-1.5 text-[12px] font-[950] text-[#F39945]">High 2</span>
       </div>
       <div className="mt-4 grid gap-3 lg:grid-cols-4">
         {alerts.map((alert, index) => (
@@ -245,7 +245,7 @@ function TeamControlCard({ team, requests }: { team: (typeof teamMetrics)[number
         <button
           type="button"
           onClick={() => openRequestStatus({ requester })}
-          className="shrink-0 rounded-full bg-[#eef5ff] px-3 py-1.5 text-[12px] font-[950] text-[#2563eb] transition hover:bg-[#dceaff]"
+          className="shrink-0 rounded-full bg-[#edf4ff] px-3 py-1.5 text-[12px] font-[950] text-[#1D50A2] transition hover:bg-[#dceaff]"
         >
           팀 상세 보기
         </button>
@@ -254,22 +254,22 @@ function TeamControlCard({ team, requests }: { team: (typeof teamMetrics)[number
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         <div className="rounded-[16px] border border-[#edf2f8] bg-[#fbfcff] p-3">
           <p className="text-[11px] font-[850] text-[#64748b]">월마감 이슈</p>
-          <p className="mt-1 text-[21px] font-[950] text-[#ef4444]">{team.monthEndCount}건</p>
+          <p className="mt-1 text-[21px] font-[950] text-[#F39945]">{team.monthEndCount}건</p>
           <p className="mt-1 truncate text-[11px] font-[750] text-[#94a3b8]">{krw(team.monthEndAmount)}</p>
         </div>
         <div className="rounded-[16px] border border-[#edf2f8] bg-[#fbfcff] p-3">
           <p className="text-[11px] font-[850] text-[#64748b]">수금 이슈</p>
-          <p className="mt-1 text-[21px] font-[950] text-[#f97316]">{team.collectionCount}건</p>
+          <p className="mt-1 text-[21px] font-[950] text-[#F39945]">{team.collectionCount}건</p>
           <p className="mt-1 truncate text-[11px] font-[750] text-[#94a3b8]">{krw(team.collectionAmount)}</p>
         </div>
         <div className="rounded-[16px] border border-[#edf2f8] bg-[#fbfcff] p-3">
           <p className="text-[11px] font-[850] text-[#64748b]">VIPS 요청</p>
-          <p className="mt-1 text-[21px] font-[950] text-[#2563eb]">{teamRequests.length}건</p>
+          <p className="mt-1 text-[21px] font-[950] text-[#1D50A2]">{teamRequests.length}건</p>
           <p className="mt-1 truncate text-[11px] font-[750] text-[#94a3b8]">접수 {counts.received} · 처리중 {counts.processing}</p>
         </div>
         <div className="rounded-[16px] border border-[#edf2f8] bg-[#fbfcff] p-3">
           <p className="text-[11px] font-[850] text-[#64748b]">반려/재확인</p>
-          <p className="mt-1 text-[21px] font-[950] text-[#ef4444]">{counts.rejected}건</p>
+          <p className="mt-1 text-[21px] font-[950] text-[#F39945]">{counts.rejected}건</p>
           <p className="mt-1 truncate text-[11px] font-[750] text-[#94a3b8]">{team.risk}</p>
         </div>
       </div>
@@ -349,7 +349,7 @@ function PendingRequests({ requests }: { requests: RequestItem[] }) {
         <button
           type="button"
           onClick={() => openRequestStatus({ status: "received" })}
-          className="rounded-full bg-[#eef5ff] px-3 py-1.5 text-[12px] font-[950] text-[#2563eb]"
+          className="rounded-full bg-[#edf4ff] px-3 py-1.5 text-[12px] font-[950] text-[#1D50A2]"
         >
           요청 관리로 이동
         </button>
@@ -471,3 +471,4 @@ export default function VipsOpsPage() {
     </ModulePage>
   );
 }
+
