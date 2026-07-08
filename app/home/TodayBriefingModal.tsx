@@ -29,16 +29,16 @@ const userBriefingSummary: Record<string, BriefingSummary> = {
 };
 
 function toneClass(tone: BriefingReason["tone"]) {
-  if (tone === "red") return "bg-[#fff5ec] text-[#F39945]";
+  if (tone === "red") return "bg-[#fef2f2] text-[#dc2626]";
   if (tone === "orange") return "bg-[#fff5ec] text-[#F39945]";
   return "bg-[#edf4ff] text-[#1D50A2]";
 }
 
 function BriefingMetric({ label, value, tone }: { label: string; value: string; tone: "red" | "orange" | "blue" }) {
   return (
-    <div className="rounded-[16px] border border-[#edf2f8] bg-[#fbfcff] px-4 py-3">
+    <div className={`rounded-[16px] border px-4 py-3 ${tone === "red" ? "border-[#fecaca] bg-[#fef2f2]" : "border-[#edf2f8] bg-[#fbfcff]"}`}>
       <p className="text-[11px] font-[850] text-[#64748b]">{label}</p>
-      <p className={`mt-1 text-[22px] font-[950] tracking-[-0.04em] ${tone === "blue" ? "text-[#1D50A2]" : "text-[#F39945]"}`}>{value}</p>
+      <p className={`mt-1 text-[22px] font-[950] tracking-[-0.04em] ${tone === "blue" ? "text-[#1D50A2]" : tone === "red" ? "text-[#dc2626]" : "text-[#F39945]"}`}>{value}</p>
     </div>
   );
 }
@@ -109,7 +109,7 @@ export function getTodayBriefingReasons(userName: string) {
       id: "month-issue",
       title: `내 월마감 체크건이 ${userSummary.monthlyNeedCount}건 있습니다.`,
       description: "출고, 계산서, Deduct 등 종료되지 않은 거래를 확인해주세요.",
-      tone: "blue",
+      tone: "red",
       route: "/month-end"
     });
   }
@@ -133,13 +133,14 @@ export function TodayBriefingModal({
   const primaryRoute = reasons[0]?.route ?? "/month-end";
   const userSummary = getUserBriefingSummary(userName);
   const userTotal = userSummary.monthlyNeedCount + userSummary.collectionNeedCount + userSummary.delayedRequestCount;
+  const isGateBlocked = userSummary.monthlyNeedCount > 0;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0f172a]/28 px-4 py-6 backdrop-blur-[2px]">
-      <section className="w-full max-w-[560px] overflow-hidden rounded-[28px] border border-[#e5eaf3] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.22)]">
-        <div className="flex items-start justify-between gap-4 border-b border-[#eef2f7] px-6 py-5">
+      <section className={`w-full max-w-[560px] overflow-hidden rounded-[28px] border bg-white shadow-[0_28px_80px_rgba(15,23,42,0.22)] ${isGateBlocked ? "border-[#ef4444] ring-4 ring-red-100" : "border-[#e5eaf3]"}`}>
+        <div className={`flex items-start justify-between gap-4 border-b px-6 py-5 ${isGateBlocked ? "border-[#fecaca] bg-[#fff7f7]" : "border-[#eef2f7]"}`}>
           <div className="min-w-0">
-            <p className="text-[11px] font-[950] uppercase tracking-[0.1em] text-[#F39945]">Today Briefing</p>
+            <p className={`text-[11px] font-[950] uppercase tracking-[0.1em] ${isGateBlocked ? "text-[#dc2626]" : "text-[#F39945]"}`}>Today Briefing</p>
             <h2 className="mt-1 text-[25px] font-[950] tracking-[-0.035em] text-[#111827]">{userName}님, 오늘 먼저 확인할 업무가 있어요.</h2>
             <p className="mt-2 text-[13px] font-[750] text-[#64748b]">내 거래와 오늘 운영 캘린더 기준으로 먼저 볼 항목만 정리했습니다.</p>
           </div>
@@ -149,12 +150,29 @@ export function TodayBriefingModal({
         </div>
 
         <div className="grid grid-cols-3 gap-2.5 px-6 pt-5">
-          <BriefingMetric label="내 월마감 체크건" value={`${userSummary.monthlyNeedCount}건`} tone="orange" />
+          <BriefingMetric label="내 월마감 체크건" value={`${userSummary.monthlyNeedCount}건`} tone={isGateBlocked ? "red" : "orange"} />
           <BriefingMetric label="내 수금 체크건" value={`${userSummary.collectionNeedCount}건`} tone="blue" />
           <BriefingMetric label="반려·지연 요청건" value={`${userSummary.delayedRequestCount}건`} tone="red" />
         </div>
 
         <div className="space-y-2.5 px-6 py-5">
+          {isGateBlocked ? (
+            <button
+              type="button"
+              onClick={() => (window.location.href = "/month-end")}
+              className="flex w-full min-w-0 items-start gap-3 rounded-[18px] border-2 border-[#ef4444] bg-[#fef2f2] p-4 text-left shadow-[0_10px_24px_rgba(220,38,38,0.08)] transition hover:bg-[#fee2e2]"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#dc2626] shadow-sm">
+                <AlertTriangle size={20} />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-[15px] font-[950] text-[#dc2626]">월마감 미완료로 VIPS팀 요청 진입이 불가합니다.</span>
+                <span className="mt-1 block text-[12px] font-[850] leading-5 text-[#991b1b]">
+                  내 월마감 체크건 {userSummary.monthlyNeedCount}건을 먼저 확인한 뒤 요청을 진행해주세요.
+                </span>
+              </span>
+            </button>
+          ) : null}
           {reasons.slice(0, 3).map((reason) => (
             <button
               key={reason.id}

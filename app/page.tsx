@@ -1367,13 +1367,13 @@ function InfoDialog({
 function GateBanner({ visible }: { visible: boolean }) {
   if (!visible) return null;
   return (
-    <section className="mb-[11px] flex items-center justify-between rounded-lg border border-[rgba(243,153,69,0.30)] bg-[#fff5ec] px-5 py-4">
+    <section className="mb-[11px] flex items-center justify-between rounded-lg border-2 border-[#ef4444] bg-[#fef2f2] px-5 py-4 shadow-[0_10px_24px_rgba(220,38,38,0.08)]">
       <div>
-        <p className="text-[15px] font-[850] text-[#b85f18]">미종료 거래가 남아 있어 VIPS팀 요청 진입이 불가합니다.</p>
-        <p className="mt-1 text-[12px] font-[650] text-[#5b6b84]">거래 종료 관리에서 내 미종료 거래를 확인하고 IKI에서 정리해주세요.</p>
+        <p className="text-[15px] font-[900] text-[#dc2626]">미종료 거래가 남아 있어 VIPS팀 요청 진입이 불가합니다.</p>
+        <p className="mt-1 text-[12px] font-[750] text-[#991b1b]">거래 종료 관리에서 내 미종료 거래를 확인하고 IKI에서 정리해주세요.</p>
       </div>
       <div className="flex gap-2">
-        <button onClick={() => (window.location.href = "/month-end")} className="h-10 rounded-md bg-[#F39945] px-4 text-[13px] font-[850] text-white">
+        <button onClick={() => (window.location.href = "/month-end")} className="h-10 rounded-md bg-[#dc2626] px-4 text-[13px] font-[900] text-white shadow-[0_8px_16px_rgba(220,38,38,0.16)]">
           미종료 거래 확인하기
         </button>
         <button onClick={() => window.open("https://iki.icbanq.com", "_blank", "noopener,noreferrer")} className="h-10 rounded-md bg-[#1D50A2] px-4 text-[13px] font-[850] text-white">
