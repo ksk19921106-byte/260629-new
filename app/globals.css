@@ -28,7 +28,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
   color: var(--ops-ink);
   background: #f6f8fb;
   font-family:
@@ -178,5 +178,37 @@ a {
     background: #f7faff;
     color: var(--ops-muted);
   }
+}
+
+.home-main {
+  --home-line: #d5dfec;
+  --home-line-soft: #dfe7f2;
+  --home-line-strong: #c8d5e5;
+  --home-card-shadow: 0 8px 18px rgba(15, 23, 42, 0.055), 0 1px 2px rgba(15, 23, 42, 0.035);
+}
+
+.home-main .border-\[\#edf2f8\],
+.home-main .border-\[\#edf1f7\],
+.home-main .border-\[\#edf1f6\],
+.home-main .border-\[\#e9eef6\],
+.home-main .border-\[\#e7ecf4\],
+.home-main .border-\[\#e6edf7\] {
+  border-color: var(--home-line-soft);
+}
+
+.home-main .border-\[\#dce6f3\],
+.home-main .border-\[\#d5dfec\],
+.home-main .border-\[\#cbd5e1\] {
+  border-color: var(--home-line-strong);
+}
+
+.home-main .divide-\[\#edf2f8\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--home-line-soft);
+}
+
+.home-main .shadow-\[0_4px_14px_rgba\(15\2c 23\2c 42\2c 0\.016\)\],
+.home-main .shadow-\[0_4px_10px_rgba\(15\2c 23\2c 42\2c 0\.022\)\],
+.home-main .shadow-\[0_6px_16px_rgba\(15\2c 23\2c 42\2c 0\.032\)\] {
+  box-shadow: var(--home-card-shadow);
 }
 

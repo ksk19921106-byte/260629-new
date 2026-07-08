@@ -60,7 +60,8 @@
       "recommendedAction": "Deduct 금액이 있습니다. 차감 사유와 반영 여부를 확인해주세요.",
       "uploadedAt": "2026-06-25T01:04:28.226Z",
       "uploadedBy": "Sally",
-      "status": "open"
+      "status": "done",
+      "memo": "테스트"
     },
     {
       "id": "2026-06-25T01:04:28.226Z-3-Tommy_ES-Jake-collection_check",

@@ -59,13 +59,13 @@ export function Home({
   const [query, setQuery] = useState("");
   const [showBriefing, setShowBriefing] = useState(false);
   const results = useMemo(() => searchGlobal(query, 6), [query]);
-  const briefingReasons = useMemo(() => getTodayBriefingReasons(), []);
+  const briefingReasons = useMemo(() => getTodayBriefingReasons(userName), [userName]);
   const showResults = query.trim().length > 0;
 
   useEffect(() => {
     if (briefingReasons.length === 0) return;
     const todayKey = new Date().toISOString().slice(0, 10);
-    const storageKey = `icbanq.ops.todayBriefing.dismissed.${userName}.${todayKey}`;
+    const storageKey = `icbanq.ops.todayBriefing.v2.dismissed.${userName}.${todayKey}`;
     try {
       if (window.localStorage.getItem(storageKey) === "true") return;
     } catch {
@@ -76,7 +76,7 @@ export function Home({
 
   const dismissBriefingToday = () => {
     const todayKey = new Date().toISOString().slice(0, 10);
-    const storageKey = `icbanq.ops.todayBriefing.dismissed.${userName}.${todayKey}`;
+    const storageKey = `icbanq.ops.todayBriefing.v2.dismissed.${userName}.${todayKey}`;
     try {
       window.localStorage.setItem(storageKey, "true");
     } catch {
@@ -95,7 +95,7 @@ export function Home({
   };
 
   return (
-    <main className="home-main w-full min-w-0 overflow-x-hidden bg-[#f5f7fb]">
+    <main className="home-main w-full min-w-0 overflow-x-hidden bg-[#eaf3ff]">
       {showBriefing ? (
         <TodayBriefingModal
           userName={userName}
@@ -105,7 +105,7 @@ export function Home({
         />
       ) : null}
       <div className="home-shell mx-auto flex w-full max-w-[1840px] flex-col gap-5 px-5 pb-7 pt-[18px] 2xl:px-6">
-        <section className="fixed left-[236px] right-0 top-0 z-40 min-w-0 overflow-visible border-b border-[#e6edf7]/80 bg-[#f5f7fb]/94 px-5 py-3 backdrop-blur-xl 2xl:px-6">
+        <section className="sticky top-0 z-40 min-w-0 overflow-visible border-b border-[#d7e6f7]/80 bg-[#eaf3ff]/94 px-0 py-3 backdrop-blur-xl">
           <div className="relative mx-auto flex w-full max-w-[1840px] min-w-0 flex-col items-start gap-2">
             <div className="flex h-[46px] w-full max-w-[620px] items-center gap-3 rounded-full border border-[#d5dfec] bg-white px-5 shadow-[0_10px_26px_rgba(15,23,42,0.07)] ring-1 ring-white">
               <Search size={18} className="shrink-0 text-[#64748b]" />
@@ -152,8 +152,6 @@ export function Home({
             ) : null}
           </div>
         </section>
-        <div className="h-[92px] shrink-0" aria-hidden="true" />
-
         <HomeGroup
           eyebrow="Today Priority"
           title="오늘 해야 할 업무"
@@ -173,7 +171,7 @@ export function Home({
           description="월마감 상태를 먼저 확인하고 필요한 요청을 등록합니다."
         >
           <GatekeeperBanner />
-          <div className="grid min-w-0 gap-3 lg:grid-cols-[1.25fr_0.75fr]">
+          <div className="grid min-w-0 gap-3 lg:grid-cols-2">
             <QuickRequestSection onSelectRequestKind={onSelectRequestKind} />
             <RequestStatusSection />
           </div>

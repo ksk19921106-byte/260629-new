@@ -16,8 +16,8 @@ export function QuickRequestSection({ onSelectRequestKind }: { onSelectRequestKi
         </button>
       </div>
 
-      <div className="mt-3 grid min-w-0 grid-cols-4 gap-2">
-        {quickRequests.map((item) => (
+      <div className="mt-3 grid min-w-0 grid-cols-3 gap-2">
+        {quickRequests.slice(0, 3).map((item) => (
           <button
             key={item.kind}
             onClick={() => onSelectRequestKind(item.kind)}

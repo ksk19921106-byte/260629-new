@@ -1719,7 +1719,7 @@ function MyBadgesCard() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-[18px] font-[900] text-[#151922]">운영 배지</h2>
-          <p className="mt-1 text-[12px] font-[600] text-[#667085]">게임 랭크가 아니라, 반복 실수를 줄이는 운영 성장 기록입니다.</p>
+          <p className="mt-1 text-[12px] font-[600] text-[#667085]">판매 이후 거래 종료까지 관리한 운영 성장 기록입니다.</p>
         </div>
         <button onClick={() => (window.location.href = "/performance")} className="flex items-center gap-1 rounded-full bg-[#f3f7ff] px-3 py-2 text-[12px] font-[850] text-[#1f5fe0]">
           전체 보기

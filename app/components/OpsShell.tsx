@@ -145,9 +145,9 @@ export function OpsShell({ children }: { children: ReactNode }) {
   const { selectedUser, setSelectedUser, users } = useSelectedUser();
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#eaf3ff] text-[#111827]">
-      <div className="grid min-h-screen grid-cols-[236px_minmax(0,1fr)]">
-        <aside className="flex w-[236px] flex-col bg-[#1D50A2] px-4 py-[18px] text-white shadow-[14px_0_34px_rgba(29,80,162,0.2)]">
+    <main className="min-h-screen overflow-x-clip bg-[#eaf3ff] text-[#111827]">
+      <div className="grid min-h-screen grid-cols-[252px_minmax(0,1fr)]">
+        <aside className="sticky top-3 m-3 flex min-h-[calc(100vh-24px)] w-[228px] flex-col overflow-hidden rounded-[26px] bg-[#1D50A2] px-3.5 py-4 text-white shadow-[14px_0_34px_rgba(29,80,162,0.2)]">
           <Logo />
           <div className="mt-4">
             <TestUserSwitcher selectedUser={selectedUser} users={users} onChange={setSelectedUser} pathname={pathname} />
@@ -165,14 +165,14 @@ export function OpsShell({ children }: { children: ReactNode }) {
                     event.preventDefault();
                     window.location.href = `/?user=${encodeURIComponent(selectedUser.name)}&home-reset=${Date.now()}`;
                   }}
-                  className={`group flex h-[42px] w-full items-center gap-2.5 rounded-[12px] px-2.5 text-[12px] font-[850] transition ${
-                    active ? "bg-white text-[#1D50A2] shadow-sm" : "text-white/85 hover:bg-white/12 hover:text-white"
+                  className={`group flex h-[40px] w-full items-center gap-2.5 rounded-[16px] border bg-white px-2.5 text-[12px] font-[850] text-[#1D50A2] transition ${
+                    active ? "border-white shadow-[0_8px_18px_rgba(8,47,126,0.18)]" : "border-white/40 hover:border-white hover:shadow-sm"
                   }`}
                 >
-                  <span className={`flex h-7 w-7 items-center justify-center rounded-full ${active ? "bg-[#eaf3ff] text-[#1D50A2]" : "bg-white/12 text-white/85 group-hover:bg-white/20 group-hover:text-white"}`}>
+                  <span className={`flex h-7 w-7 items-center justify-center rounded-full ${active ? "bg-[#eaf3ff] text-[#1D50A2]" : "bg-[#edf4ff] text-[#1D50A2] group-hover:bg-[#e4efff]"}`}>
                     <item.icon size={16} strokeWidth={2.2} />
                   </span>
-                  <span className="truncate">{item.label}</span>
+                  <span className="min-w-0 flex-1 truncate text-[#1D50A2]">{item.label}</span>
                   {item.badge ? (
                     <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[#F39945] px-1.5 text-[11px] font-[900] text-white">
                       {item.badge}
@@ -183,7 +183,7 @@ export function OpsShell({ children }: { children: ReactNode }) {
             })}
           </nav>
 
-          <div className="mt-auto space-y-3">
+          <div className="mt-auto space-y-3 pt-5">
             <SidebarChallengeCard />
             <button className="flex h-[40px] w-full items-center gap-3 rounded-[12px] bg-white/10 px-3 text-[12px] font-[850] text-white/85 hover:bg-white/18 hover:text-white">
               <LogOut size={16} />

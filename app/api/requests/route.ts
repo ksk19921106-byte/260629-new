@@ -2,7 +2,7 @@
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { REQUEST_FORM_CONFIGS, type RequestFormValues, type RequestKind } from "../../services/formValidation";
-import type { RequestAttachmentPreview, RequestCreatePayload, RequestItem, RequestStatus, RequestUpdatePayload } from "../../services/requestStorage";
+import type { ErpTransmissionLog, RequestAttachmentPreview, RequestCreatePayload, RequestItem, RequestStatus, RequestUpdatePayload } from "../../services/requestStorage";
 
 export const runtime = "nodejs";
 
@@ -33,7 +33,8 @@ const excelHeaders = [
   "처리자",
   "처리일시",
   "배정담당자",
-  "상세정보"
+  "상세정보",
+  "ERP전송정보"
 ];
 
 function normalizeStatus(status: string | undefined): RequestStatus {
@@ -164,8 +165,34 @@ function legacyRowToRequest(row: Record<string, unknown>): RequestRow {
     processedAt: pick(row, ["processedAt", "처리일시"], legacy[16] ?? "-"),
     assignedOwners: asStringArray(row.assignedOwners ?? row.배정담당자 ?? legacy[17]),
     attachments: asAttachments(row.attachments ?? row.첨부미리보기),
-    details: asDetails(row.details ?? row.상세정보 ?? legacy[18])
+    details: asDetails(row.details ?? row.상세정보 ?? legacy[18]),
+    erpTransmission: asErpTransmission(row.erpTransmission ?? row.ERP전송정보 ?? legacy[19])
   };
+}
+
+function asErpTransmission(value: unknown): ErpTransmissionLog | undefined {
+  if (!value) return undefined;
+  if (typeof value === "object" && !Array.isArray(value)) {
+    const item = value as Partial<ErpTransmissionLog>;
+    return {
+      status: item.status ?? "not_ready",
+      system: item.system ?? "ICBANQ_ERP",
+      mode: item.mode ?? "mock",
+      transmittedAt: asText(item.transmittedAt),
+      transmittedBy: asText(item.transmittedBy),
+      externalId: asText(item.externalId),
+      message: asText(item.message, "ERP 전송 정보"),
+      payload: typeof item.payload === "object" && item.payload ? item.payload as Record<string, unknown> : undefined
+    };
+  }
+  if (typeof value === "string") {
+    try {
+      return asErpTransmission(JSON.parse(value));
+    } catch {
+      return undefined;
+    }
+  }
+  return undefined;
 }
 
 function rowToItem(row: RequestRow): RequestItem {
@@ -242,8 +269,77 @@ function rowValues(row: RequestRow) {
     row.processor,
     row.processedAt,
     (row.assignedOwners ?? []).join(", "),
-    JSON.stringify(row.details ?? {})
+    JSON.stringify(row.details ?? {}),
+    JSON.stringify(row.erpTransmission ?? {})
   ];
+}
+
+function parseMoneyLike(value: string) {
+  return Number(String(value ?? "").replace(/[^0-9.-]/g, "") || 0);
+}
+
+function buildErpPayload(row: RequestRow) {
+  const details = row.details ?? {};
+  if (row.kind === "taxInvoice") {
+    return {
+      requestId: row.id,
+      requestType: "taxInvoice",
+      companyName: row.companyName,
+      contactEmail: details["담당자(E메일)"] || row.contactEmail,
+      issueDate: row.issueDate,
+      itemName: row.itemName,
+      quantity: parseMoneyLike(row.quantity),
+      unitPrice: parseMoneyLike(row.unitPrice),
+      supplyAmount: parseMoneyLike(row.supplyAmount),
+      vatAmount: parseMoneyLike(details["부가세액"] || ""),
+      totalAmount: parseMoneyLike(row.totalAmount),
+      trackingMatchStatus: details["트래킹 매칭 여부"] || "",
+      trackingNumber: details["트래킹 번호"] || "",
+      trackingMemo: details["트래킹 매칭 관련 메모"] || "",
+      note: row.note,
+      requestedBy: row.requester
+    };
+  }
+
+  if (row.kind === "revisedTaxInvoice") {
+    return {
+      requestId: row.id,
+      requestType: "revisedTaxInvoice",
+      companyName: row.companyName,
+      originalInvoiceLink: details["기존세금계산서링크"] || "",
+      revisionChange: details["수정사항"] || row.itemName,
+      revisionReason: details["수정이유"] || "",
+      note: row.note,
+      requestedBy: row.requester
+    };
+  }
+
+  return null;
+}
+
+function buildMockErpTransmission(row: RequestRow, payload: RequestUpdatePayload, processedAt: string): ErpTransmissionLog {
+  const erpPayload = buildErpPayload(row);
+  if (!erpPayload) {
+    return {
+      status: "failed",
+      system: payload.targetSystem ?? "ICBANQ_ERP",
+      mode: "mock",
+      transmittedAt: processedAt,
+      transmittedBy: payload.transmittedBy || "VIPS팀",
+      message: "ERP 전송 대상 요청이 아닙니다."
+    };
+  }
+
+  return {
+    status: "mock_sent",
+    system: payload.targetSystem ?? "ICBANQ_ERP",
+    mode: "mock",
+    transmittedAt: processedAt,
+    transmittedBy: payload.transmittedBy || "VIPS팀",
+    externalId: `MOCK-ERP-${row.id.replace(/^REQ-/, "")}`,
+    message: "Mock ERP 전송 완료. 실제 ERP API URL/인증키 연결 시 같은 payload로 전송됩니다.",
+    payload: erpPayload
+  };
 }
 
 function sheetXml(rows: RequestRow[]) {
@@ -619,12 +715,22 @@ export async function PATCH(request: Request) {
   }
 
   const now = new Date();
+  const processedAt = formatRequestedAt(now);
+  const current = rows[index];
+  const isErpSend = payload.action === "erpSend";
+  const erpTransmission = isErpSend ? buildMockErpTransmission(current, payload, processedAt) : current.erpTransmission;
+
   rows[index] = {
-    ...rows[index],
-    status: payload.status,
-    result: payload.result,
-    processor: "VIPS팀",
-    processedAt: formatRequestedAt(now)
+    ...current,
+    status: isErpSend && erpTransmission?.status === "mock_sent" ? "완료" : payload.status,
+    result: isErpSend
+      ? erpTransmission?.status === "mock_sent"
+        ? `${erpTransmission.system} 전송 완료 (${erpTransmission.externalId})`
+        : erpTransmission?.message ?? payload.result
+      : payload.result,
+    processor: payload.transmittedBy || "VIPS팀",
+    processedAt,
+    erpTransmission
   };
 
   await writeRows(rows);

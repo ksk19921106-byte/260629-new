@@ -80,7 +80,7 @@ export function WeeklyOpsCalendar() {
         <p className="rounded-full bg-[#f1f5f9] px-3 py-1 text-[11px] font-[900] text-[#64748b]">오늘 {today}요일 먼저 보기</p>
       </div>
 
-      <div className="mt-4 grid min-w-0 grid-cols-5 gap-2.5">
+      <div className="mt-4 grid min-w-0 grid-cols-2 gap-2.5 min-[1180px]:grid-cols-5">
         {orderedItems.map((item) => {
           const itemIndex = dayOrder.indexOf(item.date);
           const isToday = item.date === today;
@@ -93,7 +93,7 @@ export function WeeklyOpsCalendar() {
               onClick={() => handleWorkItemClick(item)}
               className={`flex min-h-[132px] min-w-0 flex-col justify-between overflow-hidden rounded-[18px] border p-3.5 text-left transition hover:-translate-y-0.5 hover:bg-white hover:shadow-sm ${
                 isToday
-                  ? "border-[#cbd5e1] bg-white shadow-[0_8px_18px_rgba(15,23,42,0.055)]"
+                  ? "border-[#ef4444] bg-white shadow-[0_8px_18px_rgba(239,68,68,0.12)] ring-1 ring-[#fecaca]"
                   : isPast
                     ? "border-[#edf1f7] bg-[#fbfcff] opacity-70"
                     : "border-[#edf1f7] bg-[#fbfdff] hover:border-[#1D50A2]"

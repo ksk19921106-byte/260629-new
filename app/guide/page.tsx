@@ -303,14 +303,6 @@ function SolutionArticle({ article, onPick }: { article: WikiArticle; onPick: (a
           </div>
         </section>
 
-        <section>
-          <h3 className="text-[15px] font-[950] text-[#111827]">실제 화면</h3>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <ScreenshotBlock article={article} index={1} />
-            <ScreenshotBlock article={article} index={2} />
-          </div>
-        </section>
-
         <section className="rounded-[18px] border border-[#f7c999] bg-[#fff5ec] p-4">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-[#F39945]" />
@@ -378,15 +370,6 @@ export default function GuidePage() {
           <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#1D50A2]">SEARCH FIRST</p>
           <h2 className="mt-1 text-[28px] font-[950] tracking-[-0.03em] text-[#111827]">무엇이 막혔나요?</h2>
           <p className="mt-1 text-[13px] font-[750] leading-5 text-[#64748b]">기능 이름을 몰라도 상황을 입력하면 바로 해결 문서를 찾아드립니다.</p>
-          <div className="mt-4 flex min-h-[52px] items-center gap-3 rounded-full border border-[#dbe7f5] bg-white px-5 shadow-[0_10px_28px_rgba(37,99,235,0.08)]">
-            <Search className="h-5 w-5 shrink-0 text-[#1D50A2]" />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="예: 출고 안돼요, 입금 들어왔는데, 계산서 왜 안 끊겨요, 여신 막혔어요"
-              className="min-w-0 flex-1 bg-transparent text-[14px] font-[800] text-[#111827] outline-none placeholder:text-[#94a3b8]"
-            />
-          </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {quickChips.map((chip) => (
               <button
@@ -400,6 +383,18 @@ export default function GuidePage() {
             ))}
           </div>
         </section>
+
+        <div className="sticky top-0 z-[80] rounded-[24px] border border-[#c7d8ef] bg-white/95 p-2 shadow-[0_10px_24px_rgba(29,80,162,0.08)] backdrop-blur-md">
+          <div className="flex min-h-[50px] items-center gap-3 rounded-full bg-white px-5">
+            <Search className="h-5 w-5 shrink-0 text-[#1D50A2]" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="예: 출고 안돼요, 입금 들어왔는데, 계산서 왜 안 끊겨요, 여신 막혔어요"
+              className="min-w-0 flex-1 bg-transparent text-[14px] font-[800] text-[#111827] outline-none placeholder:text-[#94a3b8]"
+            />
+          </div>
+        </div>
 
         <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
           {helpCategories.map((category) => {

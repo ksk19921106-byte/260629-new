@@ -2,13 +2,19 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
+import { AlertTriangle, X } from "lucide-react";
 import { RequestDetailModal } from "../components/RequestDetailModal";
 import { ModulePage } from "../components/ModulePage";
-import { useSelectedUser } from "../hooks/useSelectedUser";
+import { TEST_USERS, useSelectedUser } from "../hooks/useSelectedUser";
 import { fetchRequests, type RequestItem } from "../services/requestStorage";
 import { REQUEST_FORM_CONFIGS, type RequestKind } from "../services/formValidation";
 
 type RequestBucket = "received" | "processing" | "done" | "rejected";
+type AdminRequestFilters = {
+  team: string;
+  person: string;
+  status: "" | RequestBucket;
+};
 
 const bucketLabels: Record<RequestBucket, string> = {
   received: "접수",
@@ -33,6 +39,22 @@ const defaultQuery = {
   date: ""
 };
 
+const adminTeamOptions = ["S1", "S2", "S3", "B2D"];
+const defaultAdminFilters: AdminRequestFilters = {
+  team: "",
+  person: "",
+  status: ""
+};
+
+function normalizeTeamName(value: string) {
+  const key = String(value || "").trim();
+  if (key === "영업1팀") return "B2D";
+  if (key === "영업2팀") return "S2";
+  if (key === "영업3팀") return "S3";
+  if (adminTeamOptions.includes(key)) return key;
+  return key;
+}
+
 function requestBucket(status: string): RequestBucket {
   const text = String(status);
   if (text.includes("완료") || text.includes("?꾨즺")) return "done";
@@ -43,6 +65,27 @@ function requestBucket(status: string): RequestBucket {
 
 function requesterKey(value: string) {
   return String(value || "").trim().toLowerCase();
+}
+
+function findUserByIdentity(value: string) {
+  const key = requesterKey(value);
+  return TEST_USERS.find((user) => requesterKey(user.name) === key || requesterKey(user.email) === key || requesterKey(user.salesName) === key);
+}
+
+function requestTeam(item: RequestItem) {
+  const requester = findUserByIdentity(item.requester);
+  return normalizeTeamName(requester?.team ?? "");
+}
+
+function requestPersonKeys(item: RequestItem) {
+  const keys = new Set<string>();
+  const requester = findUserByIdentity(item.requester);
+
+  [item.requester, requester?.name, requester?.email, requester?.salesName, item.processor, ...(item.assignedOwners ?? [])].forEach((value) => {
+    if (value) keys.add(requesterKey(value));
+  });
+
+  return keys;
 }
 
 function isOwnRequest(item: RequestItem, selectedUser: { name: string; email: string }) {
@@ -69,6 +112,12 @@ function kindLabel(kind?: RequestKind, fallback?: string) {
   return fallback || "VIPS 요청";
 }
 
+function rejectionReason(item: RequestItem) {
+  const result = String(item.result || "").trim();
+  if (result && result !== "VIPS팀 접수 대기" && result !== "처리 결과 대기") return result;
+  return "반려 사유 미기재";
+}
+
 function readQuery() {
   if (typeof window === "undefined") return defaultQuery;
   const params = new URLSearchParams(window.location.search);
@@ -82,22 +131,37 @@ function readQuery() {
   };
 }
 
+function readAdminFilters(): AdminRequestFilters {
+  if (typeof window === "undefined") return defaultAdminFilters;
+  const params = new URLSearchParams(window.location.search);
+  const status = params.get("status") ?? "";
+  return {
+    team: params.get("team") ?? "",
+    person: params.get("person") ?? "",
+    status: ["received", "processing", "done", "rejected"].includes(status) ? (status as RequestBucket) : ""
+  };
+}
+
 export default function RequestStatusPage() {
   const { selectedUser } = useSelectedUser();
   const [items, setItems] = useState<RequestItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [detailRequest, setDetailRequest] = useState<RequestItem | null>(null);
   const [query, setQuery] = useState(defaultQuery);
+  const [adminFilters, setAdminFilters] = useState(defaultAdminFilters);
+  const [showRejectedAlert, setShowRejectedAlert] = useState(false);
 
   useEffect(() => {
     setQuery(readQuery());
+    setAdminFilters(readAdminFilters());
     fetchRequests()
       .then(setItems)
       .finally(() => setLoading(false));
   }, []);
 
   const visibleItems = useMemo(() => {
-    const isAdminAll = selectedUser.accessRole === "admin" && query.scope === "all";
+    const isAdminUser = selectedUser.accessRole === "admin";
+    const isAdminAll = isAdminUser && query.scope !== "mine";
     const kindSet = new Set(query.kind.split(",").map((value) => value.trim()).filter(Boolean));
     const requesterSet = new Set(query.requester.split(",").map((value) => requesterKey(value)).filter(Boolean));
     const assigneeSet = new Set(query.assignee.split(",").map((value) => requesterKey(value)).filter(Boolean));
@@ -113,10 +177,32 @@ export default function RequestStatusPage() {
           const owners = (item.assignedOwners ?? []).map((owner) => requesterKey(owner));
           if (!owners.some((owner) => assigneeSet.has(owner))) return false;
         }
+        if (isAdminUser) {
+          if (adminFilters.team && requestTeam(item) !== adminFilters.team) return false;
+          if (adminFilters.status && requestBucket(item.status) !== adminFilters.status) return false;
+          if (adminFilters.person) {
+            const personKey = requesterKey(adminFilters.person);
+            if (!requestPersonKeys(item).has(personKey)) return false;
+          }
+        }
         return true;
       })
       .sort((a, b) => String(b.requestedAt).localeCompare(String(a.requestedAt)));
-  }, [items, query, selectedUser]);
+  }, [adminFilters, items, query, selectedUser]);
+
+  const adminPersonOptions = useMemo(() => {
+    const names = new Set<string>();
+    TEST_USERS.forEach((user) => names.add(user.name));
+    items.forEach((item) => {
+      const requester = findUserByIdentity(item.requester);
+      if (requester) names.add(requester.name);
+      (item.assignedOwners ?? []).forEach((owner) => {
+        const user = findUserByIdentity(owner);
+        names.add(user?.name ?? owner);
+      });
+    });
+    return Array.from(names).sort((a, b) => a.localeCompare(b));
+  }, [items]);
 
   const counts = useMemo(
     () =>
@@ -130,7 +216,10 @@ export default function RequestStatusPage() {
     [visibleItems]
   );
 
-  const isAdminAll = selectedUser.accessRole === "admin" && query.scope === "all";
+  const rejectedItems = useMemo(() => visibleItems.filter((item) => requestBucket(item.status) === "rejected"), [visibleItems]);
+
+  const isAdminUser = selectedUser.accessRole === "admin";
+  const isAdminAll = isAdminUser && query.scope !== "mine";
   const canProcessDetail = !!detailRequest && (selectedUser.accessRole === "admin" || isAssignedToUser(detailRequest, selectedUser));
   const assignedCount = visibleItems.filter((item) => isAssignedToUser(item, selectedUser)).length;
   const ownCount = visibleItems.filter((item) => isOwnRequest(item, selectedUser)).length;
@@ -138,9 +227,88 @@ export default function RequestStatusPage() {
     ? "Sally Admin 권한으로 Sales가 올린 VIPS팀 요청 전체를 확인합니다."
     : "내가 요청했거나 나에게 배정된 VIPS팀 업무의 접수, 처리 상태, 처리결과를 확인합니다.";
 
+  useEffect(() => {
+    if (loading) return;
+    if (counts.rejected <= 0) return;
+    setShowRejectedAlert(true);
+  }, [counts.rejected, loading]);
+
   return (
     <ModulePage eyebrow="Request Status" title="요청 현황" description={description}>
       <div className="space-y-5">
+        {showRejectedAlert ? (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0f172a]/28 px-4 py-6 backdrop-blur-[2px]">
+            <section className="w-full max-w-[560px] overflow-hidden rounded-[26px] border border-[#fecaca] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.22)]">
+              <div className="flex items-start justify-between gap-4 border-b border-[#fee2e2] bg-[#fff1f2] px-6 py-5">
+                <div className="flex min-w-0 gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#dc2626]">
+                    <AlertTriangle size={20} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-[950] uppercase tracking-[0.1em] text-[#dc2626]">Rejected Request Alert</p>
+                    <h2 className="mt-1 text-[22px] font-[950] tracking-[-0.03em] text-[#111827]">반려된 요청이 {counts.rejected}건 있습니다.</h2>
+                    <p className="mt-2 text-[13px] font-[750] leading-5 text-[#64748b]">반려 사유를 확인하고 보완 후 다시 요청해주세요.</p>
+                  </div>
+                </div>
+                <button type="button" onClick={() => setShowRejectedAlert(false)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-[#64748b] transition hover:bg-[#fee2e2]">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="px-6 py-5">
+                <div className="max-h-[260px] space-y-2 overflow-y-auto pr-1">
+                  {rejectedItems.slice(0, 5).map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setDetailRequest(item);
+                        setShowRejectedAlert(false);
+                      }}
+                      className="w-full rounded-[18px] border border-[#fecaca] bg-[#fffafa] p-4 text-left transition hover:border-[#dc2626] hover:bg-white"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <span className="min-w-0">
+                          <b className="block truncate text-[14px] font-[950] text-[#111827]">{kindLabel(item.kind, item.type)}</b>
+                          <span className="mt-1 block truncate text-[11px] font-[800] text-[#94a3b8]">{item.id} · {item.requester}</span>
+                        </span>
+                        <span className="shrink-0 rounded-full border border-[#fecaca] bg-white px-2.5 py-1 text-[10px] font-[950] text-[#dc2626]">반려</span>
+                      </div>
+                      <div className="mt-3 rounded-[14px] bg-white px-3 py-2">
+                        <p className="text-[11px] font-[900] text-[#dc2626]">반려 사유</p>
+                        <p className="mt-1 line-clamp-2 text-[12px] font-[750] leading-5 text-[#334155]">{rejectionReason(item)}</p>
+                      </div>
+                    </button>
+                  ))}
+                  {rejectedItems.length > 5 ? (
+                    <p className="rounded-[14px] bg-[#fff7f7] px-3 py-2 text-center text-[11px] font-[850] text-[#dc2626]">
+                      외 {rejectedItems.length - 5}건은 반려건만 보기에서 확인할 수 있습니다.
+                    </p>
+                  ) : null}
+                </div>
+                <div className="mt-4 rounded-[18px] border border-[#fecaca] bg-[#fff7f7] p-4">
+                  <p className="text-[14px] font-[950] text-[#111827]">확인 순서</p>
+                  <p className="mt-2 text-[12px] font-[750] leading-5 text-[#64748b]">요청 상세 열기 → 처리 메모/반려 사유 확인 → 누락 정보 보완 → 재요청</p>
+                </div>
+                <div className="mt-5 flex justify-end gap-2">
+                  <button type="button" onClick={() => setShowRejectedAlert(false)} className="h-10 rounded-full border border-[#fecaca] bg-white px-4 text-[12px] font-[900] text-[#dc2626]">
+                    확인했습니다
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAdminFilters((current) => ({ ...current, status: "rejected" }));
+                      setShowRejectedAlert(false);
+                    }}
+                    className="h-10 rounded-full bg-[#dc2626] px-5 text-[12px] font-[950] text-white"
+                  >
+                    반려건만 보기
+                  </button>
+                </div>
+              </div>
+            </section>
+          </div>
+        ) : null}
+
         <section className="grid gap-5 xl:grid-cols-[330px_minmax(0,1fr)]">
           <article className="rounded-[24px] border border-white bg-white p-6 shadow-[0_18px_42px_rgba(15,23,42,0.07)]">
             <div className="relative mx-auto h-[104px] w-[104px] overflow-hidden rounded-full bg-[#eaf3ff] shadow-[inset_0_0_0_1px_rgba(29,80,162,0.08)]">
@@ -178,12 +346,19 @@ export default function RequestStatusPage() {
                 ["완료", counts.done, "done"],
                 ["반려", counts.rejected, "rejected"]
               ] as const).map(([label, value, bucket]) => (
-                <article key={bucket} className="rounded-[18px] border border-[#e6edf7] bg-[#fbfdff] p-4">
+                <article
+                  key={bucket}
+                  className={`rounded-[18px] border p-4 ${
+                    bucket === "rejected" && value > 0
+                      ? "border-[#fca5a5] bg-[#fff1f2] shadow-[0_10px_24px_rgba(220,38,38,0.10)]"
+                      : "border-[#e6edf7] bg-[#fbfdff]"
+                  }`}
+                >
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-[12px] font-[900] text-[#64748b]">{label}</p>
-                    <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-[900] ${bucketStyles[bucket]}`}>{bucketLabels[bucket]}</span>
+                    <p className={`text-[12px] font-[900] ${bucket === "rejected" && value > 0 ? "text-[#dc2626]" : "text-[#64748b]"}`}>{label}</p>
+                    <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-[900] ${bucket === "rejected" && value > 0 ? "border-[#fecaca] bg-white text-[#dc2626]" : bucketStyles[bucket]}`}>{bucketLabels[bucket]}</span>
                   </div>
-                  <p className="mt-5 text-[30px] font-[950] tracking-[-0.04em] text-[#10203f]">{value}건</p>
+                  <p className={`mt-5 text-[30px] font-[950] tracking-[-0.04em] ${bucket === "rejected" && value > 0 ? "text-[#dc2626]" : "text-[#10203f]"}`}>{value}건</p>
                 </article>
               ))}
             </div>
@@ -200,6 +375,65 @@ export default function RequestStatusPage() {
             </div>
             <span className="rounded-full bg-[#edf4ff] px-4 py-2 text-[12px] font-[950] text-[#1D50A2]">총 {visibleItems.length}건</span>
           </div>
+
+          {isAdminUser ? (
+            <div className="mt-5 grid gap-3 rounded-[18px] border border-[#d8e4f3] bg-[#f8fbff] p-4 md:grid-cols-4">
+              <label className="min-w-0">
+                <span className="block text-[11px] font-[850] text-[#64748b]">팀별</span>
+                <select
+                  value={adminFilters.team}
+                  onChange={(event) => setAdminFilters((current) => ({ ...current, team: event.target.value }))}
+                  className="mt-2 h-10 w-full rounded-[13px] border border-[#d8e4f3] bg-white px-3 text-[13px] font-[750] text-[#10203f] outline-none transition focus:border-[#1D50A2]"
+                >
+                  <option value="">전체 팀</option>
+                  {adminTeamOptions.map((team) => (
+                    <option key={team} value={team}>
+                      {team}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="min-w-0">
+                <span className="block text-[11px] font-[850] text-[#64748b]">담당자별</span>
+                <select
+                  value={adminFilters.person}
+                  onChange={(event) => setAdminFilters((current) => ({ ...current, person: event.target.value }))}
+                  className="mt-2 h-10 w-full rounded-[13px] border border-[#d8e4f3] bg-white px-3 text-[13px] font-[750] text-[#10203f] outline-none transition focus:border-[#1D50A2]"
+                >
+                  <option value="">전체 직원</option>
+                  {adminPersonOptions.map((person) => (
+                    <option key={person} value={person}>
+                      {person}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="min-w-0">
+                <span className="block text-[11px] font-[850] text-[#64748b]">상태</span>
+                <select
+                  value={adminFilters.status}
+                  onChange={(event) => setAdminFilters((current) => ({ ...current, status: event.target.value as AdminRequestFilters["status"] }))}
+                  className="mt-2 h-10 w-full rounded-[13px] border border-[#d8e4f3] bg-white px-3 text-[13px] font-[750] text-[#10203f] outline-none transition focus:border-[#1D50A2]"
+                >
+                  <option value="">전체 상태</option>
+                  {(["received", "processing", "done", "rejected"] as RequestBucket[]).map((bucket) => (
+                    <option key={bucket} value={bucket}>
+                      {bucketLabels[bucket]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="flex min-w-0 items-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAdminFilters(defaultAdminFilters)}
+                  className="h-10 flex-1 rounded-[13px] border border-[#d8e4f3] bg-white px-3 text-[12px] font-[850] text-[#1D50A2] transition hover:bg-[#edf4ff]"
+                >
+                  필터 초기화
+                </button>
+              </div>
+            </div>
+          ) : null}
 
           <div className="mt-5 grid grid-cols-[minmax(0,1.15fr)_minmax(110px,0.75fr)_minmax(120px,0.8fr)_150px_120px_minmax(0,1fr)] rounded-[16px] bg-[#f3f8ff] px-4 py-3 text-[12px] font-[900] text-[#64748b]">
             <span>요청 종류</span>
@@ -222,7 +456,9 @@ export default function RequestStatusPage() {
                   <button
                     key={item.id}
                     onClick={() => setDetailRequest(item)}
-                    className="grid w-full grid-cols-[minmax(0,1.15fr)_minmax(110px,0.75fr)_minmax(120px,0.8fr)_150px_120px_minmax(0,1fr)] items-center rounded-[16px] border border-[#e8eef8] bg-white px-4 py-4 text-left text-[13px] shadow-[0_5px_16px_rgba(15,23,42,0.035)] transition hover:-translate-y-0.5 hover:border-[#cddff8] hover:shadow-[0_12px_30px_rgba(23,105,232,0.09)]"
+                    className={`grid w-full grid-cols-[minmax(0,1.15fr)_minmax(110px,0.75fr)_minmax(120px,0.8fr)_150px_120px_minmax(0,1fr)] items-center rounded-[16px] border bg-white px-4 py-4 text-left text-[13px] shadow-[0_5px_16px_rgba(15,23,42,0.035)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(23,105,232,0.09)] ${
+                      bucket === "rejected" ? "border-[#fecaca] hover:border-[#fca5a5]" : "border-[#e8eef8] hover:border-[#cddff8]"
+                    }`}
                   >
                     <span className="min-w-0">
                       <b className="block truncate text-[14px] font-[950] text-[#10203f]">{kindLabel(item.kind, item.type)}</b>
@@ -231,7 +467,7 @@ export default function RequestStatusPage() {
                     <span className="truncate font-[800] text-[#64748b]">{item.requester}</span>
                     <span className="truncate font-[900] text-[#1D50A2]">{(item.assignedOwners ?? []).join(", ") || "-"}</span>
                     <span className="font-[800] text-[#64748b]">{item.requestedAt}</span>
-                    <span className={`w-fit rounded-full border px-3 py-1 text-[12px] font-[900] ${bucketStyles[bucket]}`}>{bucketLabels[bucket]}</span>
+                    <span className={`w-fit rounded-full border px-3 py-1 text-[12px] font-[900] ${bucket === "rejected" ? "border-[#fecaca] bg-[#fff1f2] text-[#dc2626]" : bucketStyles[bucket]}`}>{bucketLabels[bucket]}</span>
                     <span className="truncate font-[800] text-[#10203f]">{item.result || "처리 결과 대기"}</span>
                   </button>
                 );

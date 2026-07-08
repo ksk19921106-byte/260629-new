@@ -14,6 +14,9 @@ export type ClosingIssue = {
   iSales: string;
   company: string;
   companyCount?: number;
+  billingAmount?: number;
+  gpdAmount?: number;
+  gpRate?: number;
   issueType: ClosingIssueType;
   issueLabel: string;
   amount: number;
@@ -55,7 +58,7 @@ const issueMeta: Record<ClosingIssueType, { label: string; action: string }> = {
   },
   long_pending: {
     label: "입고O/출고X/계산서X",
-    action: "입고된 건이지만 고객에게 출고 및 계산서 발행이 되지 않은 건입니다. 거래 진행 상태를 먼저 확인해주세요."
+    action: "입고된 건이지만 고객에게 출고 및 계산서 발행이 진행되지 않은 건입니다. 거래 진행 상태를 먼저 확인해주세요."
   },
   collection_check: {
     label: "지연AR",
@@ -77,13 +80,25 @@ function normalizeMoney(value: string | undefined) {
   return match ? Math.round(Number(match[0])) : 0;
 }
 
+function normalizePercent(value: string | undefined) {
+  if (!value) return undefined;
+  const match = value.replace(/,/g, "").match(/-?\d+(\.\d+)?/);
+  return match ? Number(match[0]) : undefined;
+}
+
+function extractTotalAmount(value: string | undefined) {
+  if (!value) return 0;
+  const totalMatch = value.replace(/,/g, "").match(/Total:\s*(-?\d+(?:\.\d+)?)/i);
+  if (totalMatch) return Math.round(Number(totalMatch[1]));
+  return normalizeMoney(value);
+}
+
 function normalizeCount(value: string | undefined) {
   if (!value) return undefined;
   const compact = value.replace(/,/g, "");
   const companyCountMatch = compact.match(/(?:업체|company|거래처)[^\d-]*(\d+)/i);
   if (companyCountMatch) return Number(companyCountMatch[1]);
-  const firstNumber = compact.match(/\d+/);
-  return firstNumber ? Number(firstNumber[0]) : undefined;
+  return undefined;
 }
 
 function splitSalesPair(value: string) {
@@ -96,6 +111,10 @@ function splitSalesPair(value: string) {
 
   const fallback = normalized || "미지정";
   return { fSales: fallback, iSales: fallback };
+}
+
+function cleanCompany(value: string | undefined) {
+  return (value || "거래처 미확인").replace(/\s*\n\s*/g, " ").replace(/\s+/g, " ").trim();
 }
 
 function priorityFor(type: ClosingIssueType, amount: number, shipmentDays: number, taxIssueDays: number): "high" | "medium" | "low" {
@@ -111,6 +130,9 @@ function createIssue(params: {
   salesPair: string;
   company: string;
   companyCount?: number;
+  billingAmount?: number;
+  gpdAmount?: number;
+  gpRate?: number;
   type: ClosingIssueType;
   amount: number;
   shipmentDays: number;
@@ -129,6 +151,9 @@ function createIssue(params: {
     iSales,
     company: params.company,
     companyCount: params.companyCount,
+    billingAmount: params.billingAmount,
+    gpdAmount: params.gpdAmount,
+    gpRate: params.gpRate,
     issueType: params.type,
     issueLabel: meta.label,
     amount: params.amount,
@@ -179,24 +204,43 @@ function parseErpMultiLinePaste(text: string, uploadedBy: string, uploadedAt: st
     const rowNo = cells[0];
     const team = cells[1] || "-";
     const salesPair = cells[2] || "미지정";
-    const companyCount = normalizeCount(cells[3]);
-    const { fSales, iSales } = splitSalesPair(salesPair);
-    const company = cells[4] && !/^-?\d[\d,]*$/.test(cells[4]) ? cells[4] : `${team} ${fSales} / ${iSales} 월마감 집계`;
-    const shipmentDays = normalizeMoney(cells[6]);
-    const taxIssueDays = normalizeMoney(cells[7]);
+    const company = cleanCompany(cells[3]);
+    const companyCount = normalizeCount(company);
+    const billingAmount = extractTotalAmount(cells[4]);
+    const gpdAmount = extractTotalAmount(cells[5]);
+    const gpRate = normalizePercent(cells[6]);
+    const shipmentDays = normalizeMoney(cells[7]);
+    const taxIssueDays = normalizeMoney(cells[8]);
 
     const issueValues: Array<[ClosingIssueType, number]> = [
-      ["collection_check", normalizeMoney(cells[8])],
-      ["deduct_check", normalizeMoney(cells[9])],
-      ["shipment_check", normalizeMoney(cells[10])],
-      ["invoice_required", normalizeMoney(cells[11])],
-      ["long_pending", normalizeMoney(cells[12])],
-      ["sales_unshipped", normalizeMoney(cells[13])]
+      ["collection_check", normalizeMoney(cells[9])],
+      ["deduct_check", normalizeMoney(cells[10])],
+      ["shipment_check", normalizeMoney(cells[11])],
+      ["invoice_required", normalizeMoney(cells[12])],
+      ["long_pending", normalizeMoney(cells[13])],
+      ["sales_unshipped", normalizeMoney(cells[14])]
     ];
 
     for (const [type, amount] of issueValues) {
       if (amount <= 0) continue;
-      issues.push(createIssue({ rowNo, team, salesPair, company, companyCount, type, amount, shipmentDays, taxIssueDays, uploadedAt, uploadedBy }));
+      issues.push(
+        createIssue({
+          rowNo,
+          team,
+          salesPair,
+          company,
+          companyCount,
+          billingAmount,
+          gpdAmount,
+          gpRate,
+          type,
+          amount,
+          shipmentDays,
+          taxIssueDays,
+          uploadedAt,
+          uploadedBy
+        })
+      );
     }
   }
 

@@ -3,7 +3,9 @@
 import { type ChangeEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { BlockedGateDialog } from "../../components/BlockedGateDialog";
 import { REQUEST_FORM_CONFIGS, type RequestKind, type RequestFormValues } from "../../services/formValidation";
+import { checkMonthEndGate } from "../../services/monthEndGate";
 import { saveRequest } from "../../services/requestStorage";
 import { useSelectedUser } from "../../hooks/useSelectedUser";
 
@@ -348,6 +350,8 @@ export function RequestKindForm({ kind }: { kind: RequestKind }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [values, setValues] = useState<FormValues>({});
   const [showRevisionModal, setShowRevisionModal] = useState(kind === "revisedTaxInvoice");
+  const [gateBlocked, setGateBlocked] = useState(false);
+  const [gateLoading, setGateLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const config = REQUEST_FORM_CONFIGS[kind];
   const stableSetValues = useMemo(() => setValues, []);
@@ -355,6 +359,34 @@ export function RequestKindForm({ kind }: { kind: RequestKind }) {
   useEffect(() => {
     if (kind === "revisedTaxInvoice") setShowRevisionModal(true);
   }, [kind]);
+
+  useEffect(() => {
+    let active = true;
+    setGateLoading(true);
+
+    if (selectedUser.accessRole === "admin") {
+      setGateBlocked(false);
+      setGateLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    checkMonthEndGate(selectedUser.name)
+      .then((result) => {
+        if (active) setGateBlocked(result.isBlocked);
+      })
+      .catch(() => {
+        if (active) setGateBlocked(false);
+      })
+      .finally(() => {
+        if (active) setGateLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [selectedUser.accessRole, selectedUser.name]);
 
   const submitRequest = async () => {
     const assignedOwners = (values.assignedOwners ?? "").split(",").map((item) => item.trim()).filter(Boolean);
@@ -391,6 +423,36 @@ export function RequestKindForm({ kind }: { kind: RequestKind }) {
       setSaving(false);
     }
   };
+
+  if (gateLoading) {
+    return (
+      <div className="mt-6 rounded-[24px] border border-[#e7ecf4] bg-white p-8 text-center shadow-sm">
+        <p className="text-[14px] font-[850] text-[#64748b]">월마감 Gatekeeper를 확인하는 중입니다.</p>
+      </div>
+    );
+  }
+
+  if (gateBlocked) {
+    return (
+      <>
+        <div className="mt-6 rounded-[24px] border border-[#F39945]/40 bg-[#fff5ec] p-8 text-center shadow-sm">
+          <p className="text-[22px] font-[950] tracking-[-0.03em] text-[#111827]">월마감 미완료로 요청 진입이 제한되었습니다.</p>
+          <p className="mt-3 text-[14px] font-[750] leading-6 text-[#64748b]">
+            {selectedUser.name}님에게 미종료 거래 또는 관리자 차단 상태가 남아 있습니다. 월마감 체크에서 남은 이슈를 확인한 뒤 요청을 진행해주세요.
+          </p>
+          <div className="mt-5 flex flex-wrap justify-center gap-2">
+            <Link href={`/month-end?user=${encodeURIComponent(selectedUser.name)}`} className="flex h-11 items-center rounded-xl bg-[#1D50A2] px-5 text-[13px] font-[900] text-white">
+              월마감 체크 확인하기
+            </Link>
+            <Link href={`/requests?user=${encodeURIComponent(selectedUser.name)}`} className="flex h-11 items-center rounded-xl border border-[#dce6f3] bg-white px-5 text-[13px] font-[900] text-[#34496b]">
+              요청 메뉴로
+            </Link>
+          </div>
+        </div>
+        <BlockedGateDialog open={true} onClose={() => (window.location.href = `/requests?user=${encodeURIComponent(selectedUser.name)}`)} />
+      </>
+    );
+  }
 
   return (
     <>

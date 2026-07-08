@@ -10,6 +10,19 @@ export type RequestAttachmentPreview = {
   dataUrl: string;
 };
 
+export type ErpTransmissionStatus = "not_ready" | "mock_sent" | "sent" | "failed";
+
+export type ErpTransmissionLog = {
+  status: ErpTransmissionStatus;
+  system: "ICBANQ_ERP" | "HiworksBill";
+  mode: "mock" | "api";
+  transmittedAt?: string;
+  transmittedBy?: string;
+  externalId?: string;
+  message: string;
+  payload?: Record<string, unknown>;
+};
+
 export type RequestItem = {
   id: string;
   type: string;
@@ -31,6 +44,7 @@ export type RequestItem = {
   assignedOwners?: string[];
   attachments?: RequestAttachmentPreview[];
   details?: Record<string, string>;
+  erpTransmission?: ErpTransmissionLog;
 };
 
 export type RequestCreatePayload = {
@@ -47,6 +61,9 @@ export type RequestUpdatePayload = {
   id: string;
   status: RequestStatus;
   result: string;
+  action?: "statusUpdate" | "erpSend";
+  transmittedBy?: string;
+  targetSystem?: "ICBANQ_ERP" | "HiworksBill";
 };
 
 export async function fetchRequests(): Promise<RequestItem[]> {

@@ -1,7 +1,7 @@
 ﻿"use client";
 
-import { AlertTriangle, CalendarCheck, Clock3, WalletCards, X } from "lucide-react";
-import { collectionItems, monthlyItems, summary } from "./homeData";
+import { AlertTriangle, CalendarCheck, Clock3, X } from "lucide-react";
+import { weeklyWorkItems } from "./homeData";
 
 type BriefingReason = {
   id: string;
@@ -11,16 +11,68 @@ type BriefingReason = {
   route: string;
 };
 
+type BriefingSummary = {
+  monthlyNeedCount: number;
+  collectionNeedCount: number;
+  delayedRequestCount: number;
+};
+
+const userBriefingSummary: Record<string, BriefingSummary> = {
+  Morgan: { monthlyNeedCount: 6, collectionNeedCount: 1, delayedRequestCount: 0 },
+  Harvey: { monthlyNeedCount: 3, collectionNeedCount: 1, delayedRequestCount: 0 },
+  Eric: { monthlyNeedCount: 4, collectionNeedCount: 0, delayedRequestCount: 1 },
+  Tommy_G: { monthlyNeedCount: 7, collectionNeedCount: 2, delayedRequestCount: 0 },
+  Tommy: { monthlyNeedCount: 0, collectionNeedCount: 0, delayedRequestCount: 0 },
+  Sally: { monthlyNeedCount: 0, collectionNeedCount: 0, delayedRequestCount: 0 },
+  Vincent: { monthlyNeedCount: 0, collectionNeedCount: 0, delayedRequestCount: 0 },
+  Gavin: { monthlyNeedCount: 0, collectionNeedCount: 0, delayedRequestCount: 0 }
+};
+
 function toneClass(tone: BriefingReason["tone"]) {
   if (tone === "red") return "bg-[#fff5ec] text-[#F39945]";
   if (tone === "orange") return "bg-[#fff5ec] text-[#F39945]";
   return "bg-[#edf4ff] text-[#1D50A2]";
 }
 
-export function getTodayBriefingReasons() {
+function BriefingMetric({ label, value, tone }: { label: string; value: string; tone: "red" | "orange" | "blue" }) {
+  return (
+    <div className="rounded-[16px] border border-[#edf2f8] bg-[#fbfcff] px-4 py-3">
+      <p className="text-[11px] font-[850] text-[#64748b]">{label}</p>
+      <p className={`mt-1 text-[22px] font-[950] tracking-[-0.04em] ${tone === "blue" ? "text-[#1D50A2]" : "text-[#F39945]"}`}>{value}</p>
+    </div>
+  );
+}
+
+function todayLabel() {
+  const dayOrder = ["월", "화", "수", "목", "금"];
+  const index = new Date().getDay();
+  if (index >= 1 && index <= 5) return dayOrder[index - 1];
+  return "월";
+}
+
+function getUserBriefingSummary(userName: string): BriefingSummary {
+  return userBriefingSummary[userName] ?? { monthlyNeedCount: 0, collectionNeedCount: 0, delayedRequestCount: 0 };
+}
+
+export function getTodayBriefingReasons(userName: string) {
   const today = new Date();
   const day = today.getDate();
+  const userSummary = getUserBriefingSummary(userName);
+  const userTotal = userSummary.monthlyNeedCount + userSummary.collectionNeedCount + userSummary.delayedRequestCount;
   const reasons: BriefingReason[] = [];
+
+  if (userTotal === 0) return [];
+
+  const todayWork = weeklyWorkItems.find((item) => item.date === todayLabel());
+  if (todayWork) {
+    reasons.push({
+      id: `calendar-${todayWork.id}`,
+      title: `오늘은 ${todayWork.title} 확인일입니다.`,
+      description: todayWork.description ?? "이번 주 운영 캘린더 기준으로 오늘 업무를 먼저 확인해주세요.",
+      tone: todayWork.status === "delayed" ? "red" : todayWork.status === "needCheck" ? "orange" : "blue",
+      route: todayWork.relatedRoute ?? "/"
+    });
+  }
 
   if (day === 3) {
     reasons.push({
@@ -42,32 +94,21 @@ export function getTodayBriefingReasons() {
     });
   }
 
-  if (summary.totalNeedCheckCount >= 5) {
-    reasons.push({
-      id: "many-issues",
-      title: `오늘 확인이 필요한 업무가 ${summary.totalNeedCheckCount}건 있습니다.`,
-      description: `월마감 ${summary.monthlyNeedCount}건, 수금 ${summary.collectionNeedCount}건, 반려/지연 ${summary.delayedRequestCount}건`,
-      tone: "red",
-      route: "/month-end"
-    });
-  }
-
-  if (summary.delayedRequestCount > 0) {
+  if (userSummary.delayedRequestCount > 0) {
     reasons.push({
       id: "delayed-request",
-      title: `반려/지연 요청이 ${summary.delayedRequestCount}건 있습니다.`,
+      title: `반려/지연 요청이 ${userSummary.delayedRequestCount}건 있습니다.`,
       description: "VIPS 요청 처리 흐름이 멈춘 건을 확인해주세요.",
       tone: "orange",
       route: "/request-status"
     });
   }
 
-  const hasRiskIssue = monthlyItems.some((item) => item.tone === "needCheck" && !item.count.startsWith("0")) || collectionItems.some((item) => item.tone === "needCheck" && !item.count.startsWith("0"));
-  if (hasRiskIssue) {
+  if (userSummary.monthlyNeedCount > 0) {
     reasons.push({
-      id: "risk-issue",
-      title: "월마감/수금 위험 이슈가 있습니다.",
-      description: "출고O/계산서X, Deduct, 수금 확인 이슈를 먼저 점검해주세요.",
+      id: "month-issue",
+      title: `내 월마감 체크건이 ${userSummary.monthlyNeedCount}건 있습니다.`,
+      description: "출고, 계산서, Deduct 등 종료되지 않은 거래를 확인해주세요.",
       tone: "blue",
       route: "/month-end"
     });
@@ -90,6 +131,8 @@ export function TodayBriefingModal({
   if (reasons.length === 0) return null;
 
   const primaryRoute = reasons[0]?.route ?? "/month-end";
+  const userSummary = getUserBriefingSummary(userName);
+  const userTotal = userSummary.monthlyNeedCount + userSummary.collectionNeedCount + userSummary.delayedRequestCount;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0f172a]/28 px-4 py-6 backdrop-blur-[2px]">
@@ -98,15 +141,21 @@ export function TodayBriefingModal({
           <div className="min-w-0">
             <p className="text-[11px] font-[950] uppercase tracking-[0.1em] text-[#F39945]">Today Briefing</p>
             <h2 className="mt-1 text-[25px] font-[950] tracking-[-0.035em] text-[#111827]">{userName}님, 오늘 먼저 확인할 업무가 있어요.</h2>
-            <p className="mt-2 text-[13px] font-[750] text-[#64748b]">월마감·수금·요청 이슈 중 우선 확인할 항목만 정리했습니다.</p>
+            <p className="mt-2 text-[13px] font-[750] text-[#64748b]">내 거래와 오늘 운영 캘린더 기준으로 먼저 볼 항목만 정리했습니다.</p>
           </div>
           <button type="button" onClick={onClose} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f8fafc] text-[#64748b] transition hover:bg-[#eef2f7]">
             <X size={18} />
           </button>
         </div>
 
+        <div className="grid grid-cols-3 gap-2.5 px-6 pt-5">
+          <BriefingMetric label="내 월마감 체크건" value={`${userSummary.monthlyNeedCount}건`} tone="orange" />
+          <BriefingMetric label="내 수금 체크건" value={`${userSummary.collectionNeedCount}건`} tone="blue" />
+          <BriefingMetric label="반려·지연 요청건" value={`${userSummary.delayedRequestCount}건`} tone="red" />
+        </div>
+
         <div className="space-y-2.5 px-6 py-5">
-          {reasons.slice(0, 5).map((reason) => (
+          {reasons.slice(0, 3).map((reason) => (
             <button
               key={reason.id}
               type="button"
@@ -114,7 +163,7 @@ export function TodayBriefingModal({
               className="flex w-full min-w-0 items-start gap-3 rounded-[18px] border border-[#edf2f8] bg-[#fbfcff] p-4 text-left transition hover:border-[#cfe0ff] hover:bg-[#f8fbff]"
             >
               <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${toneClass(reason.tone)}`}>
-                {reason.id.includes("request") ? <Clock3 size={18} /> : reason.id.includes("risk") ? <WalletCards size={18} /> : reason.tone === "red" ? <AlertTriangle size={18} /> : <CalendarCheck size={18} />}
+                {reason.id.includes("request") ? <Clock3 size={18} /> : reason.tone === "red" ? <AlertTriangle size={18} /> : <CalendarCheck size={18} />}
               </span>
               <span className="min-w-0">
                 <span className="block text-[14px] font-[950] text-[#111827]">{reason.title}</span>
@@ -122,6 +171,10 @@ export function TodayBriefingModal({
               </span>
             </button>
           ))}
+          <div className="rounded-[18px] border border-[#edf2f8] bg-[#fbfcff] p-4">
+            <p className="text-[13px] font-[950] text-[#111827]">오늘 내 확인 대상은 총 {userTotal}건입니다.</p>
+            <p className="mt-1 text-[12px] font-[750] leading-5 text-[#64748b]">월마감 {userSummary.monthlyNeedCount}건 · 수금 {userSummary.collectionNeedCount}건 · 반려/지연 {userSummary.delayedRequestCount}건</p>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2 bg-[#f8fbff] px-6 py-4">

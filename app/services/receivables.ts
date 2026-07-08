@@ -71,6 +71,16 @@ export function normalizeSalesName(value?: string | null) {
   return SALES_ALIAS_MAP[key] || key;
 }
 
+export function normalizeTeamName(value?: string | null) {
+  if (!value) return "미지정";
+  const key = String(value).trim();
+  if (key === "영업1팀") return "B2D";
+  if (key === "영업2팀") return "S2";
+  if (key === "영업3팀") return "S3";
+  if (["S1", "S2", "S3", "B2D"].includes(key)) return key;
+  return key;
+}
+
 export const receivableRecords: ReceivableRecord[] = [
   {
     id: "rcv-001",
@@ -381,7 +391,9 @@ export function buildCollectionComposition(records: ReceivableRecord[]) {
 }
 
 export function buildTeamStats(records: ReceivableRecord[]): ReceivableStat[] {
-  return buildStats(records, (record) => record.team);
+  const stats = buildStats(records, (record) => normalizeTeamName(record.team));
+  const order = ["S1", "S2", "S3", "B2D"];
+  return order.map((team) => stats.find((row) => row.label === team) ?? { label: team, count: 0, expected: 0, paid: 0, remain: 0, rate: 0 });
 }
 
 export function buildSalesStats(records: ReceivableRecord[]): ReceivableStat[] {

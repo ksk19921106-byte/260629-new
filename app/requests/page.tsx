@@ -56,12 +56,18 @@ export default function RequestsPage() {
   const [activeGroup, setActiveGroup] = useState<(typeof groups)[number]>("전체");
 
   useEffect(() => {
+    if (selectedUser.accessRole === "admin") {
+      setIsBlocked(false);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     checkMonthEndGate(selectedUser.name)
       .then((result) => setIsBlocked(result.isBlocked))
       .catch(() => setIsBlocked(false))
       .finally(() => setLoading(false));
-  }, [selectedUser.name]);
+  }, [selectedUser.accessRole, selectedUser.name]);
 
   const visibleCards = useMemo(() => {
     const keyword = query.trim();
@@ -155,7 +161,7 @@ export default function RequestsPage() {
           return (
             <a
               key={item.kind}
-              href={`/requests/${item.kind}`}
+              href={`/requests/${item.kind}?user=${encodeURIComponent(selectedUser.name)}`}
               className="ops-card group p-4 text-left transition hover:-translate-y-0.5 hover:border-[#cbdaf5]"
             >
               <div className="flex items-start justify-between gap-3">

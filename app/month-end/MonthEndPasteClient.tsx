@@ -26,10 +26,12 @@ const filterOptions: Array<{ key: FilterKey; label: string }> = [
   { key: "all", label: "전체" },
   { key: "invoice_required", label: "출고O/계산서X" },
   { key: "shipment_check", label: "입고O/출고X/계산서O" },
-  { key: "deduct_check", label: "Deduct 확인 필요" },
   { key: "long_pending", label: "입고O/출고X/계산서X" },
+  { key: "deduct_check", label: "Deduct 확인 필요" },
   { key: "sales_unshipped", label: "세일즈 미출고" }
 ];
+
+const fixedTeamOptions = ["S1", "S2", "S3", "B2D"];
 
 const issueHelpText: Partial<Record<ClosingIssueType, string>> = {
   invoice_required: "고객사에 출고는 완료하였지만, 계산서 미발행 건",
@@ -46,6 +48,24 @@ function issueDisplayLabel(type: ClosingIssueType, fallback?: string) {
   if (type === "deduct_check") return "Deduct 확인 필요";
   if (type === "sales_unshipped") return "세일즈 미출고";
   return fallback ?? type;
+}
+
+function issueActionLabel(type: ClosingIssueType) {
+  if (type === "invoice_required") return "계산서발행";
+  if (type === "shipment_check") return "출고진행";
+  if (type === "long_pending") return "사유 기재";
+  if (type === "deduct_check") return "사유 기재";
+  if (type === "sales_unshipped") return "사유 기재";
+  return getIssueActionLabel(type);
+}
+
+function issueMemoPrompt(type: ClosingIssueType) {
+  if (type === "invoice_required") return "계산서 발행 진행 내용 또는 보완 사유를 입력해주세요.";
+  if (type === "shipment_check") return "출고 진행 내용 또는 보류 사유를 입력해주세요.";
+  if (type === "long_pending") return "입고O/출고X/계산서X 상태가 남아있는 사유를 입력해주세요.";
+  if (type === "deduct_check") return "Deduct 확인 사유 또는 처리 내용을 입력해주세요.";
+  if (type === "sales_unshipped") return "세일즈 미출고 사유 또는 처리 계획을 입력해주세요.";
+  return "확인 사유 또는 처리 내용을 입력해주세요.";
 }
 
 const priorityClass = {
@@ -141,12 +161,19 @@ export function MonthEndPasteClient() {
   const [snapshot, setSnapshot] = useState<ClosingSnapshot | null>(null);
   const [filter, setFilter] = useState<FilterKey>("all");
   const [query, setQuery] = useState("");
+  const [teamFilter, setTeamFilter] = useState("all");
   const [salesFilter, setSalesFilter] = useState("all");
   const [message, setMessage] = useState(isAdmin ? "ERP 월마감 데이터를 붙여넣고 데이터 인식하기를 눌러주세요." : "VIPS팀/Admin이 업로드한 최신 월마감 데이터를 불러오는 중입니다.");
   const [messageType, setMessageType] = useState<"info" | "success" | "error">("info");
 
   useEffect(() => {
     let alive = true;
+
+    const params = new URLSearchParams(window.location.search);
+    const initialTeam = params.get("team");
+    const initialSales = params.get("sales");
+    if (initialTeam && (fixedTeamOptions.includes(initialTeam) || initialTeam === "all")) setTeamFilter(initialTeam);
+    if (initialSales) setSalesFilter(initialSales);
 
     const loadLatestSnapshot = async () => {
       const browserSnapshot = readSnapshot();
@@ -192,9 +219,25 @@ export function MonthEndPasteClient() {
     return Array.from(names).sort((a, b) => a.localeCompare(b));
   }, [permissionIssues]);
 
+  const teamFilterOptions = useMemo(() => {
+    const teams = new Set(fixedTeamOptions);
+    for (const issue of permissionIssues) {
+      if (issue.team) teams.add(issue.team);
+    }
+    return Array.from(teams).sort((a, b) => {
+      const aIndex = fixedTeamOptions.indexOf(a);
+      const bIndex = fixedTeamOptions.indexOf(b);
+      if (aIndex >= 0 && bIndex >= 0) return aIndex - bIndex;
+      if (aIndex >= 0) return -1;
+      if (bIndex >= 0) return 1;
+      return a.localeCompare(b);
+    });
+  }, [permissionIssues]);
+
   const filteredIssues = useMemo(() => {
     const keyword = query.trim().toLowerCase();
     return permissionIssues.filter((issue) => {
+      const matchTeam = teamFilter === "all" || issue.team === teamFilter;
       const matchSales = salesFilter === "all" || issue.fSales === salesFilter || issue.iSales === salesFilter;
       const matchFilter = filter === "all" || filter === "mine" || issue.issueType === filter;
       const matchQuery =
@@ -202,11 +245,19 @@ export function MonthEndPasteClient() {
         issue.company.toLowerCase().includes(keyword) ||
         issue.fSales.toLowerCase().includes(keyword) ||
         issue.iSales.toLowerCase().includes(keyword);
-      return matchSales && matchFilter && matchQuery;
+      return matchTeam && matchSales && matchFilter && matchQuery;
     });
-  }, [filter, permissionIssues, query, salesFilter]);
+  }, [filter, permissionIssues, query, salesFilter, teamFilter]);
 
-  const metricIssues = useMemo(() => permissionIssues.filter((issue) => salesFilter === "all" || issue.fSales === salesFilter || issue.iSales === salesFilter), [permissionIssues, salesFilter]);
+  const metricIssues = useMemo(
+    () =>
+      permissionIssues.filter((issue) => {
+        const matchTeam = teamFilter === "all" || issue.team === teamFilter;
+        const matchSales = salesFilter === "all" || issue.fSales === salesFilter || issue.iSales === salesFilter;
+        return matchTeam && matchSales;
+      }),
+    [permissionIssues, salesFilter, teamFilter]
+  );
   const kpi = useMemo(() => kpiFor(metricIssues), [metricIssues]);
   const salesGroups = useMemo(() => groupBySales(metricIssues), [metricIssues]);
 
@@ -218,6 +269,7 @@ export function MonthEndPasteClient() {
     setRecognizedIssues(result.ok ? result.issues : []);
     if (result.ok) {
       setFilter("all");
+      setTeamFilter("all");
       setSalesFilter("all");
       setQuery("");
     }
@@ -261,16 +313,14 @@ export function MonthEndPasteClient() {
     setPasteText("");
     setRecognizedIssues([]);
     setFilter("all");
+    setTeamFilter("all");
     setSalesFilter("all");
     setQuery("");
     setMessage("ERP 월마감 데이터를 붙여넣고 데이터 인식하기를 눌러주세요.");
     setMessageType("info");
   };
 
-  const updateIssueStatus = (issue: ClosingIssue, status: ClosingIssue["status"]) => {
-    const memo = status === "open" ? issue.memo : window.prompt(status === "done" ? "확인 완료 메모를 입력해주세요." : "제외 사유를 입력해주세요.", issue.memo || "") ?? "";
-    const updater = (target: ClosingIssue) => target.id === issue.id ? { ...target, status, memo } : target;
-
+  const persistIssueUpdate = (updater: (target: ClosingIssue) => ClosingIssue) => {
     setRecognizedIssues((prev) => prev.map(updater));
     setSnapshot((prev) => {
       if (!prev) return prev;
@@ -281,16 +331,31 @@ export function MonthEndPasteClient() {
     });
   };
 
+  const saveIssueMemo = (issue: ClosingIssue) => {
+    const memo = window.prompt(issueMemoPrompt(issue.issueType), issue.memo || "");
+    if (memo === null) return;
+    persistIssueUpdate((target) => target.id === issue.id ? { ...target, memo } : target);
+  };
+
+  const updateIssueStatus = (issue: ClosingIssue, status: ClosingIssue["status"]) => {
+    const memo = status === "open" ? issue.memo : window.prompt(status === "done" ? "확인 완료 메모를 입력해주세요." : "제외 사유를 입력해주세요.", issue.memo || "") ?? "";
+    persistIssueUpdate((target) => target.id === issue.id ? { ...target, status, memo } : target);
+  };
+
   const handleIssueAction = (issue: ClosingIssue) => {
     if (issue.issueType === "invoice_required") {
       window.location.href = `/requests/taxInvoice?user=${encodeURIComponent(selectedUser.name)}`;
+      return;
+    }
+    if (issue.issueType === "shipment_check") {
+      saveIssueMemo(issue);
       return;
     }
     if (issue.issueType === "collection_check") {
       window.location.href = `/collections?user=${encodeURIComponent(selectedUser.name)}`;
       return;
     }
-    window.alert(`${issue.issueLabel}: ${issue.company} 확인이 필요합니다.`);
+    saveIssueMemo(issue);
   };
 
   return (
@@ -320,6 +385,68 @@ export function MonthEndPasteClient() {
           </div>
         </div>
 
+        {isAdmin ? (
+          <div className="mt-4 grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_220px]">
+            <div className="min-w-0 overflow-hidden rounded-[18px] border border-[#dce6f3] bg-[#fbfdff] p-3">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[13px] font-[950] text-[#111827]">ERP 표 복사 붙여넣기</p>
+                  <p className="mt-0.5 text-[11px] font-[750] text-[#64748b]">ERP 월마감 화면에서 표 전체를 복사한 뒤 아래 영역에 붙여넣으세요.</p>
+                </div>
+                <ClipboardPaste size={18} className="shrink-0 text-[#1D50A2]" />
+              </div>
+              <textarea
+                value={pasteText}
+                onChange={(event) => setPasteText(event.target.value)}
+                placeholder="ERP 월마감 화면에서 표 영역을 복사한 뒤 여기에 붙여넣으세요."
+                className="h-[168px] w-full resize-none rounded-[14px] border border-[#dce6f3] bg-white p-3 text-[12px] font-[650] leading-relaxed text-[#10203f] outline-none transition placeholder:text-[#94a3b8] focus:border-[#1D50A2] focus:ring-2 focus:ring-[#edf4ff]"
+              />
+            </div>
+            <div className="flex min-w-0 flex-col gap-2 rounded-[18px] border border-[#dce6f3] bg-white p-3">
+              <button
+                type="button"
+                onClick={() => recognizeData()}
+                className="flex h-10 items-center justify-center gap-2 rounded-[14px] bg-[#1D50A2] px-4 text-[12px] font-[950] text-white shadow-sm transition hover:bg-[#173f80]"
+              >
+                <ClipboardPaste size={15} />
+                데이터 인식하기
+              </button>
+              <button
+                type="button"
+                onClick={saveRecognizedData}
+                className="flex h-10 items-center justify-center gap-2 rounded-[14px] border border-[#dce6f3] bg-[#f8fbff] px-4 text-[12px] font-[950] text-[#1D50A2] transition hover:bg-[#edf4ff]"
+              >
+                <Save size={15} />
+                저장하기
+              </button>
+              <button
+                type="button"
+                onClick={loadSample}
+                className="h-9 rounded-[13px] border border-[#e5eaf3] bg-white px-3 text-[12px] font-[900] text-[#475569] transition hover:bg-[#f8fbff]"
+              >
+                예시 데이터 불러오기
+              </button>
+              <button
+                type="button"
+                onClick={resetData}
+                className="flex h-9 items-center justify-center gap-2 rounded-[13px] border border-[#e5eaf3] bg-white px-3 text-[12px] font-[900] text-[#64748b] transition hover:bg-[#f8fbff]"
+              >
+                <Eraser size={14} />
+                초기화
+              </button>
+              <div className={`mt-auto rounded-[14px] border px-3 py-2 text-[11px] font-[800] leading-relaxed ${
+                messageType === "error"
+                  ? "border-[#fecaca] bg-[#fff5ec] text-[#b85f18]"
+                  : messageType === "success"
+                    ? "border-[#dbe7ff] bg-[#edf4ff] text-[#1D50A2]"
+                    : "border-[#e5eaf3] bg-[#f8fbff] text-[#64748b]"
+              }`}>
+                {message}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         {snapshot ? (
           <div className="mt-4 rounded-[16px] border border-[#e5eaf3] bg-[#fbfdff] px-4 py-3 text-[12px] font-[800] text-[#64748b]">
             마지막 업로드 {snapshot.closingMonth} · {new Date(snapshot.uploadedAt).toLocaleString("ko-KR")} · 업로드 {snapshot.uploadedBy}
@@ -347,6 +474,17 @@ export function MonthEndPasteClient() {
 
           {isAdmin ? (
             <div className="mt-4 flex flex-wrap items-center gap-2 rounded-[16px] border border-[#e5eaf3] bg-[#fbfdff] px-3 py-3">
+              <span className="text-[12px] font-[950] text-[#64748b]">팀 필터</span>
+              <select
+                value={teamFilter}
+                onChange={(event) => setTeamFilter(event.target.value)}
+                className="h-9 rounded-full border border-[#dce6f3] bg-white px-3 text-[12px] font-[900] text-[#111827] outline-none"
+              >
+                <option value="all">전체 팀</option>
+                {teamFilterOptions.map((team) => (
+                  <option key={team} value={team}>{team}</option>
+                ))}
+              </select>
               <span className="text-[12px] font-[950] text-[#64748b]">담당자 필터</span>
               <select
                 value={salesFilter}
@@ -378,15 +516,14 @@ export function MonthEndPasteClient() {
           </div>
 
           <div className="mt-4 overflow-x-auto rounded-[18px] border border-[#e7ecf4]">
-            <div className="grid min-w-[1180px] grid-cols-[82px_170px_minmax(180px,1fr)_120px_120px_130px_90px_minmax(260px,1.4fr)_150px] gap-2 bg-[#f8fbff] px-4 py-3 text-[11px] font-[950] text-[#64748b]">
-              <span>우선순위</span>
+            <div className="grid min-w-[1180px] grid-cols-[170px_minmax(210px,1fr)_120px_120px_130px_90px_minmax(260px,1.4fr)_160px] gap-2 bg-[#f8fbff] px-4 py-3 text-[11px] font-[950] text-[#64748b]">
               <span>상태</span>
-              <span>거래처</span>
+              <span>거래처(Company)</span>
               <span>FSales</span>
               <span>ISales</span>
               <span>금액</span>
               <span>경과일</span>
-              <span>추천 행동</span>
+              <span>사유</span>
               <span>액션</span>
             </div>
             <div className="max-h-[520px] overflow-auto">
@@ -396,11 +533,10 @@ export function MonthEndPasteClient() {
                 filteredIssues.map((issue) => (
                   <div
                     key={issue.id}
-                    className={`grid min-w-[1180px] grid-cols-[82px_170px_minmax(180px,1fr)_120px_120px_130px_90px_minmax(260px,1.4fr)_150px] items-center gap-2 border-t border-[#eef2f7] px-4 py-3 text-[12px] ${
+                    className={`grid min-w-[1180px] grid-cols-[170px_minmax(210px,1fr)_120px_120px_130px_90px_minmax(260px,1.4fr)_160px] items-center gap-2 border-t border-[#eef2f7] px-4 py-3 text-[12px] ${
                       issue.status !== "open" ? "bg-[#f8fafc] opacity-60" : "bg-white"
                     }`}
                   >
-                    <span className={`rounded-full border px-2 py-1 text-center text-[11px] font-[950] ${priorityClass[issue.priority]}`}>{priorityLabel(issue.priority)}</span>
                     <span className="truncate font-[900] text-[#111827]" title={issueHelpText[issue.issueType] ?? issue.issueLabel}>
                       {issueDisplayLabel(issue.issueType, issue.issueLabel)}
                     </span>
@@ -409,10 +545,19 @@ export function MonthEndPasteClient() {
                     <span className="truncate font-[850] text-[#475569]">{issue.iSales}</span>
                     <span className="truncate font-[900] text-[#111827]">{formatKrw(issue.amount)}</span>
                     <span className="font-[850] text-[#64748b]">{getElapsedDays(issue)}일</span>
-                    <span className="truncate font-[800] text-[#475569]">{issue.recommendedAction}</span>
+                    <button
+                      type="button"
+                      onClick={() => saveIssueMemo(issue)}
+                      className={`min-w-0 rounded-[12px] border px-3 py-2 text-left text-[12px] font-[800] transition hover:border-[#1D50A2] hover:bg-[#f8fbff] ${
+                        issue.memo ? "border-[#dce6f3] bg-white text-[#334155]" : "border-dashed border-[#cbd5e1] bg-[#fbfdff] text-[#94a3b8]"
+                      }`}
+                      title={issue.memo || "Sales가 직접 사유를 입력합니다."}
+                    >
+                      <span className="block truncate">{issue.memo || "사유 입력/수정"}</span>
+                    </button>
                     <span className="flex gap-1.5">
                       <button type="button" onClick={() => handleIssueAction(issue)} className="ops-btn-primary h-8 px-3 text-[11px]">
-                        {getIssueActionLabel(issue.issueType)}
+                        {issueActionLabel(issue.issueType)}
                       </button>
                       <button type="button" onClick={() => updateIssueStatus(issue, "done")} title="확인 완료" className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#edf4ff] text-[#1D50A2]">
                         <CheckCircle2 size={15} />
