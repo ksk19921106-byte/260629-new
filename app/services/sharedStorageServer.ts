@@ -8,14 +8,6 @@ type SharedStorageResponse<T> = {
   message?: string;
 };
 
-export type SharedStorageDebugResult = {
-  configured: boolean;
-  ok: boolean;
-  message: string;
-  status?: number;
-  responseText?: string;
-};
-
 function enabled() {
   return Boolean(SHARED_STORAGE_URL);
 }
@@ -42,64 +34,6 @@ async function postSharedStorage<T>(payload: Record<string, unknown>) {
     return (await response.json()) as SharedStorageResponse<T>;
   } catch {
     return null;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-export async function debugSharedStorageConnection(collection = "requests"): Promise<SharedStorageDebugResult> {
-  if (!enabled()) {
-    return {
-      configured: false,
-      ok: false,
-      message: "OPS_SHARED_STORAGE_URL is not configured."
-    };
-  }
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), SHARED_STORAGE_TIMEOUT_MS);
-
-  try {
-    const response = await fetch(SHARED_STORAGE_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        secret: SHARED_STORAGE_SECRET,
-        action: "get",
-        collection
-      }),
-      signal: controller.signal,
-      cache: "no-store"
-    });
-
-    const responseText = await response.text();
-    let parsed: SharedStorageResponse<unknown> | null = null;
-
-    try {
-      parsed = JSON.parse(responseText) as SharedStorageResponse<unknown>;
-    } catch {
-      return {
-        configured: true,
-        ok: false,
-        status: response.status,
-        message: "Google Apps Script did not return JSON. Check web app access permission and URL.",
-        responseText: responseText.slice(0, 400)
-      };
-    }
-
-    return {
-      configured: true,
-      ok: Boolean(response.ok && parsed?.ok),
-      status: response.status,
-      message: parsed?.message || (response.ok && parsed?.ok ? "Connected to Google Sheets storage." : "Google Apps Script returned an error."),
-      responseText: responseText.slice(0, 400)
-    };
-  } catch (error) {
-    return {
-      configured: true,
-      ok: false,
-      message: error instanceof Error ? error.message : String(error)
-    };
   } finally {
     clearTimeout(timeout);
   }
