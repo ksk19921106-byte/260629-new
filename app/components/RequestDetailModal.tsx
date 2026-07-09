@@ -54,7 +54,7 @@ export function RequestDetailModal({
   const detailEntries = Object.entries(request.details ?? {}).filter(([, value]) => value);
   const attachments = request.attachments ?? [];
   const attachmentFileNames = detailEntries.filter(([label]) => label.includes("첨부") || label.includes("업로드"));
-  const erpEnabled = request.kind === "taxInvoice" || request.kind === "revisedTaxInvoice";
+  const erpEnabled = request.kind === "taxInvoice" || request.kind === "advancePayment";
   const erpTransmission = request.erpTransmission;
 
   const downloadRequestExcel = () => {
@@ -118,7 +118,7 @@ export function RequestDetailModal({
       const nextRequest = await updateRequest({
         id: request.id,
         status: "완료",
-        result: resultText.trim() || "VIPS 승인 후 ERP 전송",
+        result: resultText.trim() || (request.kind === "advancePayment" ? "VIPS 승인 후 선수금 ERP 처리" : "VIPS 승인 후 ERP 수동발행"),
         action: "erpSend",
         transmittedBy: "VIPS팀",
         targetSystem: "ICBANQ_ERP"
@@ -205,7 +205,7 @@ export function RequestDetailModal({
                   <div>
                     <p className="text-[13px] font-[900] text-[#10203f]">ERP 연동 준비</p>
                     <p className="mt-1 text-[12px] font-[700] leading-5 text-[#64748b]">
-                      VIPS 승인 후 ERP 전송 payload를 생성합니다. 현재는 Mock 전송이며, API 정보 연결 시 실제 ERP 전송으로 교체됩니다.
+                      VIPS 승인 후 ERP 처리 payload를 생성합니다. 현재는 Mock 승인 처리이며, API 정보 연결 시 실제 ERP 수동발행/선수금 처리로 교체됩니다.
                     </p>
                   </div>
                   <span className={`rounded-full px-3 py-1 text-[11px] font-[900] ${
@@ -264,7 +264,7 @@ export function RequestDetailModal({
                       onClick={sendToErp}
                       className="h-10 rounded-full bg-[#1D50A2] px-5 text-[12px] font-[900] text-white shadow-sm disabled:opacity-50"
                     >
-                      {sendingErp ? "ERP 전송 중" : erpTransmission?.status === "mock_sent" ? "ERP 재전송" : "승인 및 ERP 전송"}
+                      {sendingErp ? "ERP 처리 중" : erpTransmission?.status === "mock_sent" ? "ERP 재처리" : request.kind === "advancePayment" ? "승인 및 선수금 ERP 처리" : "승인 및 ERP 수동발행"}
                     </button>
                   ) : null}
                   <button

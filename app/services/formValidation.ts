@@ -2,7 +2,7 @@ export type RequestKind =
   | "taxInvoice"
   | "revisedTaxInvoice"
   | "reverseIssueApproval"
-  | "depositConfirmation"
+  | "advancePayment"
   | "cardPayment"
   | "guaranteeInsurance"
   | "invoiceMatching"
@@ -40,6 +40,7 @@ export type RequestFormValues = {
   guaranteeRequestType: string;
   guaranteeType: string;
   guaranteeRate: string;
+  guaranteePeriod: string;
   guaranteeStartDate: string;
   guaranteeEndDate: string;
   contractName: string;
@@ -54,6 +55,15 @@ export type RequestFormValues = {
   collectionTrackingUrl: string;
   collectionInvoiceLink: string;
   monthEndCase: string;
+  monthEndLink: string;
+  advanceUsageType: string;
+  ikiTaxId: string;
+  advancePaymentLink: string;
+  advanceCollectionLink: string;
+  poLink: string;
+  gpAmount: string;
+  spAmount: string;
+  upAmount: string;
   note: string;
   assignedOwners: string;
 };
@@ -74,9 +84,9 @@ export const REQUEST_FORM_CONFIGS: Record<RequestKind, RequestFormConfig> = {
     kind: "taxInvoice",
     title: "세금계산서 발행 요청",
     formTitle: "세금계산서 발행 요청",
-    subtitle: "발행일자, 업체명, 품목 내역을 기준으로 공급가액과 VAT를 자동 계산합니다.",
+    subtitle: "품목, 수량, 단가를 기준으로 공급가액과 VAT를 자동 계산합니다.",
     requiresTaxPrecheck: true,
-    requiredFields: ["companyName", "contactEmail", "issueDate", "itemName", "quantity", "unitPrice"]
+    requiredFields: ["companyName", "issueDate", "itemName", "quantity", "unitPrice"]
   },
   revisedTaxInvoice: {
     kind: "revisedTaxInvoice",
@@ -92,19 +102,19 @@ export const REQUEST_FORM_CONFIGS: Record<RequestKind, RequestFormConfig> = {
     subtitle: "역발행 사이트, 최종금액, 건수를 기준으로 VIPS팀 처리를 요청합니다.",
     requiredFields: ["reverseIssueSite", "reverseFinalAmount", "reverseIssueCount"]
   },
-  depositConfirmation: {
-    kind: "depositConfirmation",
-    title: "입금확인 요청(등록)",
-    formTitle: "입금확인 요청",
-    subtitle: "입금일자, 계좌, 입금자명, 입금금액을 기준으로 확인 요청합니다.",
-    requiredFields: ["companyName", "depositDate", "depositAccount", "depositorName", "depositAmount", "note"]
+  advancePayment: {
+    kind: "advancePayment",
+    title: "선수금 처리 요청",
+    formTitle: "선수금 처리 요청",
+    subtitle: "선수금 일부사용/전부소진 여부와 IKI 링크를 기준으로 ERP 처리 요청을 남깁니다.",
+    requiredFields: ["advanceUsageType", "ikiTaxId", "advancePaymentLink", "advanceCollectionLink", "poLink", "gpAmount", "spAmount", "upAmount"]
   },
   cardPayment: {
     kind: "cardPayment",
     title: "카드결제 확인 요청(등록)",
     formTitle: "카드결제 확인 요청",
     subtitle: "카드매출전표를 첨부해 결제 확인을 요청합니다.",
-    requiredFields: ["companyName", "paymentDate", "paymentAmount", "cardReceiptName", "note"]
+    requiredFields: ["companyName", "cardReceiptName"]
   },
   guaranteeInsurance: {
     kind: "guaranteeInsurance",
@@ -116,18 +126,17 @@ export const REQUEST_FORM_CONFIGS: Record<RequestKind, RequestFormConfig> = {
       "guaranteeType",
       "companyName",
       "guaranteeRate",
-      "guaranteeStartDate",
-      "guaranteeEndDate",
+      "guaranteePeriod",
       "contractName",
       "contractAmount",
       "contractFileName"
-    ]
+    ] as RequestFormField[]
   },
   invoiceMatching: {
     kind: "invoiceMatching",
     title: "계산서매칭/해제 요청",
     formTitle: "계산서매칭/해제 요청",
-    subtitle: "계산서와 트래킹 연결 또는 연결 해제를 하나의 흐름으로 접수합니다.",
+    subtitle: "계산서와 거래 흐름을 연결하거나 연결 해제를 요청합니다.",
     requiredFields: ["invoiceMatchType", "companyName", "invoiceLink", "trackingLink", "matchReason"]
   },
   collectionMatching: {
@@ -142,7 +151,7 @@ export const REQUEST_FORM_CONFIGS: Record<RequestKind, RequestFormConfig> = {
     title: "월마감 관련 확인 요청",
     formTitle: "월마감 관련 확인 요청",
     subtitle: "IKI 월마감 확인 중 VIPS팀 확인이 필요한 건을 요청합니다.",
-    requiredFields: ["companyName", "monthEndCase", "note"]
+    requiredFields: ["companyName", "monthEndCase", "monthEndLink", "note"]
   }
 };
 
@@ -177,6 +186,7 @@ export const initialRequestFormValues: RequestFormValues = {
   guaranteeRequestType: "",
   guaranteeType: "",
   guaranteeRate: "",
+  guaranteePeriod: "",
   guaranteeStartDate: "",
   guaranteeEndDate: "",
   contractName: "",
@@ -191,12 +201,21 @@ export const initialRequestFormValues: RequestFormValues = {
   collectionTrackingUrl: "",
   collectionInvoiceLink: "",
   monthEndCase: "",
+  monthEndLink: "",
+  advanceUsageType: "",
+  ikiTaxId: "",
+  advancePaymentLink: "",
+  advanceCollectionLink: "",
+  poLink: "",
+  gpAmount: "",
+  spAmount: "",
+  upAmount: "",
   note: "",
   assignedOwners: ""
 };
 
 export function validateRequestForm(kind: RequestKind, values: RequestFormValues) {
-  const missingFields = REQUEST_FORM_CONFIGS[kind].requiredFields.filter((field) => !values[field].trim());
+  const missingFields = REQUEST_FORM_CONFIGS[kind].requiredFields.filter((field) => !String(values[field] ?? "").trim());
   const contractFileExtension = values.contractFileName.split(".").pop()?.toLowerCase();
   const hasInvalidContractFile =
     kind === "guaranteeInsurance" &&

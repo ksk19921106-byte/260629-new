@@ -27,8 +27,15 @@ type DraftMap = Record<string, { status: RequestStatus; result: string }>;
 
 const defaultBlockedUsers: BlockedUserMap = {
   Sally: "OK",
+  Vincent: "OK",
+  Gavin: "OK",
   Harvey: "OK",
-  Tommy: "OK"
+  Lauren: "OK",
+  Riley: "OK",
+  Jake: "OK",
+  Terry: "OK",
+  Chris: "OK",
+  Robin: "OK"
 };
 
 export default function AdminPage() {
@@ -408,10 +415,10 @@ export default function AdminPage() {
                     try {
                       const response = await fetch("/api/month-end/blocked", { cache: "no-store" });
                       const data = await response.json();
-                      const users = { Sally: "OK", Harvey: "OK", Tommy: "OK", ...(data.users || {}) };
+                      const users = { ...defaultBlockedUsers, ...(data.users || {}) };
                       Object.entries(users).forEach(([user, status]) => applyStatus(user, status));
                     } catch {
-                      ["Sally", "Harvey", "Tommy"].forEach((user) => applyStatus(user, "OK"));
+                      Object.keys(defaultBlockedUsers).forEach((user) => applyStatus(user, "OK"));
                     }
                   };
                   bindButtons();

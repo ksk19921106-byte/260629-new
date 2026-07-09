@@ -1,8 +1,8 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, CheckCircle2, ClipboardPaste, Eraser, Save, Search, ShieldCheck, SlidersHorizontal } from "lucide-react";
-import { useSelectedUser } from "../hooks/useSelectedUser";
+import { AlertCircle, CheckCircle2, ClipboardPaste, Eraser, Save, Search, ShieldCheck, SlidersHorizontal, Upload } from "lucide-react";
+import { TEST_USERS, useSelectedUser } from "../hooks/useSelectedUser";
 import {
   formatKrw,
   getIssueActionLabel,
@@ -11,24 +11,25 @@ import {
   type ClosingIssueType,
   type ClosingSnapshot
 } from "../services/closingPasteParser";
+import { saveMonthEndActionRequest } from "../services/monthEndActionStorage";
+import { fetchMonthEndRmaSnapshot, uploadMonthEndRmaFile, type MonthEndRmaRecord, type MonthEndRmaSnapshot } from "../services/monthEndRma";
 
-type FilterKey = "all" | "mine" | ClosingIssueType;
+type FilterKey = "all" | "mine" | ClosingIssueType | "rma";
 
 const SNAPSHOT_KEY = "icbanq.ops.monthEnd.latestSnapshot";
 
 const samplePaste = `NO	TEAM	FSales / ISales	Company	Billing	GPD	GP	출고소요기간	TAX발행기간	지연AR(A)	Deduct(A)	입고O/출고X/계산서O	출고O/계산서X	입고O/출고X/계산서X	세일즈 미출고
-1	B2D	Tommy_G / Harvey	OO전자	1,429,024	1,300,000	129,024	4	2	1,429,024	0	0	0	0	0
-2	B2D	Tommy_G / Morgan	재일전자	1,761,433	1,600,000	161,433	15	26	0	0	0	1,761,433	0	0
-3	B2D	Tommy_G / Eric	아이씨	75,000	70,000	5,000	8	0	0	0	0	0	75,000	1
-4	S1	Tommy / Tommy	나라센서	5,252,933	5,000,000	252,933	18	0	0	75,000	5,252,933	0	0	0`;
+1	B2D	Lauren / Harvey	OO전자	1,429,024	1,300,000	129,024	4	2	1,429,024	0	0	0	0	0
+2	B2D	Lauren / Riley	재일전자	1,761,433	1,600,000	161,433	15	26	0	0	0	1,761,433	0	0
+3	S1	Jake / Terry	아이씨	75,000	70,000	5,000	8	0	0	0	0	0	75,000	1
+4	S3	Chris / Robin	나라센서	5,252,933	5,000,000	252,933	18	0	0	75,000	5,252,933	0	0	0`;
 
 const filterOptions: Array<{ key: FilterKey; label: string }> = [
   { key: "all", label: "전체" },
   { key: "invoice_required", label: "출고O/계산서X" },
   { key: "shipment_check", label: "입고O/출고X/계산서O" },
   { key: "long_pending", label: "입고O/출고X/계산서X" },
-  { key: "deduct_check", label: "Deduct 확인 필요" },
-  { key: "sales_unshipped", label: "세일즈 미출고" }
+  { key: "rma", label: "RMA" }
 ];
 
 const fixedTeamOptions = ["S1", "S2", "S3", "B2D"];
@@ -119,6 +120,24 @@ function getElapsedDays(issue: ClosingIssue) {
   return Math.max(issue.shipmentDays ?? 0, issue.taxIssueDays ?? 0);
 }
 
+function isVisibleMonthEndIssue(issue: ClosingIssue) {
+  return issue.issueType === "invoice_required" || issue.issueType === "shipment_check" || issue.issueType === "long_pending";
+}
+
+function normalizeName(value: string) {
+  return String(value || "").trim().toLowerCase();
+}
+
+const accountSalesNames = new Set(TEST_USERS.map((user) => normalizeName(user.salesName)));
+
+function hasPortalAccount(issue: ClosingIssue) {
+  return accountSalesNames.has(normalizeName(issue.iSales)) || accountSalesNames.has(normalizeName(issue.fSales));
+}
+
+function hasPortalSalesName(value: string) {
+  return accountSalesNames.has(normalizeName(value));
+}
+
 function priorityLabel(priority: ClosingIssue["priority"]) {
   if (priority === "high") return "높음";
   if (priority === "medium") return "보통";
@@ -152,6 +171,12 @@ function groupBySales(issues: ClosingIssue[]) {
   return Array.from(map.values()).sort((a, b) => b.totalCount - a.totalCount);
 }
 
+function visibleRmaRecords(records: MonthEndRmaRecord[], selectedSalesName: string, isAdmin: boolean) {
+  const accountScoped = records.filter((record) => hasPortalSalesName(record.sales));
+  if (isAdmin) return accountScoped;
+  return accountScoped.filter((record) => normalizeName(record.sales) === normalizeName(selectedSalesName));
+}
+
 export function MonthEndPasteClient() {
   const { selectedUser } = useSelectedUser();
   const isAdmin = selectedUser.accessRole === "admin";
@@ -165,6 +190,12 @@ export function MonthEndPasteClient() {
   const [salesFilter, setSalesFilter] = useState("all");
   const [message, setMessage] = useState(isAdmin ? "ERP 월마감 데이터를 붙여넣고 데이터 인식하기를 눌러주세요." : "VIPS팀/Admin이 업로드한 최신 월마감 데이터를 불러오는 중입니다.");
   const [messageType, setMessageType] = useState<"info" | "success" | "error">("info");
+  const [arrangeIssue, setArrangeIssue] = useState<ClosingIssue | null>(null);
+  const [arrangeMemo, setArrangeMemo] = useState("");
+  const [rmaSnapshot, setRmaSnapshot] = useState<MonthEndRmaSnapshot | null>(null);
+  const [rmaMessage, setRmaMessage] = useState("RMA 파일을 업로드하면 Sales별 조회 리스트가 생성됩니다.");
+  const [rmaMessageType, setRmaMessageType] = useState<"info" | "success" | "error">("info");
+  const [rmaUploading, setRmaUploading] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -196,13 +227,17 @@ export function MonthEndPasteClient() {
 
     loadLatestSnapshot();
 
+    fetchMonthEndRmaSnapshot()
+      .then(setRmaSnapshot)
+      .catch(() => setRmaSnapshot(null));
+
     return () => {
       alive = false;
     };
   }, [isAdmin]);
 
   const allIssuesRaw = isAdmin ? recognizedIssues.length > 0 ? recognizedIssues : snapshot?.issues ?? [] : snapshot?.issues ?? [];
-  const allIssues = allIssuesRaw.filter((issue) => issue.issueType !== "collection_check");
+  const allIssues = allIssuesRaw.filter((issue) => isVisibleMonthEndIssue(issue) && hasPortalAccount(issue));
 
   const permissionIssues = useMemo(() => {
     if (isAdmin) return allIssues;
@@ -213,8 +248,8 @@ export function MonthEndPasteClient() {
   const salesFilterOptions = useMemo(() => {
     const names = new Set<string>();
     for (const issue of permissionIssues) {
-      if (issue.fSales) names.add(issue.fSales);
-      if (issue.iSales) names.add(issue.iSales);
+      if (issue.fSales && accountSalesNames.has(normalizeName(issue.fSales))) names.add(issue.fSales);
+      if (issue.iSales && accountSalesNames.has(normalizeName(issue.iSales))) names.add(issue.iSales);
     }
     return Array.from(names).sort((a, b) => a.localeCompare(b));
   }, [permissionIssues]);
@@ -260,6 +295,10 @@ export function MonthEndPasteClient() {
   );
   const kpi = useMemo(() => kpiFor(metricIssues), [metricIssues]);
   const salesGroups = useMemo(() => groupBySales(metricIssues), [metricIssues]);
+  const rmaRecords = useMemo(
+    () => visibleRmaRecords(rmaSnapshot?.records ?? [], selectedUser.salesName, isAdmin),
+    [isAdmin, rmaSnapshot, selectedUser.salesName]
+  );
 
   const recognizeData = (text = pasteText) => {
     const uploadedAt = new Date().toISOString();
@@ -320,6 +359,25 @@ export function MonthEndPasteClient() {
     setMessageType("info");
   };
 
+  const handleRmaUpload = async (file: File | undefined) => {
+    if (!file) return;
+    setRmaUploading(true);
+    setRmaMessageType("info");
+    setRmaMessage("RMA 파일을 인식하는 중입니다.");
+    try {
+      const nextSnapshot = await uploadMonthEndRmaFile(file, selectedUser.name);
+      setRmaSnapshot(nextSnapshot);
+      setFilter("rma");
+      setRmaMessage(`RMA ${nextSnapshot.records.length}건을 인식했습니다. Sales 계정별로 본인 RMA 리스트가 표시됩니다.`);
+      setRmaMessageType("success");
+    } catch (error) {
+      setRmaMessage(error instanceof Error ? error.message : "RMA 파일 업로드 중 오류가 발생했습니다.");
+      setRmaMessageType("error");
+    } finally {
+      setRmaUploading(false);
+    }
+  };
+
   const persistIssueUpdate = (updater: (target: ClosingIssue) => ClosingIssue) => {
     setRecognizedIssues((prev) => prev.map(updater));
     setSnapshot((prev) => {
@@ -348,7 +406,8 @@ export function MonthEndPasteClient() {
       return;
     }
     if (issue.issueType === "shipment_check") {
-      saveIssueMemo(issue);
+      setArrangeIssue(issue);
+      setArrangeMemo(issue.memo || "");
       return;
     }
     if (issue.issueType === "collection_check") {
@@ -360,6 +419,19 @@ export function MonthEndPasteClient() {
 
   return (
     <div className="space-y-5">
+      <ArrangeModal
+        issue={arrangeIssue}
+        memo={arrangeMemo}
+        onMemoChange={setArrangeMemo}
+        onClose={() => setArrangeIssue(null)}
+        onConfirm={(issue) => {
+          const memo = arrangeMemo || "출고 진행 확인";
+          saveMonthEndActionRequest({ issue, memo, requestedBy: selectedUser.name });
+          persistIssueUpdate((target) => target.id === issue.id ? { ...target, memo } : target);
+          setArrangeIssue(null);
+          window.alert("출고진행 요청이 VIPS 운영 화면에 임시 저장되었습니다. 추후 ERP API 연동 시 이 동작이 ERP 출고요청으로 연결됩니다.");
+        }}
+      />
       <section className="ops-card p-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -447,6 +519,50 @@ export function MonthEndPasteClient() {
           </div>
         ) : null}
 
+        {isAdmin ? (
+          <div className="mt-4 rounded-[18px] border border-[#dce6f3] bg-white p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-[#1D50A2]">
+                  <Upload size={16} />
+                  <p className="text-[12px] font-[950] uppercase tracking-[0.08em]">RMA FILE UPLOAD</p>
+                </div>
+                <h3 className="mt-1 text-[16px] font-[950] text-[#111827]">RMA 파일 업로드</h3>
+                <p className="mt-1 text-[12px] font-[750] text-[#64748b]">
+                  Sales, Supplier, P.status, W.status 컬럼을 읽어 Sales별 RMA 리스트를 생성합니다.
+                </p>
+              </div>
+              <label className="flex h-10 cursor-pointer items-center rounded-[14px] bg-[#1D50A2] px-4 text-[12px] font-[950] text-white shadow-sm transition hover:bg-[#173f80]">
+                {rmaUploading ? "업로드 중" : "RMA 파일 선택"}
+                <input
+                  type="file"
+                  accept=".xlsx,.csv"
+                  disabled={rmaUploading}
+                  className="hidden"
+                  onChange={(event) => {
+                    handleRmaUpload(event.target.files?.[0]);
+                    event.currentTarget.value = "";
+                  }}
+                />
+              </label>
+            </div>
+            <div className={`mt-3 rounded-[14px] border px-3 py-2 text-[11px] font-[800] leading-relaxed ${
+              rmaMessageType === "error"
+                ? "border-[#fecaca] bg-[#fff5ec] text-[#b85f18]"
+                : rmaMessageType === "success"
+                  ? "border-[#dbe7ff] bg-[#edf4ff] text-[#1D50A2]"
+                  : "border-[#e5eaf3] bg-[#f8fbff] text-[#64748b]"
+            }`}>
+              {rmaMessage}
+              {rmaSnapshot ? (
+                <span className="ml-2 text-[#94a3b8]">
+                  마지막 업로드 {rmaSnapshot.fileName} · {new Date(rmaSnapshot.uploadedAt).toLocaleString("ko-KR")}
+                </span>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
         {snapshot ? (
           <div className="mt-4 rounded-[16px] border border-[#e5eaf3] bg-[#fbfdff] px-4 py-3 text-[12px] font-[800] text-[#64748b]">
             마지막 업로드 {snapshot.closingMonth} · {new Date(snapshot.uploadedAt).toLocaleString("ko-KR")} · 업로드 {snapshot.uploadedBy}
@@ -515,15 +631,48 @@ export function MonthEndPasteClient() {
             ))}
           </div>
 
+          {filter === "rma" ? (
+            <div className="mt-4 overflow-hidden rounded-[18px] border border-[#e7ecf4]">
+              <div className="grid min-w-[760px] grid-cols-[130px_minmax(240px,1fr)_140px_140px] gap-2 bg-[#f8fbff] px-4 py-3 text-[11px] font-[950] text-[#64748b]">
+                <span>Sales</span>
+                <span>Supplier</span>
+                <span>P.status</span>
+                <span>W.status</span>
+              </div>
+              <div className="max-h-[420px] overflow-auto">
+                {rmaRecords.length === 0 ? (
+                  <div className="p-6 text-center">
+                    <p className="text-[13px] font-[900] text-[#64748b]">표시할 RMA 데이터가 없습니다.</p>
+                    <p className="mt-1 text-[12px] font-[750] text-[#94a3b8]">
+                      {isAdmin ? "Admin 계정으로 RMA 파일을 업로드해주세요." : "내 Sales명으로 등록된 RMA가 없습니다."}
+                    </p>
+                  </div>
+                ) : (
+                  rmaRecords.map((record) => (
+                    <div key={record.id} className="grid min-w-[760px] grid-cols-[130px_minmax(240px,1fr)_140px_140px] items-center gap-2 border-t border-[#eef2f7] bg-white px-4 py-3 text-[12px]">
+                      <span className="truncate font-[950] text-[#475569]">{record.sales}</span>
+                      <span className="truncate font-[900] text-[#111827]">{record.supplier || "-"}</span>
+                      <span className="w-fit rounded-full border border-[#dce6f3] bg-[#fbfdff] px-3 py-1 text-[11px] font-[900] text-[#1D50A2]">{record.purchaseStatus || "-"}</span>
+                      <span className="w-fit rounded-full border border-[#dce6f3] bg-[#fbfdff] px-3 py-1 text-[11px] font-[900] text-[#475569]">{record.warehouseStatus || "-"}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="border-t border-[#eef2f7] bg-[#fbfdff] px-4 py-3 text-[12px] font-[800] text-[#64748b]">
+                RMA는 확인용 리스트입니다. 사유 입력이나 액션 처리는 제공하지 않습니다.
+              </div>
+            </div>
+          ) : (
           <div className="mt-4 overflow-x-auto rounded-[18px] border border-[#e7ecf4]">
-            <div className="grid min-w-[1180px] grid-cols-[170px_minmax(210px,1fr)_120px_120px_130px_90px_minmax(260px,1.4fr)_160px] gap-2 bg-[#f8fbff] px-4 py-3 text-[11px] font-[950] text-[#64748b]">
+            <div className="grid min-w-[1180px] grid-cols-[110px_170px_minmax(210px,1fr)_120px_120px_80px_100px_minmax(230px,1.1fr)_150px] gap-2 bg-[#f8fbff] px-4 py-3 text-[11px] font-[950] text-[#64748b]">
+              <span>ISales</span>
               <span>상태</span>
               <span>거래처(Company)</span>
-              <span>FSales</span>
-              <span>ISales</span>
               <span>금액</span>
-              <span>경과일</span>
-              <span>사유</span>
+              <span>GPD</span>
+              <span>GP</span>
+              <span>미출고기간</span>
+              <span>사유입력칸</span>
               <span>액션</span>
             </div>
             <div className="max-h-[520px] overflow-auto">
@@ -533,18 +682,21 @@ export function MonthEndPasteClient() {
                 filteredIssues.map((issue) => (
                   <div
                     key={issue.id}
-                    className={`grid min-w-[1180px] grid-cols-[170px_minmax(210px,1fr)_120px_120px_130px_90px_minmax(260px,1.4fr)_160px] items-center gap-2 border-t border-[#eef2f7] px-4 py-3 text-[12px] ${
+                    className={`grid min-w-[1180px] grid-cols-[110px_170px_minmax(210px,1fr)_120px_120px_80px_100px_minmax(230px,1.1fr)_150px] items-center gap-2 border-t border-[#eef2f7] px-4 py-3 text-[12px] ${
                       issue.status !== "open" ? "bg-[#f8fafc] opacity-60" : "bg-white"
                     }`}
                   >
+                    <span className="truncate font-[900] text-[#475569]">{issue.iSales}</span>
                     <span className="truncate font-[900] text-[#111827]" title={issueHelpText[issue.issueType] ?? issue.issueLabel}>
                       {issueDisplayLabel(issue.issueType, issue.issueLabel)}
                     </span>
                     <span className="truncate font-[850] text-[#10203f]">{issue.company}</span>
-                    <span className="truncate font-[850] text-[#475569]">{issue.fSales}</span>
-                    <span className="truncate font-[850] text-[#475569]">{issue.iSales}</span>
                     <span className="truncate font-[900] text-[#111827]">{formatKrw(issue.amount)}</span>
-                    <span className="font-[850] text-[#64748b]">{getElapsedDays(issue)}일</span>
+                    <span className="truncate font-[900] text-[#475569]">{issue.gpdAmount ? formatKrw(issue.gpdAmount) : "-"}</span>
+                    <span className="font-[850] text-[#64748b]">{typeof issue.gpRate === "number" ? `${issue.gpRate}%` : "-"}</span>
+                    <span className="font-[850] text-[#64748b]">
+                      {issue.issueType === "invoice_required" ? "-" : `${issue.shipmentDays ?? getElapsedDays(issue)}일`}
+                    </span>
                     <button
                       type="button"
                       onClick={() => saveIssueMemo(issue)}
@@ -568,12 +720,87 @@ export function MonthEndPasteClient() {
               )}
             </div>
           </div>
+          )}
 
           <div className="mt-4 flex items-center gap-2 rounded-[16px] bg-[#f8fbff] px-4 py-3 text-[12px] font-[800] text-[#64748b]">
             <SlidersHorizontal size={15} />
             월마감 데이터는 VIPS/Admin이 전체 데이터를 저장하고, 영업은 FSales/ISales 권한에 따라 본인 범위만 확인합니다.
           </div>
         </article>
+      </section>
+    </div>
+  );
+}
+
+function ArrangeModal({
+  issue,
+  memo,
+  onMemoChange,
+  onClose,
+  onConfirm
+}: {
+  issue: ClosingIssue | null;
+  memo: string;
+  onMemoChange: (value: string) => void;
+  onClose: () => void;
+  onConfirm: (issue: ClosingIssue) => void;
+}) {
+  if (!issue) return null;
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#0f172a]/35 px-4 py-6">
+      <section className="w-full max-w-[880px] overflow-hidden rounded-[4px] border-4 border-[#4aa3d9] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.28)]">
+        <div className="flex h-8 items-center justify-between bg-[#4aa3d9] px-3 text-white">
+          <p className="text-[13px] font-[950]">상세보기</p>
+          <button type="button" onClick={onClose} className="text-[12px] font-[900] text-white">× close</button>
+        </div>
+        <div className="bg-[#eef7fd] px-3 py-2 text-[12px] font-[950] text-[#0f5f9d]">Warehouse out Arrange</div>
+
+        <div className="border-t border-[#b7d5e8]">
+          <div className="grid grid-cols-[44px_1fr_1fr_1fr_1fr] border-b border-[#cbd5e1] text-center text-[12px]">
+            <div className="bg-[#f8fafc] py-2 font-[900] text-[#0f5f9d]">선택</div>
+            <div className="bg-[#f8fafc] py-2 font-[900] text-[#0f5f9d]">P/N</div>
+            <div className="bg-[#f8fafc] py-2 font-[900] text-[#0f5f9d]">NAME</div>
+            <div className="bg-[#f8fafc] py-2 font-[900] text-[#0f5f9d]">ADDR</div>
+            <div className="bg-[#f8fafc] py-2 font-[900] text-[#0f5f9d]">계산서형태</div>
+            <div className="flex items-center justify-center border-t border-[#d7e2ea] py-2">
+              <input type="checkbox" checked readOnly />
+            </div>
+            <div className="border-t border-[#d7e2ea] px-2 py-2 font-[750] text-[#334155]">월마감 출고 확인 대상</div>
+            <div className="border-t border-[#d7e2ea] px-2 py-2 font-[750] text-[#334155]">{issue.company}</div>
+            <div className="border-t border-[#d7e2ea] px-2 py-2 font-[750] text-[#334155]">출고 주소 확인 필요</div>
+            <div className="border-t border-[#d7e2ea] px-2 py-2 font-[750] text-[#334155]">영수</div>
+          </div>
+
+          <div className="border-t-[6px] border-[#4aa3d9]">
+            {[
+              ["Date", <><input value={today} readOnly className="h-7 w-[150px] border border-[#94a3b8] px-2 text-[12px]" /> <span className="ml-2 text-[11px] font-[850] text-red-500">*오전8시에서 오후2시 이후에는 당일출고가 불가능 합니다.</span></>],
+              ["NAME", <input value={issue.company} readOnly className="h-7 w-[380px] border border-[#94a3b8] px-2 text-[12px]" />],
+              ["ADDR", <input value="출고 주소는 IKI에서 최종 확인해주세요." readOnly className="h-7 w-full border border-[#94a3b8] px-2 text-[12px]" />],
+              ["배송방법", <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px]"><label><input type="radio" defaultChecked /> 택배-신용</label><label><input type="radio" /> 택배-착불</label><label><input type="radio" /> 퀵-신용</label><label><input type="radio" /> 방문수령</label><label><input type="radio" /> 취소(출고보류)</label></div>],
+              ["계산서형태", <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px]"><label><input type="radio" defaultChecked /> 영수</label><label><input type="radio" /> 청구</label><label><input type="radio" /> 가상발행</label><input value={today} readOnly className="h-7 w-[120px] border border-[#94a3b8] px-2 text-[12px]" /><span className="text-[11px] font-[850] text-red-500">*계산서 발행월 확인</span></div>],
+              ["발송형태", <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px]"><label><input type="radio" defaultChecked /> 메일발송</label><label><input type="radio" /> 박스동봉</label><label><input type="radio" /> 프린트출력</label></div>],
+              ["연락처", <input placeholder="연락처 확인" className="h-7 w-[220px] border border-[#94a3b8] px-2 text-[12px]" />],
+              ["월마감 메모", <textarea value={memo} onChange={(event) => onMemoChange(event.target.value)} placeholder="출고 진행 내용 또는 보류 사유를 입력해주세요." className="h-16 w-full resize-none border border-[#94a3b8] px-2 py-1 text-[12px]" />]
+            ].map(([label, content]) => (
+              <div key={String(label)} className="grid grid-cols-[160px_1fr] border-b border-[#d7e2ea]">
+                <div className="bg-[#f8fafc] px-3 py-2 text-right text-[12px] font-[950] text-[#0f5f9d]">{label}</div>
+                <div className="px-2 py-1.5">{content}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex justify-center gap-2 bg-[#eef7fd] px-4 py-3">
+          <button type="button" onClick={() => onConfirm(issue)} className="h-9 rounded-sm bg-[#6b7280] px-8 text-[12px] font-[950] text-white">
+            확인
+          </button>
+          <button type="button" onClick={onClose} className="h-9 rounded-sm border border-[#94a3b8] bg-white px-6 text-[12px] font-[900] text-[#475569]">
+            닫기
+          </button>
+        </div>
       </section>
     </div>
   );

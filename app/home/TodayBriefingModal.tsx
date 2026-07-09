@@ -18,11 +18,13 @@ type BriefingSummary = {
 };
 
 const userBriefingSummary: Record<string, BriefingSummary> = {
-  Morgan: { monthlyNeedCount: 6, collectionNeedCount: 1, delayedRequestCount: 0 },
   Harvey: { monthlyNeedCount: 3, collectionNeedCount: 1, delayedRequestCount: 0 },
-  Eric: { monthlyNeedCount: 4, collectionNeedCount: 0, delayedRequestCount: 1 },
-  Tommy_G: { monthlyNeedCount: 7, collectionNeedCount: 2, delayedRequestCount: 0 },
-  Tommy: { monthlyNeedCount: 0, collectionNeedCount: 0, delayedRequestCount: 0 },
+  Lauren: { monthlyNeedCount: 6, collectionNeedCount: 1, delayedRequestCount: 0 },
+  Riley: { monthlyNeedCount: 4, collectionNeedCount: 0, delayedRequestCount: 1 },
+  Jake: { monthlyNeedCount: 2, collectionNeedCount: 1, delayedRequestCount: 0 },
+  Terry: { monthlyNeedCount: 1, collectionNeedCount: 0, delayedRequestCount: 0 },
+  Chris: { monthlyNeedCount: 0, collectionNeedCount: 1, delayedRequestCount: 0 },
+  Robin: { monthlyNeedCount: 0, collectionNeedCount: 0, delayedRequestCount: 0 },
   Sally: { monthlyNeedCount: 0, collectionNeedCount: 0, delayedRequestCount: 0 },
   Vincent: { monthlyNeedCount: 0, collectionNeedCount: 0, delayedRequestCount: 0 },
   Gavin: { monthlyNeedCount: 0, collectionNeedCount: 0, delayedRequestCount: 0 }
@@ -52,6 +54,12 @@ function todayLabel() {
 
 function getUserBriefingSummary(userName: string): BriefingSummary {
   return userBriefingSummary[userName] ?? { monthlyNeedCount: 0, collectionNeedCount: 0, delayedRequestCount: 0 };
+}
+
+function goMonthEnd() {
+  const params = new URLSearchParams(window.location.search);
+  const user = params.get("user");
+  window.location.href = `/month-end${user ? `?user=${encodeURIComponent(user)}` : ""}`;
 }
 
 export function getTodayBriefingReasons(userName: string) {
@@ -130,7 +138,6 @@ export function TodayBriefingModal({
 }) {
   if (reasons.length === 0) return null;
 
-  const primaryRoute = reasons[0]?.route ?? "/month-end";
   const userSummary = getUserBriefingSummary(userName);
   const userTotal = userSummary.monthlyNeedCount + userSummary.collectionNeedCount + userSummary.delayedRequestCount;
   const isGateBlocked = userSummary.monthlyNeedCount > 0;
@@ -159,7 +166,7 @@ export function TodayBriefingModal({
           {isGateBlocked ? (
             <button
               type="button"
-              onClick={() => (window.location.href = "/month-end")}
+              onClick={goMonthEnd}
               className="flex w-full min-w-0 items-start gap-3 rounded-[18px] border-2 border-[#ef4444] bg-[#fef2f2] p-4 text-left shadow-[0_10px_24px_rgba(220,38,38,0.08)] transition hover:bg-[#fee2e2]"
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#dc2626] shadow-sm">
@@ -203,7 +210,7 @@ export function TodayBriefingModal({
             <button type="button" onClick={onClose} className="h-10 rounded-full border border-[#dce6f3] bg-white px-4 text-[12px] font-[900] text-[#64748b] transition hover:bg-[#f8fafc]">
               나중에 보기
             </button>
-            <button type="button" onClick={() => (window.location.href = primaryRoute)} className="h-10 rounded-full bg-[#F39945] px-5 text-[12px] font-[950] text-white shadow-[0_10px_18px_rgba(239,68,68,0.18)] transition hover:bg-[#b85f18]">
+            <button type="button" onClick={goMonthEnd} className="h-10 rounded-full bg-[#F39945] px-5 text-[12px] font-[950] text-white shadow-[0_10px_18px_rgba(239,68,68,0.18)] transition hover:bg-[#b85f18]">
               오늘 업무 시작하기
             </button>
           </div>

@@ -3,6 +3,7 @@ import path from "node:path";
 import { NextResponse } from "next/server";
 import { REQUEST_FORM_CONFIGS, type RequestFormValues, type RequestKind } from "../../services/formValidation";
 import type { ErpTransmissionLog, RequestAttachmentPreview, RequestCreatePayload, RequestItem, RequestStatus, RequestUpdatePayload } from "../../services/requestStorage";
+import { readSharedCollection, writeSharedCollection } from "../../services/sharedStorageServer";
 
 export const runtime = "nodejs";
 
@@ -48,7 +49,7 @@ function normalizeKind(kind: string | undefined, type: string): RequestKind {
   if (kind && kind in REQUEST_FORM_CONFIGS) return kind as RequestKind;
   if (type.includes("수정")) return "revisedTaxInvoice";
   if (type.includes("역발행")) return "reverseIssueApproval";
-  if (type.includes("입금")) return "depositConfirmation";
+  if (type.includes("선수금") || type.includes("입금")) return "advancePayment";
   if (type.includes("카드")) return "cardPayment";
   if (type.includes("보증보험")) return "guaranteeInsurance";
   if (type.includes("계산서매칭")) return "invoiceMatching";
@@ -235,6 +236,9 @@ function columnName(index: number) {
 }
 
 async function readRows(): Promise<RequestRow[]> {
+  const sharedRows = await readSharedCollection<Array<Record<string, unknown>>>("requests");
+  if (Array.isArray(sharedRows)) return sharedRows.map(legacyRowToRequest);
+
   try {
     const parsed = JSON.parse(await readFile(jsonPath, "utf8")) as Array<Record<string, unknown>>;
     return parsed.map(legacyRowToRequest);
@@ -244,9 +248,15 @@ async function readRows(): Promise<RequestRow[]> {
 }
 
 async function writeRows(rows: RequestRow[]) {
-  await mkdir(dataDir, { recursive: true });
-  await writeFile(jsonPath, JSON.stringify(rows, null, 2), "utf8");
-  await writeFile(xlsxPath, createWorkbook(rows));
+  await writeSharedCollection("requests", rows);
+
+  try {
+    await mkdir(dataDir, { recursive: true });
+    await writeFile(jsonPath, JSON.stringify(rows, null, 2), "utf8");
+    await writeFile(xlsxPath, createWorkbook(rows));
+  } catch {
+    // Vercel file system is not persistent. Shared storage is the source of truth when configured.
+  }
 }
 
 function rowValues(row: RequestRow) {
@@ -314,6 +324,23 @@ function buildErpPayload(row: RequestRow) {
     };
   }
 
+  if (row.kind === "advancePayment") {
+    return {
+      requestId: row.id,
+      requestType: "advancePayment",
+      advanceUsageType: details["처리구분"] || "",
+      ikiTaxId: details["IKI Tax ID"] || "",
+      advancePaymentLink: details["선수금링크"] || "",
+      collectionLink: details["수금링크"] || "",
+      poLink: details["PO링크"] || "",
+      gpAmount: parseMoneyLike(details["G/P"] || row.supplyAmount),
+      spAmount: parseMoneyLike(details["S/P"] || ""),
+      upAmount: parseMoneyLike(details["U/P"] || ""),
+      note: row.note,
+      requestedBy: row.requester
+    };
+  }
+
   return null;
 }
 
@@ -326,7 +353,7 @@ function buildMockErpTransmission(row: RequestRow, payload: RequestUpdatePayload
       mode: "mock",
       transmittedAt: processedAt,
       transmittedBy: payload.transmittedBy || "VIPS팀",
-      message: "ERP 전송 대상 요청이 아닙니다."
+      message: "ERP 처리 대상 요청이 아닙니다."
     };
   }
 
@@ -337,7 +364,7 @@ function buildMockErpTransmission(row: RequestRow, payload: RequestUpdatePayload
     transmittedAt: processedAt,
     transmittedBy: payload.transmittedBy || "VIPS팀",
     externalId: `MOCK-ERP-${row.id.replace(/^REQ-/, "")}`,
-    message: "Mock ERP 전송 완료. 실제 ERP API URL/인증키 연결 시 같은 payload로 전송됩니다.",
+    message: "Mock ERP 처리 승인 완료. 실제 ERP API URL/인증키 연결 시 같은 payload로 사내 ERP 수동발행/선수금 처리에 연결됩니다.",
     payload: erpPayload
   };
 }
@@ -494,21 +521,26 @@ function buildRow(kind: RequestKind, id: string, requestedAt: string, requester:
     attachments: buildAttachments(values)
   };
 
-  if (kind === "depositConfirmation") {
+  if (kind === "advancePayment") {
     return {
       ...base,
-      issueDate: values.depositDate,
-      itemName: `입금자: ${values.depositorName}`,
+      type: config.title,
+      companyName: values.companyName || values.ikiTaxId,
+      issueDate: "-",
+      itemName: `${values.advanceUsageType || "선수금 처리"} · ${values.ikiTaxId}`,
       quantity: "-",
       unitPrice: "-",
-      supplyAmount: values.depositAmount,
-      totalAmount: money(values.depositAmount),
+      supplyAmount: values.gpAmount,
+      totalAmount: money(values.gpAmount),
       details: {
-        업체명: values.companyName,
-        입금일자: values.depositDate,
-        입금계좌: values.depositAccount,
-        입금자명: values.depositorName,
-        입금금액: money(values.depositAmount),
+        처리구분: values.advanceUsageType,
+        "IKI Tax ID": values.ikiTaxId,
+        선수금링크: values.advancePaymentLink,
+        수금링크: values.advanceCollectionLink,
+        PO링크: values.poLink,
+        "G/P": money(values.gpAmount),
+        "S/P": money(values.spAmount),
+        "U/P": money(values.upAmount),
         비고: values.note
       }
     };
@@ -547,7 +579,7 @@ function buildRow(kind: RequestKind, id: string, requestedAt: string, requester:
         "보증보험 종류": values.guaranteeType,
         업체명: values.companyName,
         보증요율: values.guaranteeRate,
-        보증기간: `${values.guaranteeStartDate} ~ ${values.guaranteeEndDate}`,
+        보증기간: values.guaranteePeriod || `${values.guaranteeStartDate} ~ ${values.guaranteeEndDate}`,
         계약명: values.contractName,
         "계약금액(VAT 포함)": money(values.contractAmount),
         계약서첨부: values.contractFileName,
@@ -650,6 +682,7 @@ function buildRow(kind: RequestKind, id: string, requestedAt: string, requester:
       details: {
         업체명: values.companyName,
         월마감확인유형: values.monthEndCase,
+        월마감관련링크: values.monthEndLink,
         비고: values.note
       }
     };
@@ -725,7 +758,7 @@ export async function PATCH(request: Request) {
     status: isErpSend && erpTransmission?.status === "mock_sent" ? "완료" : payload.status,
     result: isErpSend
       ? erpTransmission?.status === "mock_sent"
-        ? `${erpTransmission.system} 전송 완료 (${erpTransmission.externalId})`
+        ? `${erpTransmission.system} 처리 승인 완료 (${erpTransmission.externalId})`
         : erpTransmission?.message ?? payload.result
       : payload.result,
     processor: payload.transmittedBy || "VIPS팀",

@@ -1,4 +1,4 @@
-import type { TestUser } from "../hooks/useSelectedUser";
+﻿import type { TestUser } from "../hooks/useSelectedUser";
 
 export type ReceivableStatus = "완료" | "부분수금" | "미수";
 export type CollectionIssueStatus = "미수" | "부분수금" | "미매칭" | "장기미수";
@@ -48,20 +48,20 @@ export type ReceivableStat = {
 };
 
 export const SALES_ALIAS_MAP: Record<string, string> = {
-  ER: "Eric",
-  Eric: "Eric",
   MX: "Max",
   Max: "Max",
   JE: "Jenny",
   Jenny: "Jenny",
   LO: "Lauren",
   Lauren: "Lauren",
+  Riley: "Riley",
+  Jake: "Jake",
+  Terry: "Terry",
+  Chris: "Chris",
+  Robin: "Robin",
   WN: "Winnie",
   Winnie: "Winnie",
-  Morgan: "Morgan",
   Harvey: "Harvey",
-  Tommy: "Tommy",
-  Tommy_G: "Tommy_G",
   Sally: "Sally"
 };
 
@@ -85,8 +85,8 @@ export const receivableRecords: ReceivableRecord[] = [
   {
     id: "rcv-001",
     team: "영업1팀",
-    fSales: "Tommy_G",
-    sales: "Morgan",
+    fSales: "Lauren",
+    sales: "Riley",
     name: "파인테크",
     expected: 286597,
     paid: 120000,
@@ -102,8 +102,8 @@ export const receivableRecords: ReceivableRecord[] = [
   {
     id: "rcv-002",
     team: "영업1팀",
-    fSales: "Tommy_G",
-    sales: "Morgan",
+    fSales: "Lauren",
+    sales: "Riley",
     name: "제이엠일렉",
     expected: 168626,
     paid: 0,
@@ -117,8 +117,8 @@ export const receivableRecords: ReceivableRecord[] = [
   {
     id: "rcv-003",
     team: "영업1팀",
-    fSales: "Tommy_G",
-    sales: "Morgan",
+    fSales: "Lauren",
+    sales: "Riley",
     name: "오름전자",
     expected: 100000,
     paid: 0,
@@ -134,7 +134,7 @@ export const receivableRecords: ReceivableRecord[] = [
   {
     id: "rcv-004",
     team: "영업1팀",
-    fSales: "Tommy_G",
+    fSales: "Lauren",
     sales: "Harvey",
     name: "나래센서",
     expected: 1429024,
@@ -149,7 +149,7 @@ export const receivableRecords: ReceivableRecord[] = [
   {
     id: "rcv-005",
     team: "영업1팀",
-    fSales: "Tommy_G",
+    fSales: "Lauren",
     sales: "ER",
     name: "동양부품",
     expected: 2580000,
@@ -180,8 +180,8 @@ export const receivableRecords: ReceivableRecord[] = [
   {
     id: "rcv-007",
     team: "영업3팀",
-    fSales: "Tommy",
-    sales: "Tommy",
+    fSales: "Jake",
+    sales: "Jake",
     name: "하이테크",
     expected: 5252933,
     paid: 5252933,
@@ -196,8 +196,8 @@ export const receivableRecords: ReceivableRecord[] = [
   {
     id: "rcv-008",
     team: "영업3팀",
-    fSales: "Tommy",
-    sales: "Tommy",
+    fSales: "Jake",
+    sales: "Jake",
     name: "삼원테크",
     expected: 780000,
     paid: 0,
@@ -210,7 +210,7 @@ export const receivableRecords: ReceivableRecord[] = [
   {
     id: "rcv-009",
     team: "영업1팀",
-    fSales: "Tommy_G",
+    fSales: "Lauren",
     sales: "",
     name: "미래디바이스",
     expected: 640000,

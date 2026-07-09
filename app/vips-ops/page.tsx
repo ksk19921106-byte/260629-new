@@ -5,10 +5,15 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock3,
+  CreditCard,
   FileText,
+  PackageCheck,
   ShieldAlert,
+  ShipWheel,
+  Truck,
   UsersRound,
   WalletCards,
+  X,
   type LucideIcon
 } from "lucide-react";
 import { AccessDenied } from "../components/AccessDenied";
@@ -19,6 +24,13 @@ import { fetchRequests, type RequestItem, type RequestStatus } from "../services
 import { buildCollectionComposition, normalizeSalesName, receivableRecords, type ReceivableRecord } from "../services/receivables";
 import type { ClosingIssue, ClosingSnapshot } from "../services/closingPasteParser";
 import { fetchBlockedUsers, updateBlockedUser, type BlockedUserMap, type MonthEndGateStatus } from "../services/monthEndGate";
+import { fetchMonthEndRmaSnapshot, type MonthEndRmaSnapshot, type MonthEndRmaRecord } from "../services/monthEndRma";
+import {
+  fetchMonthEndActionRequests,
+  updateMonthEndActionRequestStatus,
+  type MonthEndActionRequest,
+  type MonthEndActionStatus
+} from "../services/monthEndActionStorage";
 
 type StatusTone = "blue" | "orange" | "red" | "green" | "gray";
 type IssueStatus = "normal" | "attention" | "needCheck";
@@ -33,7 +45,7 @@ type GatekeeperRow = {
 
 const salesMetrics = [
   {
-    name: "Morgan",
+    name: "Lauren",
     team: "B2D",
     monthEndCount: 4,
     monthEndAmount: 31594963,
@@ -51,7 +63,7 @@ const salesMetrics = [
     status: "attention" as IssueStatus
   },
   {
-    name: "Eric",
+    name: "Riley",
     team: "B2D",
     monthEndCount: 1,
     monthEndAmount: 1429024,
@@ -60,7 +72,7 @@ const salesMetrics = [
     status: "attention" as IssueStatus
   },
   {
-    name: "Tommy",
+    name: "Jake",
     team: "S1",
     monthEndCount: 2,
     monthEndAmount: 75000,
@@ -73,7 +85,7 @@ const salesMetrics = [
 const teamMetrics = [
   {
     team: "B2D",
-    members: ["Morgan", "Harvey", "Eric"],
+    members: ["Harvey", "Lauren", "Riley"],
     monthEndCount: 6,
     monthEndAmount: 79475205,
     collectionCount: 3,
@@ -83,7 +95,7 @@ const teamMetrics = [
   },
   {
     team: "S1",
-    members: ["Tommy"],
+    members: ["Jake", "Terry"],
     monthEndCount: 2,
     monthEndAmount: 75000,
     collectionCount: 1,
@@ -94,18 +106,20 @@ const teamMetrics = [
 ];
 
 const salesTeamMap: Record<string, string> = {
-  Tommy_G: "S1",
-  Tommy: "S1",
-  Morgan: "B2D",
+  Jake: "S1",
+  Terry: "S1",
   Harvey: "B2D",
-  Eric: "B2D"
+  Lauren: "B2D",
+  Riley: "B2D",
+  Chris: "S3",
+  Robin: "S3"
 };
 
 const teamRoster = [
-  { team: "S1", members: ["Tommy_G", "Tommy"] },
+  { team: "S1", members: ["Jake", "Terry"] },
   { team: "S2", members: [] },
-  { team: "S3", members: [] },
-  { team: "B2D", members: ["Morgan", "Harvey", "Eric"] }
+  { team: "S3", members: ["Chris", "Robin"] },
+  { team: "B2D", members: ["Harvey", "Lauren", "Riley"] }
 ];
 
 const highValueThreshold = 10000000;
@@ -179,7 +193,7 @@ function statusTone(status: IssueStatus): StatusTone {
 }
 
 function openRequestStatus(params: Record<string, string> = {}) {
-  const search = new URLSearchParams({ user: "Sally", scope: "all", ...params });
+  const search = new URLSearchParams({ user: "Sally", scope: "opsAll", ...params });
   window.location.href = `/request-status?${search.toString()}`;
 }
 
@@ -267,49 +281,344 @@ function KpiCard({
   );
 }
 
-function TodayAlertCard({
-  closingRateValue,
-  collectionRateValue,
-  overdue30Count,
-  longPendingCount
-}: {
-  closingRateValue: number;
-  collectionRateValue: number;
-  overdue30Count: number;
-  longPendingCount: number;
-}) {
-  const alerts = [
-    { title: "전체 세일즈 월마감 비율", value: `${closingRateValue}%`, helper: "전체 Sales 월마감 이슈 기준", tone: closingRateValue < 50 ? "red" as StatusTone : "blue" as StatusTone },
-    { title: "전체 수금률", value: `${collectionRateValue}%`, helper: "완료 수금액 / 전체 예정금액", tone: collectionRateValue < 70 ? "orange" as StatusTone : "blue" as StatusTone },
-    { title: "30일 이상 미수 건", value: `${overdue30Count}건`, helper: "30일 이상 지연된 미수", tone: overdue30Count > 0 ? "red" as StatusTone : "green" as StatusTone },
-    { title: "월마감 장기 미진행건", value: `${longPendingCount}건`, helper: "입고O/출고X/계산서X", tone: longPendingCount > 0 ? "red" as StatusTone : "green" as StatusTone }
-  ];
+type MonthEndOpsCardKey = "invoice_required" | "shipment_check" | "long_pending" | "rma" | "customs";
 
+type MonthEndOpsCard = {
+  key: MonthEndOpsCardKey;
+  icon: LucideIcon;
+  title: string;
+  count: number;
+  amount: number;
+  helper?: string;
+  issues?: ClosingIssue[];
+  rmaRecords?: MonthEndRmaRecord[];
+};
+
+function issueAmount(issues: ClosingIssue[]) {
+  return issues.reduce((sum, issue) => sum + issue.amount, 0);
+}
+
+function buildMonthEndOpsCards(issues: ClosingIssue[], rmaRecords: MonthEndRmaRecord[]): MonthEndOpsCard[] {
+  const invoiceIssues = issues.filter((issue) => issue.issueType === "invoice_required");
+  const shipmentIssues = issues.filter((issue) => issue.issueType === "shipment_check");
+  const longPendingIssues = issues.filter((issue) => issue.issueType === "long_pending");
+
+  return [
+    {
+      key: "invoice_required",
+      icon: FileText,
+      title: "세금계산서 미발행",
+      count: invoiceIssues.length,
+      amount: issueAmount(invoiceIssues),
+      issues: invoiceIssues
+    },
+    {
+      key: "shipment_check",
+      icon: Truck,
+      title: "미출고",
+      count: shipmentIssues.length,
+      amount: issueAmount(shipmentIssues),
+      issues: shipmentIssues
+    },
+    {
+      key: "long_pending",
+      icon: PackageCheck,
+      title: "출고/세금계산서 발행 대기",
+      count: longPendingIssues.length,
+      amount: issueAmount(longPendingIssues),
+      helper: "상태: 입고 완료",
+      issues: longPendingIssues
+    },
+    {
+      key: "rma",
+      icon: ShipWheel,
+      title: "RMA 미처리 내역",
+      count: rmaRecords.length,
+      amount: 0,
+      rmaRecords
+    },
+    {
+      key: "customs",
+      icon: ShieldAlert,
+      title: "관세미수금",
+      count: 0,
+      amount: 0,
+      issues: []
+    }
+  ];
+}
+
+function MonthEndOpsSummary({
+  cards,
+  onSelect
+}: {
+  cards: MonthEndOpsCard[];
+  onSelect: (card: MonthEndOpsCard) => void;
+}) {
   return (
     <section className="ops-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#F39945]">Today Control Point</p>
-          <h2 className="mt-1 text-[20px] font-[950] tracking-[-0.03em] text-[#111827]">오늘 먼저 확인할 이슈</h2>
-          <p className="mt-1 text-[12px] font-[750] text-[#64748b]">전체 Sales 기준 월마감, 수금, 장기 리스크를 먼저 확인합니다.</p>
+          <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#1D50A2]">MONTH-END CHECK</p>
+          <h2 className="mt-1 text-[20px] font-[950] tracking-[-0.03em] text-[#111827]">월마감 체크</h2>
         </div>
+        <p className="hidden text-[13px] font-[750] text-[#64748b] sm:block">카드를 클릭하면 하위 리스트가 열립니다.</p>
       </div>
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        {alerts.map((alert, index) => (
-          <div key={alert.title} className="rounded-[18px] border border-[#edf2f8] bg-[#fbfcff] p-4">
-            <div className="flex items-center gap-2">
-              <span className={`flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-[950] ${toneClass(alert.tone)}`}>{index + 1}</span>
-              <span className={`rounded-full px-2.5 py-1 text-[10px] font-[950] ${toneClass(alert.tone)}`}>
-                {alert.tone === "red" ? "High" : alert.tone === "orange" ? "Medium" : "Info"}
-              </span>
-            </div>
-            <p className="mt-3 text-[14px] font-[950] leading-5 text-[#111827]">{alert.title}</p>
-            <p className="mt-2 text-[28px] font-[950] tracking-[-0.04em] text-[#111827]">{alert.value}</p>
-            <p className="mt-1 truncate text-[12px] font-[750] text-[#64748b]">{alert.helper}</p>
+      <div className="mt-4 grid gap-3 md:grid-cols-5">
+        {cards.map((card) => {
+          const Icon = card.icon;
+          const isPrimary = card.key === "long_pending";
+          return (
+            <button
+              key={card.key}
+              type="button"
+              onClick={() => onSelect(card)}
+              className={`min-h-[160px] rounded-[10px] border bg-white p-4 text-left transition hover:border-[#1D50A2] hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)] ${
+                isPrimary ? "border-[#2f80ff] bg-[#fbfdff]" : "border-[#eef2f7]"
+              }`}
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f8fafc] text-[#4b5563]">
+                <Icon size={18} />
+              </div>
+              <p className="mt-4 min-h-[38px] text-[13px] font-[850] leading-[19px] text-[#374151]">{card.title}</p>
+              <p className="mt-2 text-[28px] font-[950] tracking-[-0.04em] text-[#C7312E]">{card.count}건</p>
+              <p className="mt-1 truncate text-[12px] font-[750] text-[#94a3b8]">{card.helper ?? krw(card.amount)}</p>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function MonthEndIssueModal({
+  card,
+  onClose
+}: {
+  card: MonthEndOpsCard | null;
+  onClose: () => void;
+}) {
+  if (!card) return null;
+  const isRma = card.key === "rma";
+  const issues = card.issues ?? [];
+  const rmaRecords = card.rmaRecords ?? [];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f172a]/35 px-4 py-6">
+      <section className="max-h-[86vh] w-full max-w-[1080px] overflow-hidden rounded-[28px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.24)]">
+        <div className="flex items-start justify-between gap-4 border-b border-[#edf2f8] px-6 py-5">
+          <div>
+            <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#1D50A2]">MONTH-END LIST</p>
+            <h3 className="mt-1 text-[24px] font-[950] tracking-[-0.03em] text-[#111827]">{card.title}</h3>
+            <p className="mt-1 text-[13px] font-[750] text-[#64748b]">총 {card.count}건 · {card.amount > 0 ? krw(card.amount) : "목록 확인"}</p>
           </div>
+          <button type="button" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f8fafc] text-[#64748b] transition hover:bg-[#edf4ff] hover:text-[#1D50A2]">
+            <X size={18} />
+          </button>
+        </div>
+        <div className="max-h-[64vh] overflow-auto p-5">
+          {isRma ? (
+            <table className="w-full min-w-[760px] border-separate border-spacing-0 overflow-hidden rounded-[18px] border border-[#edf2f8] text-left">
+              <thead className="bg-[#f8fafc] text-[12px] font-[900] text-[#475569]">
+                <tr>
+                  <th className="px-4 py-3">Sales</th>
+                  <th className="px-4 py-3">Supplier</th>
+                  <th className="px-4 py-3">P.status</th>
+                  <th className="px-4 py-3">W.status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#edf2f8] text-[13px] font-[750] text-[#334155]">
+                {rmaRecords.length === 0 ? (
+                  <tr><td colSpan={4} className="px-4 py-10 text-center text-[#94a3b8]">표시할 RMA 미처리 내역이 없습니다.</td></tr>
+                ) : (
+                  rmaRecords.map((record) => (
+                    <tr key={record.id}>
+                      <td className="px-4 py-3 font-[950] text-[#111827]">{record.sales}</td>
+                      <td className="px-4 py-3">{record.supplier}</td>
+                      <td className="px-4 py-3">{record.purchaseStatus || "-"}</td>
+                      <td className="px-4 py-3">{record.warehouseStatus || "-"}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          ) : (
+            <table className="w-full min-w-[900px] border-separate border-spacing-0 overflow-hidden rounded-[18px] border border-[#edf2f8] text-left">
+              <thead className="bg-[#f8fafc] text-[12px] font-[900] text-[#475569]">
+                <tr>
+                  <th className="px-4 py-3">ISales</th>
+                  <th className="px-4 py-3">상태</th>
+                  <th className="px-4 py-3">업체명</th>
+                  <th className="px-4 py-3">금액</th>
+                  <th className="px-4 py-3">GPD</th>
+                  <th className="px-4 py-3">GP</th>
+                  <th className="px-4 py-3">미출고기간</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#edf2f8] text-[13px] font-[750] text-[#334155]">
+                {issues.length === 0 ? (
+                  <tr><td colSpan={7} className="px-4 py-10 text-center text-[#94a3b8]">표시할 월마감 이슈가 없습니다.</td></tr>
+                ) : (
+                  issues.map((issue) => (
+                    <tr key={issue.id}>
+                      <td className="px-4 py-3 font-[950] text-[#111827]">{issue.iSales || "-"}</td>
+                      <td className="px-4 py-3">{issue.issueLabel}</td>
+                      <td className="px-4 py-3 font-[900] text-[#111827]">{issue.company}</td>
+                      <td className="px-4 py-3">{krw(issue.amount)}</td>
+                      <td className="px-4 py-3">{krw(issue.gpdAmount ?? 0)}</td>
+                      <td className="px-4 py-3">{issue.gpRate != null ? `${issue.gpRate}%` : "-"}</td>
+                      <td className="px-4 py-3">{issue.issueType === "invoice_required" ? "-" : `${issue.shipmentDays ?? 0}일`}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+type CollectionOpsCardKey = "total" | "unpaid" | "matching";
+
+type CollectionOpsCard = {
+  key: CollectionOpsCardKey;
+  title: string;
+  value: string;
+  helper: string;
+  records: ReceivableRecord[];
+};
+
+function matchingPendingRecords(records: ReceivableRecord[]) {
+  return records.filter((record) => record.status === "부분수금" || record.gubun === "신규매칭" || record.gubun === "담당자미매칭");
+}
+
+function buildCollectionOpsCards(records: ReceivableRecord[]): CollectionOpsCard[] {
+  const openRecords = records.filter((record) => record.status !== "완료" || record.diff > 0);
+  const unpaidRecords = records.filter((record) => record.status === "미수" && record.diff > 0);
+  const matchingRecords = matchingPendingRecords(records);
+  const totalAmount = openRecords.reduce((sum, record) => sum + Math.max(record.diff, record.expected), 0);
+  const unpaidAmount = unpaidRecords.reduce((sum, record) => sum + record.diff, 0);
+  const allExpected = records.reduce((sum, record) => sum + record.expected, 0);
+
+  return [
+    {
+      key: "total",
+      title: "전체 금액 및 건수",
+      value: krw(totalAmount),
+      helper: `${openRecords.length}건`,
+      records: openRecords
+    },
+    {
+      key: "unpaid",
+      title: "미수 금액 및 건수",
+      value: krw(unpaidAmount),
+      helper: `${unpaidRecords.length}건 · 전체 대비 ${allExpected > 0 ? Math.round((unpaidAmount / allExpected) * 100) : 0}%`,
+      records: unpaidRecords
+    },
+    {
+      key: "matching",
+      title: "수금매칭 대기",
+      value: `${matchingRecords.length}건`,
+      helper: "무입금 확인 필요",
+      records: matchingRecords
+    }
+  ];
+}
+
+function CollectionOpsSummary({
+  cards,
+  onSelect
+}: {
+  cards: CollectionOpsCard[];
+  onSelect: (card: CollectionOpsCard) => void;
+}) {
+  return (
+    <section className="ops-card p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#1D50A2]">AR CHECK</p>
+          <h2 className="mt-1 text-[20px] font-[950] tracking-[-0.03em] text-[#111827]">AR 체크</h2>
+        </div>
+        <p className="hidden text-[13px] font-[750] text-[#64748b] sm:block">전월말 수금 현황을 확인합니다.</p>
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        {cards.map((card) => (
+          <button
+            key={card.key}
+            type="button"
+            onClick={() => onSelect(card)}
+            className="min-h-[140px] rounded-[10px] border border-[#eef2f7] bg-white p-5 text-left transition hover:border-[#1D50A2] hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)]"
+          >
+            <p className="text-[15px] font-[850] text-[#64748b]">{card.title}</p>
+            <p className={`mt-4 text-[28px] font-[950] tracking-[-0.04em] ${card.key === "unpaid" ? "text-[#A12A2A]" : "text-[#111827]"}`}>{card.value}</p>
+            <p className="mt-1 text-[13px] font-[750] text-[#64748b]">{card.helper}</p>
+          </button>
         ))}
       </div>
     </section>
+  );
+}
+
+function CollectionIssueModal({
+  card,
+  onClose
+}: {
+  card: CollectionOpsCard | null;
+  onClose: () => void;
+}) {
+  if (!card) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f172a]/35 px-4 py-6">
+      <section className="max-h-[86vh] w-full max-w-[1080px] overflow-hidden rounded-[28px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.24)]">
+        <div className="flex items-start justify-between gap-4 border-b border-[#edf2f8] px-6 py-5">
+          <div>
+            <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#1D50A2]">AR LIST</p>
+            <h3 className="mt-1 text-[24px] font-[950] tracking-[-0.03em] text-[#111827]">{card.title}</h3>
+            <p className="mt-1 text-[13px] font-[750] text-[#64748b]">총 {card.records.length}건 · {card.value}</p>
+          </div>
+          <button type="button" onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f8fafc] text-[#64748b] transition hover:bg-[#edf4ff] hover:text-[#1D50A2]">
+            <X size={18} />
+          </button>
+        </div>
+        <div className="max-h-[64vh] overflow-auto p-5">
+          <table className="w-full min-w-[900px] border-separate border-spacing-0 overflow-hidden rounded-[18px] border border-[#edf2f8] text-left">
+            <thead className="bg-[#f8fafc] text-[12px] font-[900] text-[#475569]">
+              <tr>
+                <th className="px-4 py-3">담당자</th>
+                <th className="px-4 py-3">거래처</th>
+                <th className="px-4 py-3">예정금액</th>
+                <th className="px-4 py-3">입금액</th>
+                <th className="px-4 py-3">차액</th>
+                <th className="px-4 py-3">상태</th>
+                <th className="px-4 py-3">경과</th>
+                <th className="px-4 py-3">근거</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#edf2f8] text-[13px] font-[750] text-[#334155]">
+              {card.records.length === 0 ? (
+                <tr><td colSpan={8} className="px-4 py-10 text-center text-[#94a3b8]">표시할 수금 이슈가 없습니다.</td></tr>
+              ) : (
+                card.records.map((record) => (
+                  <tr key={record.id}>
+                    <td className="px-4 py-3 font-[950] text-[#111827]">{normalizeSalesName(record.sales) || "미매칭"}</td>
+                    <td className="px-4 py-3 font-[900] text-[#111827]">{record.name}</td>
+                    <td className="px-4 py-3">{krw(record.expected)}</td>
+                    <td className="px-4 py-3">{krw(record.paid)}</td>
+                    <td className="px-4 py-3 font-[950] text-[#A12A2A]">{krw(record.diff)}</td>
+                    <td className="px-4 py-3">{record.status}</td>
+                    <td className="px-4 py-3">{record.overdueDays}일</td>
+                    <td className="px-4 py-3">{record.basis || record.gubun || "-"}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -604,7 +913,7 @@ function GatekeeperControlPanel({
 }
 
 function PendingRequests({ requests }: { requests: RequestItem[] }) {
-  const waiting = requests.filter((item) => ["received", "processing", "rejected"].includes(statusBucket(item.status)));
+  const waiting = requests.filter((item) => ["received", "processing"].includes(statusBucket(item.status)));
   const counts = countByStatus(requests);
   const typeSummary = waiting.reduce<Record<string, number>>((acc, item) => {
     const label = item.kind && REQUEST_FORM_CONFIGS[item.kind] ? REQUEST_FORM_CONFIGS[item.kind].title.replace(" 요청", "") : item.type || "VIPS 요청";
@@ -631,7 +940,6 @@ function PendingRequests({ requests }: { requests: RequestItem[] }) {
         {[
           ["접수", counts.received, "blue"],
           ["처리중", counts.processing, "orange"],
-          ["반려/재확인", counts.rejected, "red"],
           ["오늘 완료", requests.filter((item) => statusBucket(item.status) === "done" && isToday(item)).length || counts.done, "green"]
         ].map(([label, value, tone]) => (
           <div key={label} className="rounded-[16px] border border-[#edf2f8] bg-[#fbfcff] p-3">
@@ -681,11 +989,93 @@ function RejectionRateSection({ rows }: { rows: SalesOpsMetric[] }) {
   );
 }
 
+function actionStatusLabel(status: MonthEndActionStatus) {
+  if (status === "done") return "완료";
+  if (status === "inProgress") return "확인중";
+  return "접수";
+}
+
+function actionStatusClass(status: MonthEndActionStatus) {
+  if (status === "done") return "bg-[#edfdf5] text-[#15803d]";
+  if (status === "inProgress") return "bg-[#fff5ec] text-[#F39945]";
+  return "bg-[#edf4ff] text-[#1D50A2]";
+}
+
+function MonthEndActionRequestsSection({
+  requests,
+  onStatusChange
+}: {
+  requests: MonthEndActionRequest[];
+  onStatusChange: (id: string, status: MonthEndActionStatus) => void;
+}) {
+  const openRequests = requests.filter((request) => request.status !== "done");
+  const visibleRequests = requests.slice(0, 6);
+
+  return (
+    <section className="ops-card p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-[18px] font-[950] text-[#111827]">월마감 조치 요청</h2>
+          <p className="mt-0.5 text-[12px] font-[750] text-[#64748b]">
+            Sales가 월마감 화면에서 남긴 출고진행 요청입니다. 현재는 시연용 임시 저장이며, 추후 ERP API 출고요청으로 연결됩니다.
+          </p>
+        </div>
+        <div className="rounded-full bg-[#edf4ff] px-3 py-1 text-[12px] font-[950] text-[#1D50A2]">
+          미완료 {openRequests.length}건
+        </div>
+      </div>
+
+      {requests.length === 0 ? (
+        <div className="mt-4 rounded-[18px] border border-dashed border-[#dce6f3] bg-[#fbfdff] px-4 py-6 text-center">
+          <p className="text-[13px] font-[900] text-[#64748b]">아직 접수된 월마감 조치 요청이 없습니다.</p>
+          <p className="mt-1 text-[12px] font-[750] text-[#94a3b8]">Sales가 월마감 이슈에서 출고진행을 저장하면 이곳에 표시됩니다.</p>
+        </div>
+      ) : (
+        <div className="mt-4 space-y-2">
+          {visibleRequests.map((request) => (
+            <div key={request.id} className="grid gap-3 rounded-[18px] border border-[#edf2f8] bg-[#fbfcff] p-3 lg:grid-cols-[minmax(0,1fr)_150px_180px] lg:items-center">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`rounded-full px-3 py-1 text-[11px] font-[950] ${actionStatusClass(request.status)}`}>
+                    {actionStatusLabel(request.status)}
+                  </span>
+                  <span className="text-[12px] font-[900] text-[#64748b]">{request.iSales} · {request.fSales}</span>
+                  <span className="text-[11px] font-[750] text-[#94a3b8]">{new Date(request.requestedAt).toLocaleString("ko-KR")}</span>
+                </div>
+                <p className="mt-2 truncate text-[15px] font-[950] text-[#111827]">{request.company}</p>
+                <p className="mt-1 line-clamp-2 text-[12px] font-[750] text-[#64748b]">
+                  {request.memo || "출고 진행 확인"} · {krw(request.amount)}
+                </p>
+              </div>
+              <div className="rounded-[14px] bg-white px-3 py-2">
+                <p className="text-[11px] font-[850] text-[#94a3b8]">ERP 연동 상태</p>
+                <p className="mt-1 text-[12px] font-[950] text-[#F39945]">API 연동 전</p>
+              </div>
+              <div className="flex flex-wrap justify-end gap-2">
+                <button type="button" onClick={() => onStatusChange(request.id, "inProgress")} className="ops-btn-secondary h-8 px-3 text-[11px]">
+                  확인중
+                </button>
+                <button type="button" onClick={() => onStatusChange(request.id, "done")} className="ops-btn-primary h-8 px-3 text-[11px]">
+                  완료
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function VipsOpsPage() {
   const { selectedUser } = useSelectedUser();
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [closingSnapshot, setClosingSnapshot] = useState<ClosingSnapshot | null>(null);
+  const [rmaSnapshot, setRmaSnapshot] = useState<MonthEndRmaSnapshot | null>(null);
   const [blockedUsers, setBlockedUsers] = useState<BlockedUserMap>({});
+  const [monthEndActionRequests, setMonthEndActionRequests] = useState<MonthEndActionRequest[]>([]);
+  const [selectedMonthEndCard, setSelectedMonthEndCard] = useState<MonthEndOpsCard | null>(null);
+  const [selectedCollectionCard, setSelectedCollectionCard] = useState<CollectionOpsCard | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -701,10 +1091,26 @@ export default function VipsOpsPage() {
       .then((response) => (response.ok ? response.json() : null))
       .then((data: { snapshot?: ClosingSnapshot | null } | null) => setClosingSnapshot(data?.snapshot ?? null))
       .catch(() => setClosingSnapshot(null));
+
+    fetchMonthEndRmaSnapshot()
+      .then(setRmaSnapshot)
+      .catch(() => setRmaSnapshot(null));
+
+    const syncActionRequests = () => setMonthEndActionRequests(fetchMonthEndActionRequests());
+    syncActionRequests();
+    window.addEventListener("month-end-action-requests-updated", syncActionRequests);
+    window.addEventListener("storage", syncActionRequests);
+    return () => {
+      window.removeEventListener("month-end-action-requests-updated", syncActionRequests);
+      window.removeEventListener("storage", syncActionRequests);
+    };
   }, []);
 
   const closingIssues = useMemo(() => openClosingIssues(closingSnapshot), [closingSnapshot]);
   const useSnapshotClosing = closingIssues.length > 0;
+  const rmaRecords = useMemo(() => rmaSnapshot?.records ?? [], [rmaSnapshot]);
+  const monthEndOpsCards = useMemo(() => buildMonthEndOpsCards(closingIssues, rmaRecords), [closingIssues, rmaRecords]);
+  const collectionOpsCards = useMemo(() => buildCollectionOpsCards(receivableRecords), []);
 
   const salesRows = useMemo<SalesOpsMetric[]>(() => {
     return TEST_USERS.filter((user) => user.role === "SALES").map((user) => {
@@ -761,10 +1167,6 @@ export default function VipsOpsPage() {
     [requests, salesRows]
   );
 
-  const waitingCount = useMemo(() => {
-    const counts = countByStatus(requests);
-    return counts.received + counts.processing + counts.rejected;
-  }, [requests]);
   const monthEndCount = salesRows.reduce((sum, row) => sum + row.monthEndCount, 0);
   const monthEndAmount = salesRows.reduce((sum, row) => sum + row.monthEndAmount, 0);
   const allCollectionComposition = useMemo(() => buildCollectionComposition(receivableRecords), []);
@@ -773,11 +1175,6 @@ export default function VipsOpsPage() {
   const collectionAmount = allCollectionRisk.reduce((sum, record) => sum + record.diff, 0);
   const needCheckTeamNames = teamRows.filter((team) => team.monthEndRate < 50).map((team) => team.team);
   const overallClosingRate = salesRows.length > 0 ? Math.round(salesRows.reduce((sum, row) => sum + row.monthEndRate, 0) / salesRows.length) : 100;
-  const overdue30Count = receivableRecords.filter((record) => record.diff > 0 && record.overdueDays >= 30).length;
-  const longPendingCount = useSnapshotClosing
-    ? closingIssues.filter((issue) => issue.issueType === "long_pending").length
-    : salesRows.reduce((sum, row) => sum + Math.max(0, Math.floor(row.monthEndCount / 4)), 0);
-
   const gatekeeperRows = useMemo<GatekeeperRow[]>(() => {
     const names = new Set<string>();
     TEST_USERS.filter((user) => user.role === "SALES").forEach((user) => names.add(user.salesName));
@@ -809,6 +1206,10 @@ export default function VipsOpsPage() {
     setBlockedUsers(nextUsers);
   };
 
+  const handleActionStatusChange = (id: string, status: MonthEndActionStatus) => {
+    setMonthEndActionRequests(updateMonthEndActionRequestStatus(id, status));
+  };
+
   const canAccess = selectedUser.accessRole === "admin";
   if (!canAccess) return <AccessDenied />;
 
@@ -819,19 +1220,9 @@ export default function VipsOpsPage() {
       description="팀별 월마감·수금·요청 이슈를 한눈에 확인하고, 오늘 먼저 봐야 할 운영 이슈를 관리합니다."
     >
       <div className="mt-5 space-y-4">
-        <TodayAlertCard
-          closingRateValue={overallClosingRate}
-          collectionRateValue={allCollectionComposition.collectionRate}
-          overdue30Count={overdue30Count}
-          longPendingCount={longPendingCount}
-        />
+        <MonthEndOpsSummary cards={monthEndOpsCards} onSelect={setSelectedMonthEndCard} />
 
-        <section className="grid gap-3 md:grid-cols-4">
-          <KpiCard icon={UsersRound} label="확인 필요 팀" value={needCheckTeamNames.length > 0 ? needCheckTeamNames.join(", ") : "없음"} helper="월마감 진행률 50% 미만" tone={needCheckTeamNames.length > 0 ? "red" : "green"} />
-          <KpiCard icon={AlertTriangle} label="전체 직원 월마감 이슈" value={`${monthEndCount}건`} helper={krw(monthEndAmount)} tone="red" onClick={() => goMonthEnd()} />
-          <KpiCard icon={WalletCards} label="수금 이슈" value={`${collectionCount}건`} helper={`${krw(collectionAmount)} · 30일 이상 또는 고액미수`} tone="orange" onClick={() => goCollections()} />
-          <KpiCard icon={Clock3} label="VIPS 처리 대기" value={`${waitingCount}건`} helper={loading ? "불러오는 중" : "접수/처리/재확인"} tone="blue" onClick={() => openRequestStatus()} />
-        </section>
+        <CollectionOpsSummary cards={collectionOpsCards} onSelect={setSelectedCollectionCard} />
         <p className="text-[11px] font-[750] text-[#94a3b8]">
           수금 이슈 기준: 30일 이상 미수 또는 {krw(highValueThreshold)} 이상 고액미수입니다. 동일 거래가 두 조건에 모두 해당해도 1건으로만 계산합니다.
         </p>
@@ -854,7 +1245,11 @@ export default function VipsOpsPage() {
 
         <GatekeeperControlPanel rows={gatekeeperRows} onUpdate={handleGateUpdate} />
 
+        <MonthEndActionRequestsSection requests={monthEndActionRequests} onStatusChange={handleActionStatusChange} />
+
       </div>
+      <MonthEndIssueModal card={selectedMonthEndCard} onClose={() => setSelectedMonthEndCard(null)} />
+      <CollectionIssueModal card={selectedCollectionCard} onClose={() => setSelectedCollectionCard(null)} />
     </ModulePage>
   );
 }

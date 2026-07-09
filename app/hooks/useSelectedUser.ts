@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export type TestUserName = "Sally" | "Vincent" | "Gavin" | "Tommy_G" | "Morgan" | "Harvey" | "Eric" | "Tommy";
+export type TestUserName = "Sally" | "Vincent" | "Gavin" | "Harvey" | "Lauren" | "Riley" | "Jake" | "Terry" | "Chris" | "Robin";
 export type UserRole = "SALES" | "VIPS";
 export type AccessRole = "admin" | "manager" | "sales";
 
@@ -19,18 +19,21 @@ export const TEST_USERS: TestUser[] = [
   { name: "Sally", email: "sally@icbanq.com", team: "VIPS팀", role: "VIPS", accessRole: "admin", salesName: "Sally" },
   { name: "Vincent", email: "vincent@icbanq.com", team: "VIPS팀", role: "VIPS", accessRole: "admin", salesName: "Vincent" },
   { name: "Gavin", email: "gavin@icbanq.com", team: "VIPS팀", role: "VIPS", accessRole: "admin", salesName: "Gavin" },
-  { name: "Tommy_G", email: "tommy.g@icbanq.com", team: "영업1팀", role: "SALES", accessRole: "manager", salesName: "Tommy_G" },
-  { name: "Morgan", email: "morgan@icbanq.com", team: "영업1팀", role: "SALES", accessRole: "sales", salesName: "Morgan" },
   { name: "Harvey", email: "harvey@icbanq.com", team: "영업1팀", role: "SALES", accessRole: "sales", salesName: "Harvey" },
-  { name: "Eric", email: "eric@icbanq.com", team: "영업1팀", role: "SALES", accessRole: "sales", salesName: "Eric" },
-  { name: "Tommy", email: "tommy@icbanq.com", team: "영업3팀", role: "SALES", accessRole: "admin", salesName: "Tommy" }
+  { name: "Lauren", email: "lauren@icbanq.com", team: "영업1팀", role: "SALES", accessRole: "sales", salesName: "Lauren" },
+  { name: "Riley", email: "riley@icbanq.com", team: "영업1팀", role: "SALES", accessRole: "sales", salesName: "Riley" },
+  { name: "Jake", email: "jake@icbanq.com", team: "영업2팀", role: "SALES", accessRole: "sales", salesName: "Jake" },
+  { name: "Terry", email: "terry@icbanq.com", team: "영업2팀", role: "SALES", accessRole: "sales", salesName: "Terry" },
+  { name: "Chris", email: "chris@icbanq.com", team: "영업3팀", role: "SALES", accessRole: "sales", salesName: "Chris" },
+  { name: "Robin", email: "robin@icbanq.com", team: "영업3팀", role: "SALES", accessRole: "sales", salesName: "Robin" }
 ];
 
 const STORAGE_KEY = "icbanq.ops.selectedUser";
 const EVENT_NAME = "icbanq:selected-user-change";
 
 function normalizeUser(value: string | null): TestUserName {
-  return TEST_USERS.some((user) => user.name === value) ? (value as TestUserName) : "Sally";
+  const matched = TEST_USERS.find((user) => user.name.toLowerCase() === String(value || "").toLowerCase());
+  return matched ? matched.name : "Sally";
 }
 
 function readStoredUser() {
@@ -61,9 +64,10 @@ export function useSelectedUser() {
     const sync = () => {
       if (typeof window === "undefined") return;
       const userFromUrl = new URLSearchParams(window.location.search).get("user");
-      if (userFromUrl && TEST_USERS.some((user) => user.name === userFromUrl)) {
-        writeStoredUser(userFromUrl as TestUserName);
-        setSelectedUserState(getTestUser(userFromUrl));
+      const normalizedUrlUser = normalizeUser(userFromUrl);
+      if (userFromUrl && TEST_USERS.some((user) => user.name.toLowerCase() === userFromUrl.toLowerCase())) {
+        writeStoredUser(normalizedUrlUser);
+        setSelectedUserState(getTestUser(normalizedUrlUser));
         return;
       }
 

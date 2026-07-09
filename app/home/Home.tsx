@@ -33,7 +33,7 @@ function HomeGroup({
   compact?: boolean;
 }) {
   return (
-    <section className={`min-w-0 rounded-[28px] border border-[#edf2f8] bg-white/40 p-3.5 shadow-[0_4px_14px_rgba(15,23,42,0.016)] ${compact ? "space-y-2.5" : "space-y-3.5"}`}>
+    <section className={`min-w-0 rounded-[28px] border border-[#edf2f8] bg-white/40 shadow-[0_4px_14px_rgba(15,23,42,0.016)] ${compact ? "space-y-2.5 p-3.5" : "space-y-4 p-5"}`}>
       <div className="flex min-w-0 items-end justify-between gap-3 px-1">
         <div className="min-w-0">
           <p className="text-[10px] font-[950] uppercase tracking-[0.1em] text-[#1D50A2]">{eyebrow}</p>

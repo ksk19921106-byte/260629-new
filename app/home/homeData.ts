@@ -1,9 +1,9 @@
 ﻿import {
   Banknote,
-  CalendarCheck,
   CreditCard,
   FileText,
   Landmark,
+  PackageCheck,
   ShieldCheck,
   Truck,
   WalletCards,
@@ -104,13 +104,14 @@ export const weeklyWorkItems: WorkItem[] = [
   }
 ];
 
-export const searchChips = ["수정세금계산서", "입금확인", "보증보험", "수금매칭", "계산서매칭"];
+export const searchChips = ["수정세금계산서", "선수금", "보증보험", "수금매칭", "계산서매칭"];
 
 export const monthlyItems = [
-  { label: "계산서 발행 필요", count: "3건", amount: "79,895,946원", icon: FileText, tone: "needCheck" },
-  { label: "출고 확인 필요", count: "2건", amount: "5,252,933원", icon: Truck, tone: "inProgress" },
-  { label: "장기 미진행 거래", count: "1건", amount: "75,000원", icon: CalendarCheck, tone: "info" },
-  { label: "Deduct 확인 필요", count: "0건", amount: "0원", icon: ShieldCheck, tone: "done" }
+  { key: "invoice_required", label: "세금계산서 미발행", count: "3건", amount: "79,895,946원", icon: FileText, tone: "needCheck" },
+  { key: "shipment_check", label: "미출고", count: "2건", amount: "5,252,933원", icon: Truck, tone: "inProgress" },
+  { key: "long_pending", label: "출고/세금계산서 발행 대기", count: "4건", amount: "상태: 입고 완료", icon: PackageCheck, tone: "info" },
+  { key: "rma", label: "RMA 미처리 내역", count: "1건", amount: "75,000원", icon: PackageCheck, tone: "needCheck" },
+  { key: "customs", label: "관세미수금", count: "0건", amount: "0원", icon: ShieldCheck, tone: "done" }
 ];
 
 export const collectionItems = [
@@ -122,7 +123,7 @@ export const collectionItems = [
 export const quickRequests: Array<{ kind: RequestKind; label: string; icon: LucideIcon; tone: string }> = [
   { kind: "taxInvoice", label: "세금계산서\n발행 요청", icon: FileText, tone: "info" },
   { kind: "revisedTaxInvoice", label: "수정세금계산서\n요청", icon: FileText, tone: "info" },
-  { kind: "depositConfirmation", label: "입금확인\n요청", icon: Landmark, tone: "info" },
+  { kind: "advancePayment", label: "선수금 처리\n요청", icon: Landmark, tone: "info" },
   { kind: "invoiceMatching", label: "계산서매칭", icon: FileText, tone: "info" }
 ];
 

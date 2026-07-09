@@ -163,12 +163,12 @@ const menuSearchIndex: GlobalSearchItem[] = [
     iconLabel: "📝"
   },
   {
-    id: "request-deposit",
+    id: "request-advance-payment",
     type: "request",
-    title: "입금확인 요청하기",
-    description: "입금일자, 업체명, 입금금액, 입금계좌를 선택해 요청합니다.",
-    keywords: ["입금확인", "입금", "요청", "계좌", "수금"],
-    route: "/requests/depositConfirmation",
+    title: "선수금 처리 요청하기",
+    description: "선수금 일부사용 또는 전부소진 처리를 위해 IKI Tax ID와 관련 링크를 남깁니다.",
+    keywords: ["선수금", "입금", "요청", "일부사용", "전부소진", "IKI Tax ID"],
+    route: "/requests/advancePayment",
     categoryLabel: "VIPS 요청",
     iconLabel: "📝"
   },

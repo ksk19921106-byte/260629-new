@@ -20,6 +20,7 @@ import {
 } from "../services/receivables";
 
 type TableFilter = "all" | "completed" | "partial" | "unpaid" | "long_overdue" | "unmatched_payment";
+type CollectionSummaryFilter = "scheduled" | "completed" | "partial" | "unpaid" | "high" | "long";
 type CollectionActionStatus = {
   issueId: string;
   status: "open" | "checked" | "request_vips";
@@ -101,14 +102,15 @@ const filterOptions: Array<{ key: TableFilter; label: string }> = [
 
 const collectionTeamOptions = ["S1", "S2", "S3", "B2D"];
 const defaultSalesRoster = [
-  "Tommy_G",
-  "Tommy",
-  "Morgan",
   "Harvey",
-  "Eric",
+  "Lauren",
+  "Riley",
+  "Jake",
+  "Terry",
+  "Chris",
+  "Robin",
   "William_S2",
   "Jenny",
-  "Lauren",
   "Winnie",
   "Max"
 ];
@@ -408,6 +410,13 @@ function parseArRows(rows: string[][]): DemoArRecord[] {
     .filter((row) => row.company && row.ar > 0);
 }
 
+function formatOverdueMonths(days: number) {
+  const safeDays = Math.max(0, Math.round(days || 0));
+  if (safeDays < 30) return "1개월 미만";
+  const months = Math.max(1, Math.floor(safeDays / 30));
+  return `${months}개월`;
+}
+
 function candidateScore(payment: DemoPayment, order: DemoOrder) {
   const payer = normalizeMatchText(payment.payerName);
   const company = normalizeMatchText(order.company);
@@ -468,6 +477,7 @@ export default function CollectionsPage() {
   const [actionMemo, setActionMemo] = useState("");
   const [highlightTop, setHighlightTop] = useState(false);
   const [showAllRows, setShowAllRows] = useState(false);
+  const [summaryFilter, setSummaryFilter] = useState<CollectionSummaryFilter>("scheduled");
   const [assignedSales, setAssignedSales] = useState<Record<string, string>>({});
   const [orderPaste, setOrderPaste] = useState("");
   const [paymentPaste, setPaymentPaste] = useState("");
@@ -505,7 +515,7 @@ export default function CollectionsPage() {
       const name = normalizeSalesName(record.sales);
       if (name && name !== "미매칭") names.add(name);
     }
-    ["Tommy_G", "Morgan", "Harvey", "Eric", "Tommy"].forEach((name) => names.add(name));
+    ["Harvey", "Lauren", "Riley", "Jake", "Terry", "Chris", "Robin"].forEach((name) => names.add(name));
     return Array.from(names).sort((a, b) => a.localeCompare(b));
   }, [arRecords, matchingDemo.orders, salesFilterOptions]);
   const scopedRecords = useMemo(
@@ -592,6 +602,46 @@ export default function CollectionsPage() {
       highAmount: highValue.reduce((sum, record) => sum + record.ar, 0)
     };
   }, [scopedArRecords]);
+  const collectionSummaryRows = useMemo(() => {
+    const completed = scopedArRecords.filter((record) => record.status.includes("완료") || record.ar <= 0);
+    const partial = scopedArRecords.filter((record) => record.status.includes("부분"));
+    const unpaid = scopedArRecords.filter((record) => record.ar > 0);
+    const high = scopedArRecords.filter((record) => record.ar >= 1000000);
+    const long = scopedArRecords.filter((record) => record.overdueDays >= 30);
+    return {
+      scheduled: scopedArRecords,
+      completed,
+      partial,
+      unpaid,
+      high,
+      long
+    };
+  }, [scopedArRecords]);
+  const collectionSummaryMetrics = useMemo(() => {
+    const sumAmount = (rows: DemoArRecord[]) => rows.reduce((sum, record) => sum + (record.amount || record.ar), 0);
+    const sumAr = (rows: DemoArRecord[]) => rows.reduce((sum, record) => sum + record.ar, 0);
+    return {
+      scheduled: { count: collectionSummaryRows.scheduled.length, amount: sumAmount(collectionSummaryRows.scheduled) },
+      completed: { count: collectionSummaryRows.completed.length, amount: sumAmount(collectionSummaryRows.completed) },
+      partial: { count: collectionSummaryRows.partial.length, amount: sumAr(collectionSummaryRows.partial) },
+      unpaid: { count: collectionSummaryRows.unpaid.length, amount: sumAr(collectionSummaryRows.unpaid) },
+      high: { count: collectionSummaryRows.high.length, amount: sumAr(collectionSummaryRows.high) },
+      long: { count: collectionSummaryRows.long.length, amount: sumAr(collectionSummaryRows.long) }
+    };
+  }, [collectionSummaryRows]);
+  const summaryFilterOptions: Array<{ key: CollectionSummaryFilter; label: string; count: number; amount: string; tone: "blue" | "green" | "orange" | "red" }> = [
+    { key: "scheduled", label: "수금예정액", count: collectionSummaryMetrics.scheduled.count, amount: formatKrwShort(collectionSummaryMetrics.scheduled.amount), tone: "blue" },
+    { key: "completed", label: "수금 완료금액", count: collectionSummaryMetrics.completed.count, amount: formatKrwShort(collectionSummaryMetrics.completed.amount), tone: "green" },
+    { key: "unpaid", label: "미수금액", count: collectionSummaryMetrics.unpaid.count, amount: formatKrwShort(collectionSummaryMetrics.unpaid.amount), tone: "red" }
+  ];
+  const selectedSummaryRows = useMemo(
+    () => collectionSummaryRows[summaryFilter].slice().sort((a, b) => b.ar - a.ar || b.overdueDays - a.overdueDays),
+    [collectionSummaryRows, summaryFilter]
+  );
+  const longOverdueRows = useMemo(
+    () => scopedArRecords.filter((record) => record.overdueDays >= 30).sort((a, b) => b.overdueDays - a.overdueDays || b.ar - a.ar),
+    [scopedArRecords]
+  );
   const arAgingRows = useMemo(() => {
     const buckets = [
       { label: "7일이내", test: (days: number) => days <= 7 },
@@ -605,7 +655,16 @@ export default function CollectionsPage() {
       return { bucket: bucket.label, count: rows.length, amount: rows.reduce((sum, record) => sum + record.ar, 0) };
     });
   }, [scopedArRecords]);
-  const arHighValueRows = useMemo(() => scopedArRecords.slice().sort((a, b) => b.ar - a.ar).slice(0, 8), [scopedArRecords]);
+  const arHighValueRows = useMemo(() => scopedArRecords.filter((record) => record.ar >= 1000000).sort((a, b) => b.ar - a.ar).slice(0, 8), [scopedArRecords]);
+  const visibleUnmatchedPayments = useMemo(() => {
+    if (isAdmin) return unmatchedDemoPayments;
+    const userSales = normalizeSalesName(selectedUser.salesName);
+    return unmatchedDemoPayments.filter((payment) => {
+      const assigned = normalizeSalesName(assignedPaymentSales[payment.id]);
+      const recommended = normalizeSalesName(inferPaymentSales(payment, matchingDemo.orders, scopedArRecords));
+      return assigned === userSales || (!assigned && recommended === userSales);
+    });
+  }, [assignedPaymentSales, isAdmin, matchingDemo.orders, scopedArRecords, selectedUser.salesName, unmatchedDemoPayments]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -799,8 +858,13 @@ export default function CollectionsPage() {
       } else {
         const parsed = parsePaymentRows(rows);
         setPaymentPaste(text);
+        saveMatchingDemo({
+          ...matchingDemo,
+          payments: parsed,
+          matches: matchingDemo.matches.filter((match) => parsed.some((payment) => payment.id === match.paymentId))
+        });
         const leftCount = parsed.filter((payment) => payment.status === "unmatched").length;
-        setPaymentFileMessage(`${file.name} · 수금 ${parsed.length}건 · 남은금액/미매칭 ${leftCount}건 인식 가능`);
+        setPaymentFileMessage(`${file.name} · 수금 ${parsed.length}건 · 남은금액/미매칭 ${leftCount}건 반영`);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "파일을 읽지 못했습니다.";
@@ -869,7 +933,7 @@ export default function CollectionsPage() {
     >
       <div className="space-y-5">
         <section className="ops-card bg-[linear-gradient(135deg,#ffffff_0%,#f8fbff_58%,#fff7f3_100%)] p-5">
-          <div className="grid gap-5 lg:grid-cols-[1fr_260px]">
+          <div className={`grid gap-5 ${isAdmin ? "lg:grid-cols-[minmax(360px,0.72fr)_minmax(520px,1.28fr)]" : "lg:grid-cols-[1fr_260px]"}`}>
             <div>
               <div className="flex items-center gap-2 text-[#1D50A2]">
                 <ShieldCheck size={18} />
@@ -893,9 +957,17 @@ export default function CollectionsPage() {
               </button>
             </div>
             {isAdmin ? (
-              <div className="rounded-[18px] border border-[#e5eaf3] bg-white p-4">
-                <p className="text-[12px] font-[900] text-[#64748b]">회사 전체 수금 관제</p>
-                <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="flex min-h-[190px] flex-col justify-center rounded-[18px] border border-[#e5eaf3] bg-white p-5">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[12px] font-[900] text-[#64748b]">회사 전체 수금 관제</p>
+                    <p className="mt-2 max-w-[360px] text-[12px] font-[750] leading-5 text-[#64748b]">
+                      Admin이 업로드한 Aging 데이터를 기준으로 전체 수금률, AR, 장기미수 병목을 확인합니다.
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-[#edf4ff] px-3 py-1 text-[11px] font-[950] text-[#1D50A2]">Admin View</span>
+                </div>
+                <div className="mt-4 grid gap-2 sm:grid-cols-4">
                   <MiniAmount label="전체 수금률" value={`${adminSummary.collectionRate}%`} strong />
                   <MiniAmount label="전체 AR" value={formatKrwShort(adminSummary.unpaidAmount)} strong />
                   <MiniAmount label="확인 필요" value={`${buildCollectionIssues(recordsWithAssignments).length}건`} />
@@ -918,13 +990,6 @@ export default function CollectionsPage() {
           </div>
         </section>
 
-        <section className="grid gap-3 md:grid-cols-4">
-          <KpiCard icon={AlertCircle} label="오늘 확인 필요" value={`${openIssues.length}건`} tone="red" />
-          <KpiCard icon={CircleDollarSign} label="미수금" value={formatKrwShort(summary.unpaidAmount)} tone="orange" />
-          <KpiCard icon={Banknote} label="수금률" value={`${summary.collectionRate}%`} tone="blue" />
-          <KpiCard icon={AlertCircle} label="30일 이상 미수" value={`${summary.longOverdueCount}건`} tone="red" />
-        </section>
-
         <section className="ops-card p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -933,7 +998,7 @@ export default function CollectionsPage() {
                 {isAdmin ? "전체 직원" : `${selectedUser.name}님`}의 수금 대상 {composition.totalRecords}건 중 완료 {composition.completedRecords.length}건, 부분수금 {composition.partialRecords.length}건, 미수 {composition.unpaidRecords.length}건입니다.
               </p>
             </div>
-            <div className="rounded-full bg-[#f8fbff] px-3 py-1.5 text-[12px] font-[900] text-[#1D50A2]">완료 기준 수금률 {composition.collectionRate}%</div>
+            <div className="rounded-full bg-[#f8fbff] px-3 py-1.5 text-[12px] font-[900] text-[#1D50A2]">전체 수금률 {composition.collectionRate}%</div>
           </div>
           {isAdmin ? (
             <div className="mt-4 flex flex-wrap items-center gap-2 rounded-[16px] border border-[#e5eaf3] bg-[#fbfdff] px-3 py-3">
@@ -970,19 +1035,50 @@ export default function CollectionsPage() {
               </span>
             </div>
           ) : null}
-          <div className="mt-4 grid gap-3 md:grid-cols-4">
-            <SummaryTile label="전체 수금 대상" count={`${composition.totalRecords}건`} amount={formatKrwShort(composition.totalExpected)} tone="blue" />
-            <SummaryTile label="완료" count={`${composition.completedRecords.length}건`} amount={formatKrwShort(composition.completedAmount)} tone="green" />
-            <SummaryTile label="부분수금" count={`${composition.partialRecords.length}건`} amount={`차액 ${formatKrwShort(composition.partialDiff)}`} tone="orange" />
-            <SummaryTile label="미수" count={`${composition.unpaidRecords.length}건`} amount={formatKrwShort(composition.unpaidAmount)} tone="red" />
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {summaryFilterOptions.map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                onClick={() => setSummaryFilter(option.key)}
+                className={`min-w-0 rounded-[18px] border bg-white p-4 text-left transition hover:-translate-y-0.5 hover:border-[#1D50A2] ${
+                  summaryFilter === option.key ? "border-[#1D50A2] ring-4 ring-blue-50" : "border-[#e5eaf3]"
+                }`}
+              >
+                <SummaryTile label={option.label} count={`${option.count}건`} amount={option.amount} tone={option.tone} compact />
+              </button>
+            ))}
           </div>
-          <div className="mt-4 rounded-[16px] border border-[#e5eaf3] bg-[#fbfdff] p-4">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-[13px] font-[950] text-[#111827]">오늘 확인 {checkedCount} / {todayTotal} 완료</p>
-              <p className="text-[12px] font-[850] text-[#64748b]">{todayProgress}%</p>
+          <p className="mt-3 text-[11px] font-[750] text-[#94a3b8]">
+            장기미수는 Admin이 업로드한 수금/AR 파일의 수금예정일 기준 경과일이 30일 이상인 건만 집계합니다.
+          </p>
+          <div className="mt-4 overflow-hidden rounded-[18px] border border-[#e7ecf4]">
+            <div className="grid grid-cols-[minmax(220px,1fr)_120px_120px_100px_96px_110px] gap-2 bg-[#f8fbff] px-4 py-3 text-[11px] font-[950] text-[#64748b]">
+              <span>거래처</span>
+              <span>담당 Sales</span>
+              <span>수금예정액</span>
+              <span>미수금액</span>
+              <span>경과일</span>
+              <span>상태</span>
             </div>
-            <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#e7ecf4]">
-              <span className="block h-full rounded-full bg-[#1D50A2] transition-all" style={{ width: `${todayProgress}%` }} />
+            <div className="max-h-[360px] overflow-auto">
+              {selectedSummaryRows.length === 0 ? (
+                <p className="p-6 text-center text-[13px] font-[850] text-[#64748b]">선택한 기준에 맞는 수금 데이터가 없습니다.</p>
+              ) : (
+                selectedSummaryRows.map((record) => (
+                  <div key={`${record.id}-${record.company}`} className="grid grid-cols-[minmax(220px,1fr)_120px_120px_100px_96px_110px] items-center gap-2 border-t border-[#eef2f7] bg-white px-4 py-3 text-[12px]">
+                    <span className="min-w-0">
+                      <b className="block truncate font-[950] text-[#111827]">{record.company}</b>
+                      <span className="mt-0.5 block truncate text-[11px] font-[750] text-[#64748b]">{record.poid || "수금/AR"} · {record.poitemId || record.itemName || "-"}</span>
+                    </span>
+                    <span className="truncate font-[850] text-[#475569]">{record.sales || "미매칭"}</span>
+                    <span className="truncate font-[900] text-[#111827]">{formatKrwShort(record.amount || record.ar)}</span>
+                    <span className="truncate font-[950] text-[#b85f18]">{formatKrwShort(record.ar)}</span>
+                    <span className={record.overdueDays >= 30 ? "font-[950] text-[#b85f18]" : "font-[850] text-[#64748b]"}>{record.overdueDays}일</span>
+                    <span className="rounded-full bg-[#f8fbff] px-3 py-1 text-center text-[11px] font-[950] text-[#64748b]">{record.status || (record.ar > 0 ? "미수" : "완료")}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </section>
@@ -991,7 +1087,7 @@ export default function CollectionsPage() {
           전체 {recordsWithAssignments.length}건 중 담당자 매핑 성공 {mappedRecordsCount}건 · 담당자 미매칭 {unmappedRecords.length}건 · 현재 사용자 {selectedUser.name} 기준 {visibleRecords.length}건 표시
         </section> : null}
 
-        <section className="ops-card p-5">
+        {isAdmin ? <section className="ops-card p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-[11px] font-[950] uppercase tracking-[0.08em] text-[#1D50A2]">AR CONTROL</p>
@@ -1072,9 +1168,9 @@ export default function CollectionsPage() {
               </div>
             </div>
           </div>
-        </section>
+        </section> : null}
 
-        <section className="ops-card p-4">
+        <section className="hidden">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className="text-[20px] font-[950] tracking-[-0.02em] text-[#111827]">수금매칭 예외 검토</h3>
@@ -1106,7 +1202,7 @@ export default function CollectionsPage() {
                 value={orderPaste}
                 onChange={(event) => setOrderPaste(event.target.value)}
                 className="mt-2 h-[140px] w-full resize-none rounded-[16px] border border-[#dce6f3] bg-[#fbfdff] p-3 text-[12px] font-[750] leading-5 text-[#10203f] outline-none focus:border-[#1D50A2]"
-                placeholder={"주문번호\tTracking\t거래처명\tSales\t세금계산서\t품목\t청구금액\tAR\nB260707026503\tTRK-8821\t자유에이테크\tEric\tTAX-20260707-003\tE2726DS QHD IPS\t528000\t528000"}
+                placeholder={"주문번호\tTracking\t거래처명\tSales\t세금계산서\t품목\t청구금액\tAR\nB260707026503\tTRK-8821\t자유에이테크\tLauren\tTAX-20260707-003\tE2726DS QHD IPS\t528000\t528000"}
               />
             </label>
             <label className="block">
@@ -1271,7 +1367,7 @@ export default function CollectionsPage() {
           ) : null}
         </section>
 
-        <section className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
+        <section className="hidden">
           <article
             ref={topSectionRef}
             className={`ops-card min-w-0 overflow-hidden p-4 transition ${
@@ -1415,8 +1511,19 @@ export default function CollectionsPage() {
           </article>
         </section>
 
+        <section className="grid gap-5 xl:grid-cols-1">
+          <AdminPanel
+            title="장기미수"
+            rows={longOverdueRows.slice(0, 8).map((row) => [row.company, formatOverdueMonths(row.overdueDays), formatKrwShort(row.ar)])}
+          />
+        </section>
+
         {isAdmin ? (
           <>
+            <section className="grid gap-5 xl:grid-cols-2">
+              <AdminPanel title="팀별 성과" rows={teamStats.map((row) => [row.label, `${row.rate}%`, formatKrwShort(row.remain)])} />
+              <AdminPanel title="담당자별 성과" rows={salesPerformanceRows.map((row) => [row.label, `${row.rate}%`, `${row.count}건`])} />
+            </section>
             <section className="ops-card p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -1424,6 +1531,21 @@ export default function CollectionsPage() {
                   <p className="mt-1 text-[13px] font-[750] text-[#64748b]">수금 RAW에는 남은금액이 있지만 주문 후보가 없어 Sales 검토 담당자를 먼저 지정해야 하는 건입니다.</p>
                 </div>
                 <span className="rounded-full bg-[#fff5ec] px-3 py-1 text-[12px] font-[950] text-[#b85f18]">{unmatchedDemoPayments.length}건</span>
+              </div>
+              <div className="mt-4 rounded-[16px] border border-dashed border-[#cfe0f4] bg-[#fbfdff] p-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[12px] font-[950] text-[#111827]">미매칭 수금 파일 업로드</p>
+                    <p className="mt-1 text-[11px] font-[750] text-[#64748b]">Admin이 수금 RAW 파일을 올리면 담당자 지정 후 Sales 화면에 배포됩니다.</p>
+                  </div>
+                  <input
+                    type="file"
+                    accept=".xls,.xlsx,.csv,.tsv,.txt"
+                    onChange={(event) => importMatchingFile(event.target.files?.[0], "payments")}
+                    className="block max-w-[360px] text-[12px] font-[800] text-[#475569] file:mr-3 file:rounded-full file:border-0 file:bg-[#edf4ff] file:px-3 file:py-2 file:text-[12px] file:font-[950] file:text-[#1D50A2]"
+                  />
+                </div>
+                {paymentFileMessage ? <p className="mt-2 text-[11px] font-[900] text-[#1D50A2]">{paymentFileMessage}</p> : null}
               </div>
               <div className="mt-4 overflow-hidden rounded-[18px] border border-[#e7ecf4]">
                 <div className="grid grid-cols-[minmax(240px,1.2fr)_120px_100px_minmax(170px,1fr)_160px_130px] gap-2 bg-[#f8fbff] px-4 py-3 text-[11px] font-[950] text-[#64748b]">
@@ -1489,18 +1611,52 @@ export default function CollectionsPage() {
                 </div>
               </div>
             </section>
-            <section className="grid gap-5 xl:grid-cols-2">
-              <AdminPanel title="팀별 성과" rows={teamStats.map((row) => [row.label, `${row.rate}%`, formatKrwShort(row.remain)])} />
-              <AdminPanel title="담당자별 성과" rows={salesPerformanceRows.map((row) => [row.label, `${row.rate}%`, `${row.count}건`])} />
-            </section>
           </>
-        ) : (
-          <section className="grid gap-5 xl:grid-cols-3">
-            <AdminPanel title="고액 미수" rows={arHighValueRows.slice(0, 5).map((row) => [row.company, row.sales || "미매칭", formatKrwShort(row.ar)])} />
-            <AdminPanel title="Aging 분석" rows={arAgingRows.map((row) => [row.bucket, `${row.count}건`, formatKrwShort(row.amount)])} />
-            <AdminPanel title="수금 미매칭건" rows={matchingReviewRows.map((row) => [row.name, row.matched_payer ?? "-", row.gubun ?? "확인 필요"])} />
+        ) : null}
+
+        {!isAdmin ? (
+          <section className="ops-card p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-[20px] font-[950] tracking-[-0.02em] text-[#111827]">내 담당 미매칭 수금건</h3>
+                <p className="mt-1 text-[13px] font-[750] text-[#64748b]">
+                  VIPS/Admin이 업로드하고 담당자로 지정한 미매칭 수금건입니다.
+                </p>
+              </div>
+              <span className="rounded-full bg-[#fff5ec] px-3 py-1 text-[12px] font-[950] text-[#b85f18]">{visibleUnmatchedPayments.length}건</span>
+            </div>
+            <div className="mt-4 overflow-hidden rounded-[18px] border border-[#e7ecf4]">
+              <div className="grid grid-cols-[minmax(240px,1.2fr)_130px_110px_minmax(180px,1fr)] gap-2 bg-[#f8fbff] px-4 py-3 text-[11px] font-[950] text-[#64748b]">
+                <span>수금건</span>
+                <span>남은금액</span>
+                <span>입금일</span>
+                <span>확인 내용</span>
+              </div>
+              <div className="max-h-[320px] overflow-auto">
+                {visibleUnmatchedPayments.length === 0 ? (
+                  <p className="p-5 text-center text-[13px] font-[850] text-[#64748b]">내 담당으로 지정된 미매칭 수금건이 없습니다.</p>
+                ) : (
+                  visibleUnmatchedPayments.map((payment) => {
+                    const reason = paymentUnmatchedReason(payment, matchingDemo.orders);
+                    return (
+                      <div key={payment.id} className="grid grid-cols-[minmax(240px,1.2fr)_130px_110px_minmax(180px,1fr)] items-center gap-2 border-t border-[#eef2f7] bg-white px-4 py-3 text-[12px]">
+                        <span className="min-w-0">
+                          <b className="block truncate font-[950] text-[#111827]">{payment.payerName}</b>
+                          <span className="mt-0.5 block truncate text-[11px] font-[750] text-[#64748b]">
+                            {payment.paymentNo} · {payment.account} · {payment.rawStatus || "남은금액"}
+                          </span>
+                        </span>
+                        <span className="truncate font-[900] text-[#b85f18]">{formatKrwShort(payment.amount)}</span>
+                        <span className="truncate font-[850] text-[#475569]">{payment.date}</span>
+                        <span className="truncate font-[850] text-[#64748b]" title={reason}>{reason}</span>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
           </section>
-        )}
+        ) : null}
       </div>
 
       {activeIssue ? (
@@ -1566,13 +1722,23 @@ function KpiCard({ icon: Icon, label, value, tone }: { icon: typeof AlertCircle;
   );
 }
 
-function SummaryTile({ label, count, amount, tone }: { label: string; count: string; amount: string; tone: "blue" | "green" | "orange" | "red" }) {
+function SummaryTile({ label, count, amount, tone, compact = false }: { label: string; count: string; amount: string; tone: "blue" | "green" | "orange" | "red"; compact?: boolean }) {
   const toneClass = {
     blue: "bg-[#edf4ff] text-[#1D50A2]",
     green: "bg-[#edf4ff] text-[#1D50A2]",
     orange: "bg-[#fff5ec] text-[#b85f18]",
     red: "bg-[#fff5ec] text-[#b85f18]"
   }[tone];
+
+  if (compact) {
+    return (
+      <div className="min-w-0 overflow-hidden">
+        <p className="truncate text-[12px] font-[900] text-[#64748b]">{label}</p>
+        <p className={`mt-3 inline-flex rounded-full px-3 py-1 text-[12px] font-[950] ${toneClass}`}>{count}</p>
+        <p className="mt-3 truncate text-[19px] font-[950] tracking-[-0.02em] text-[#111827]">{amount}</p>
+      </div>
+    );
+  }
 
   return (
     <article className="min-w-0 overflow-hidden rounded-[16px] border border-[#e5eaf3] bg-[#fbfdff] p-4">

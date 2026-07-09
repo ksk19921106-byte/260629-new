@@ -32,7 +32,7 @@ const requestCards: Array<{
   { kind: "taxInvoice", group: "계산서", icon: FileText, summary: "품목, 수량, 단가를 기준으로 공급가액과 VAT를 계산합니다.", chips: ["세금계산서", "VAT", "트래킹"] },
   { kind: "revisedTaxInvoice", group: "계산서", icon: RotateCcw, summary: "전월 계산서 수정은 월마감과 부가세 흐름을 먼저 확인합니다.", chips: ["수정발행", "전월수정", "팝업확인"] },
   { kind: "reverseIssueApproval", group: "계산서", icon: ShieldCheck, summary: "역발행 사이트, 최종금액, 건수를 정리해 승인 요청합니다.", chips: ["역발행", "승인", "금액"] },
-  { kind: "depositConfirmation", group: "수금", icon: Landmark, summary: "입금일자, 금액, 계좌를 기준으로 입금 흐름을 확인합니다.", chips: ["입금확인", "수금", "계좌"] },
+  { kind: "advancePayment", group: "수금", icon: Landmark, summary: "선수금 일부사용/전부소진 처리에 필요한 IKI 링크와 금액 기준을 남깁니다.", chips: ["선수금", "IKI Tax ID", "ERP처리"] },
   { kind: "cardPayment", group: "수금", icon: CreditCard, summary: "카드전표 첨부를 기준으로 카드결제 확인을 요청합니다.", chips: ["카드전표", "첨부필수", "수금"] },
   { kind: "guaranteeInsurance", group: "계약", icon: BadgeCheck, summary: "계약서와 계약금액 기준으로 보증보험 요청을 진행합니다.", chips: ["계약", "보증보험", "VAT포함"] },
   { kind: "invoiceMatching", group: "계산서", icon: Link2, summary: "계산서와 트래킹 흐름을 연결하거나 해제합니다.", chips: ["매칭", "해제", "트래킹"] },
@@ -118,7 +118,7 @@ export default function RequestsPage() {
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="전월 수정, 입금확인, 카드전표, 수금매칭"
+                placeholder="전월 수정, 선수금, 카드전표, 수금매칭"
                 className="h-full min-w-0 flex-1 bg-transparent text-[14px] font-[750] text-[#10203f] outline-none placeholder:text-[#8a9bb4]"
               />
             </div>

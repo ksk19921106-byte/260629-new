@@ -52,7 +52,7 @@ const requestKinds: RequestKind[] = [
   "taxInvoice",
   "revisedTaxInvoice",
   "reverseIssueApproval",
-  "depositConfirmation",
+  "advancePayment",
   "cardPayment",
   "guaranteeInsurance",
   "invoiceMatching",
@@ -480,7 +480,7 @@ function CompactHomeDashboard({
   const shortcutItems: Array<{ kind: RequestKind; label: string; icon: typeof FileText; tone: string; badge?: string }> = [
     { kind: "taxInvoice", label: "세금계산서\n발행 요청", icon: FileText, tone: "blue" },
     { kind: "revisedTaxInvoice", label: "수정세금계산서\n요청", icon: FileText, tone: "green" },
-    { kind: "depositConfirmation", label: "입금확인\n요청", icon: Landmark, tone: "violet" },
+    { kind: "advancePayment", label: "선수금 처리\n요청", icon: Landmark, tone: "violet" },
     { kind: "guaranteeInsurance", label: "보증보험\n요청", icon: ShieldCheck, tone: "orange" },
     { kind: "invoiceMatching", label: "계산서매칭", icon: CheckCircle2, tone: "teal", badge: "NEW" },
     { kind: "collectionMatching", label: "수금매칭", icon: Banknote, tone: "pink", badge: "NEW" }
@@ -733,7 +733,7 @@ function IcbHomeDashboard({
   const shortcutItems: Array<{ kind: RequestKind; label: string; icon: typeof FileText; tone: string; badge?: string }> = [
     { kind: "taxInvoice", label: "세금계산서\n발행 요청", icon: FileText, tone: "blue" },
     { kind: "revisedTaxInvoice", label: "수정세금계산서\n요청", icon: FileText, tone: "green" },
-    { kind: "depositConfirmation", label: "입금확인\n요청", icon: Landmark, tone: "violet" },
+    { kind: "advancePayment", label: "선수금 처리\n요청", icon: Landmark, tone: "violet" },
     { kind: "guaranteeInsurance", label: "보증보험\n요청", icon: ShieldCheck, tone: "orange" },
     { kind: "invoiceMatching", label: "계산서매칭", icon: CheckCircle2, tone: "teal", badge: "NEW" },
     { kind: "collectionMatching", label: "수금매칭", icon: Banknote, tone: "pink", badge: "NEW" }
@@ -1034,7 +1034,7 @@ function StableHomeDashboard({
   const shortcuts: Array<{ kind: RequestKind; label: string; icon: typeof FileText; tone: string; badge?: string }> = [
     { kind: "taxInvoice", label: "세금계산서\n발행 요청", icon: FileText, tone: "blue" },
     { kind: "revisedTaxInvoice", label: "수정세금계산서\n요청", icon: FileText, tone: "green" },
-    { kind: "depositConfirmation", label: "입금확인\n요청", icon: Landmark, tone: "purple" },
+    { kind: "advancePayment", label: "선수금 처리\n요청", icon: Landmark, tone: "purple" },
     { kind: "guaranteeInsurance", label: "보증보험\n요청", icon: ShieldCheck, tone: "orange" },
     { kind: "invoiceMatching", label: "계산서매칭", icon: CheckCircle2, tone: "teal", badge: "NEW" },
     { kind: "collectionMatching", label: "수금매칭", icon: Banknote, tone: "pink", badge: "NEW" }
@@ -1622,7 +1622,7 @@ function RequestShortcuts({ onSelect }: { onSelect: (kind: RequestKind) => void 
   const visibleShortcutKinds: RequestKind[] = [
     "taxInvoice",
     "revisedTaxInvoice",
-    "depositConfirmation",
+    "advancePayment",
     "guaranteeInsurance",
     "invoiceMatching",
     "collectionMatching"
@@ -1630,7 +1630,7 @@ function RequestShortcuts({ onSelect }: { onSelect: (kind: RequestKind) => void 
   const shortcutLabels: Partial<Record<RequestKind, string>> = {
     taxInvoice: "세금계산서 발행 요청",
     revisedTaxInvoice: "수정세금계산서 요청",
-    depositConfirmation: "입금확인 요청",
+    advancePayment: "선수금 처리 요청",
     guaranteeInsurance: "보증보험 요청",
     invoiceMatching: "계산서매칭",
     collectionMatching: "수금매칭"
@@ -1638,7 +1638,7 @@ function RequestShortcuts({ onSelect }: { onSelect: (kind: RequestKind) => void 
   const shortcutIcons: Partial<Record<RequestKind, typeof FileText>> = {
     taxInvoice: FileText,
     revisedTaxInvoice: FileText,
-    depositConfirmation: Landmark,
+    advancePayment: Landmark,
     guaranteeInsurance: ShieldCheck,
     invoiceMatching: CheckCircle2,
     collectionMatching: Banknote
@@ -2037,31 +2037,32 @@ function VipsRequestForm({
                   <Field label="건수" required type="number" value={values.reverseIssueCount} placeholder="요청 건수 입력" error={showError("reverseIssueCount")} onChange={(value) => onChange("reverseIssueCount", value)} />
                 </>
               )}
-              {kind === "depositConfirmation" && (
+              {kind === "advancePayment" && (
                 <>
-                  <Field label="입금일자" required type="date" value={values.depositDate} error={showError("depositDate")} onChange={(value) => onChange("depositDate", value)} />
                   <label className="block">
                     <span className="mb-2 flex items-center gap-1 text-[13px] font-[800] text-[#1d2f4f]">
-                      입금계좌 <span className="text-[#F39945]">*</span>
+                      처리 구분 <span className="text-[#F39945]">*</span>
                     </span>
                     <select
-                      value={values.depositAccount}
-                      onChange={(event) => onChange("depositAccount", event.target.value)}
+                      value={values.advanceUsageType}
+                      onChange={(event) => onChange("advanceUsageType", event.target.value)}
                       className={`h-11 w-full rounded-md border bg-white px-3 text-[14px] font-[600] text-[#10203f] outline-none focus:border-[#1D50A2] focus:ring-2 focus:ring-[#dbe7f5] ${
-                        showError("depositAccount") ? "border-[#F39945] bg-[#fff5ec]" : "border-[#cfdbea]"
+                        showError("advanceUsageType") ? "border-[#F39945] bg-[#fff5ec]" : "border-[#cfdbea]"
                       }`}
                     >
-                      <option value="">입금계좌 선택</option>
-                      <option value="우리은행(165630)">우리은행(165630)</option>
-                      <option value="우리은행(145961)">우리은행(145961)</option>
-                      <option value="우리은행(648954)">우리은행(648954)</option>
-                      <option value="기업은행(01014)">기업은행(01014)</option>
-                      <option value="어음발행">어음발행</option>
+                      <option value="">선택해주세요</option>
+                      <option value="일부사용">일부사용</option>
+                      <option value="전부소진">전부소진</option>
                     </select>
-                    {showError("depositAccount") && <p className="mt-1 text-[12px] font-[700] text-[#F39945]">누락된 필수 항목입니다.</p>}
+                    {showError("advanceUsageType") && <p className="mt-1 text-[12px] font-[700] text-[#F39945]">누락된 필수 항목입니다.</p>}
                   </label>
-                  <Field label="입금자명" required value={values.depositorName} placeholder="예: 홍길동" error={showError("depositorName")} onChange={(value) => onChange("depositorName", value)} />
-                  <Field label="입금금액" required type="number" value={values.depositAmount} placeholder="0" error={showError("depositAmount")} onChange={(value) => onChange("depositAmount", value)} />
+                  <Field label="IKI Tax ID" required value={values.ikiTaxId} placeholder="예: TAX-20260709-001" error={showError("ikiTaxId")} onChange={(value) => onChange("ikiTaxId", value)} />
+                  <Field label="선수금 링크" required value={values.advancePaymentLink} placeholder="IKI 선수금 링크" error={showError("advancePaymentLink")} onChange={(value) => onChange("advancePaymentLink", value)} />
+                  <Field label="수금 링크" required value={values.advanceCollectionLink} placeholder="IKI 수금 링크" error={showError("advanceCollectionLink")} onChange={(value) => onChange("advanceCollectionLink", value)} />
+                  <Field label="PO 링크" required value={values.poLink} placeholder="PO 또는 Tracking 링크" error={showError("poLink")} onChange={(value) => onChange("poLink", value)} />
+                  <Field label="G/P" required type="number" value={values.gpAmount} placeholder="0" error={showError("gpAmount")} onChange={(value) => onChange("gpAmount", value)} />
+                  <Field label="S/P" required type="number" value={values.spAmount} placeholder="0" error={showError("spAmount")} onChange={(value) => onChange("spAmount", value)} />
+                  <Field label="U/P" required type="number" value={values.upAmount} placeholder="0" error={showError("upAmount")} onChange={(value) => onChange("upAmount", value)} />
                 </>
               )}
               {kind === "cardPayment" && (
@@ -2504,7 +2505,8 @@ function HomePageContent() {
               rate: latestExchangeRate?.rate ?? exchangeRates[exchangeRates.length - 1]?.rate,
               baseDate: latestExchangeRate?.baseDate ?? exchangeRates[exchangeRates.length - 1]?.baseDate,
               isLive: exchangeSource === "exchangerate-api",
-              sourceLabel: exchangeSource === "exchangerate-api" ? "ExchangeRate API" : "수동 기준값"
+              sourceLabel: exchangeSource === "exchangerate-api" ? "ExchangeRate API" : "수동 기준값",
+              history: exchangeRates.map((point) => ({ date: point.date, rate: point.rate }))
             }}
             onSelectRequestKind={handleRequestEntry}
           />

@@ -40,6 +40,10 @@ const defaultQuery = {
 };
 
 const adminTeamOptions = ["S1", "S2", "S3", "B2D"];
+const requestKindOptions = Object.values(REQUEST_FORM_CONFIGS).map((config) => ({
+  value: config.kind,
+  label: config.title
+}));
 const defaultAdminFilters: AdminRequestFilters = {
   team: "",
   person: "",
@@ -96,6 +100,10 @@ function isOwnRequest(item: RequestItem, selectedUser: { name: string; email: st
 function isAssignedToUser(item: RequestItem, selectedUser: { name: string; email: string }) {
   const owners = (item.assignedOwners ?? []).map((owner) => requesterKey(owner));
   return owners.includes(requesterKey(selectedUser.name)) || owners.includes(requesterKey(selectedUser.email));
+}
+
+function isVipsRequestOwner(selectedUser: { name: string }) {
+  return ["sally", "gavin", "vincent"].includes(requesterKey(selectedUser.name));
 }
 
 function todayText() {
@@ -161,14 +169,16 @@ export default function RequestStatusPage() {
 
   const visibleItems = useMemo(() => {
     const isAdminUser = selectedUser.accessRole === "admin";
-    const isAdminAll = isAdminUser && query.scope !== "mine";
+    const isOpsAll = isAdminUser && query.scope === "opsAll";
+    const vipsOwnerMode = isAdminUser && isVipsRequestOwner(selectedUser) && !isOpsAll;
     const kindSet = new Set(query.kind.split(",").map((value) => value.trim()).filter(Boolean));
     const requesterSet = new Set(query.requester.split(",").map((value) => requesterKey(value)).filter(Boolean));
     const assigneeSet = new Set(query.assignee.split(",").map((value) => requesterKey(value)).filter(Boolean));
 
     return items
       .filter((item) => {
-        if (!isAdminAll && !isOwnRequest(item, selectedUser) && !isAssignedToUser(item, selectedUser)) return false;
+        if (vipsOwnerMode && !isAssignedToUser(item, selectedUser)) return false;
+        if (!isOpsAll && !vipsOwnerMode && !isOwnRequest(item, selectedUser) && !isAssignedToUser(item, selectedUser)) return false;
         if (kindSet.size > 0 && (!item.kind || !kindSet.has(item.kind))) return false;
         if (query.status && requestBucket(item.status) !== query.status) return false;
         if (query.date === "today" && !isToday(item)) return false;
@@ -177,7 +187,7 @@ export default function RequestStatusPage() {
           const owners = (item.assignedOwners ?? []).map((owner) => requesterKey(owner));
           if (!owners.some((owner) => assigneeSet.has(owner))) return false;
         }
-        if (isAdminUser) {
+        if (isOpsAll) {
           if (adminFilters.team && requestTeam(item) !== adminFilters.team) return false;
           if (adminFilters.status && requestBucket(item.status) !== adminFilters.status) return false;
           if (adminFilters.person) {
@@ -219,19 +229,22 @@ export default function RequestStatusPage() {
   const rejectedItems = useMemo(() => visibleItems.filter((item) => requestBucket(item.status) === "rejected"), [visibleItems]);
 
   const isAdminUser = selectedUser.accessRole === "admin";
-  const isAdminAll = isAdminUser && query.scope !== "mine";
+  const isOpsAll = isAdminUser && query.scope === "opsAll";
   const canProcessDetail = !!detailRequest && (selectedUser.accessRole === "admin" || isAssignedToUser(detailRequest, selectedUser));
   const assignedCount = visibleItems.filter((item) => isAssignedToUser(item, selectedUser)).length;
   const ownCount = visibleItems.filter((item) => isOwnRequest(item, selectedUser)).length;
-  const description = isAdminAll
-    ? "Sally Admin 권한으로 Sales가 올린 VIPS팀 요청 전체를 확인합니다."
-    : "내가 요청했거나 나에게 배정된 VIPS팀 업무의 접수, 처리 상태, 처리결과를 확인합니다.";
+  const description = isOpsAll
+    ? "VIPS 운영 권한으로 Sales가 올린 VIPS팀 요청 전체를 확인합니다."
+    : selectedUser.role === "VIPS"
+      ? "나에게 배정된 VIPS팀 요청의 접수, 처리 상태, 처리결과를 확인합니다."
+      : "내가 요청했거나 나에게 배정된 VIPS팀 업무의 접수, 처리 상태, 처리결과를 확인합니다.";
 
   useEffect(() => {
     if (loading) return;
+    if (selectedUser.accessRole === "admin") return;
     if (counts.rejected <= 0) return;
     setShowRejectedAlert(true);
-  }, [counts.rejected, loading]);
+  }, [counts.rejected, loading, selectedUser.accessRole]);
 
   return (
     <ModulePage eyebrow="Request Status" title="요청 현황" description={description}>
@@ -370,14 +383,29 @@ export default function RequestStatusPage() {
             <div>
               <h2 className="text-[18px] font-[950] tracking-[-0.02em] text-[#10203f]">요청 목록</h2>
               <p className="mt-1 text-[12px] font-[750] text-[#64748b]">
-                {isAdminAll ? "VIPS 운영에서 선택한 조건의 요청입니다." : "내 요청과 배정받은 요청만 표시됩니다."}
+                {isOpsAll ? "VIPS 운영에서 선택한 조건의 요청입니다." : selectedUser.role === "VIPS" ? "나에게 배정된 요청만 표시됩니다." : "내 요청과 배정받은 요청만 표시됩니다."}
               </p>
             </div>
             <span className="rounded-full bg-[#edf4ff] px-4 py-2 text-[12px] font-[950] text-[#1D50A2]">총 {visibleItems.length}건</span>
           </div>
 
-          {isAdminUser ? (
-            <div className="mt-5 grid gap-3 rounded-[18px] border border-[#d8e4f3] bg-[#f8fbff] p-4 md:grid-cols-4">
+          {isOpsAll ? (
+            <div className="mt-5 grid gap-3 rounded-[18px] border border-[#d8e4f3] bg-[#f8fbff] p-4 md:grid-cols-5">
+              <label className="min-w-0">
+                <span className="block text-[11px] font-[850] text-[#64748b]">요청종류</span>
+                <select
+                  value={requestKindOptions.some((option) => option.value === query.kind) ? query.kind : ""}
+                  onChange={(event) => setQuery((current) => ({ ...current, kind: event.target.value }))}
+                  className="mt-2 h-10 w-full rounded-[13px] border border-[#d8e4f3] bg-white px-3 text-[13px] font-[750] text-[#10203f] outline-none transition focus:border-[#1D50A2]"
+                >
+                  <option value="">전체 요청</option>
+                  {requestKindOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <label className="min-w-0">
                 <span className="block text-[11px] font-[850] text-[#64748b]">팀별</span>
                 <select
@@ -426,14 +454,44 @@ export default function RequestStatusPage() {
               <div className="flex min-w-0 items-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setAdminFilters(defaultAdminFilters)}
+                  onClick={() => {
+                    setAdminFilters(defaultAdminFilters);
+                    setQuery((current) => ({ ...current, kind: "" }));
+                  }}
                   className="h-10 flex-1 rounded-[13px] border border-[#d8e4f3] bg-white px-3 text-[12px] font-[850] text-[#1D50A2] transition hover:bg-[#edf4ff]"
                 >
                   필터 초기화
                 </button>
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div className="mt-5 grid gap-3 rounded-[18px] border border-[#d8e4f3] bg-[#f8fbff] p-4 sm:grid-cols-[minmax(0,280px)_auto]">
+              <label className="min-w-0">
+                <span className="block text-[11px] font-[850] text-[#64748b]">요청종류</span>
+                <select
+                  value={requestKindOptions.some((option) => option.value === query.kind) ? query.kind : ""}
+                  onChange={(event) => setQuery((current) => ({ ...current, kind: event.target.value }))}
+                  className="mt-2 h-10 w-full rounded-[13px] border border-[#d8e4f3] bg-white px-3 text-[13px] font-[750] text-[#10203f] outline-none transition focus:border-[#1D50A2]"
+                >
+                  <option value="">전체 요청</option>
+                  {requestKindOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="flex min-w-0 items-end">
+                <button
+                  type="button"
+                  onClick={() => setQuery((current) => ({ ...current, kind: "" }))}
+                  className="h-10 rounded-[13px] border border-[#d8e4f3] bg-white px-4 text-[12px] font-[850] text-[#1D50A2] transition hover:bg-[#edf4ff]"
+                >
+                  필터 초기화
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="mt-5 grid grid-cols-[minmax(0,1.15fr)_minmax(110px,0.75fr)_minmax(120px,0.8fr)_150px_120px_minmax(0,1fr)] rounded-[16px] bg-[#f3f8ff] px-4 py-3 text-[12px] font-[900] text-[#64748b]">
             <span>요청 종류</span>
