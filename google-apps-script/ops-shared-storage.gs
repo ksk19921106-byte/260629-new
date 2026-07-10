@@ -15,8 +15,17 @@ const CONFIG_SHEET_NAME = "OPS_STORAGE";
 const ALLOWED_COLLECTIONS = [
   "requests",
   "monthEndSnapshot",
-  "monthEndRma"
+  "monthEndRma",
+  "receivablesAging"
 ];
+
+function doGet(e) {
+  return jsonOutput({
+    ok: true,
+    message: "ICBANQ OPS storage is reachable",
+    time: new Date().toISOString()
+  });
+}
 
 function doPost(e) {
   try {

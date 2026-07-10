@@ -694,6 +694,23 @@ export default function CollectionsPage() {
       setArRecords([]);
     }
 
+    void fetch("/api/receivables-aging")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        const records = payload?.snapshot?.records;
+        if (!Array.isArray(records)) return;
+        setArRecords(records as DemoArRecord[]);
+        setArFileMessage(`공용 저장소에서 미수금 Aging ${records.length}건을 불러왔습니다.`);
+        try {
+          window.localStorage.setItem(AR_DEMO_KEY, JSON.stringify(records));
+        } catch {
+          // Shared data still renders even when browser storage is unavailable.
+        }
+      })
+      .catch(() => {
+        // Local sample/localStorage data is still available when shared storage is not configured.
+      });
+
     try {
       const rawPaymentAssignments = window.localStorage.getItem(PAYMENT_ASSIGNMENT_KEY);
       if (rawPaymentAssignments) setAssignedPaymentSales(JSON.parse(rawPaymentAssignments) as Record<string, string>);
@@ -883,7 +900,29 @@ export default function CollectionsPage() {
       const parsed = parseArRows(rows);
       setArRecords(parsed);
       window.localStorage.setItem(AR_DEMO_KEY, JSON.stringify(parsed));
-      setArFileMessage(`${file.name} · AR ${parsed.length}건 · ${formatKrwShort(parsed.reduce((sum, record) => sum + record.ar, 0))} 인식`);
+      const uploadedAt = new Date().toISOString();
+      const snapshot = {
+        id: `receivables-aging-${uploadedAt}`,
+        uploadedAt,
+        uploadedBy: selectedUser.name,
+        fileName: file.name,
+        records: parsed
+      };
+      let saveMessage = "브라우저 임시 저장";
+
+      try {
+        const response = await fetch("/api/receivables-aging", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(snapshot)
+        });
+        if (!response.ok) throw new Error("shared save failed");
+        saveMessage = "구글 시트 저장 완료";
+      } catch {
+        saveMessage = "브라우저 저장만 완료 · 공용 저장 실패";
+      }
+
+      setArFileMessage(`${file.name} · AR ${parsed.length}건 · ${formatKrwShort(parsed.reduce((sum, record) => sum + record.ar, 0))} 인식 · ${saveMessage}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "AR 파일을 읽지 못했습니다.";
       setArFileMessage(message);
