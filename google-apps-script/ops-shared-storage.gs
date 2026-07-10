@@ -16,7 +16,8 @@ const ALLOWED_COLLECTIONS = [
   "requests",
   "monthEndSnapshot",
   "monthEndRma",
-  "receivablesAging"
+  "receivablesAging",
+  "receivablesStatus"
 ];
 
 function doGet(e) {
